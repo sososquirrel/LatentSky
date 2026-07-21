@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 baselines = pd.read_csv(REPO / "docs/baselines_lead3h_newsplits.csv")
 baselines = baselines[baselines["eval_set"] == "patchsplit_test_blocks"]
@@ -74,7 +75,7 @@ fig.suptitle("Warm-started ('residual/refinement') diffusion vs. baselines and p
               fontsize=10)
 fig.tight_layout(rect=[0, 0, 1, 0.88])
 
-out = REPO / "docs/figures/diffusion_refine_vs_baselines_lead3h.png"
+out = FIGURES_DIR / "diffusion_refine_vs_baselines_lead3h.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150)
 print(f"wrote {out}")

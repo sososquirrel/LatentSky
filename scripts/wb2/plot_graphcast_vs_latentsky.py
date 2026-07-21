@@ -23,6 +23,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 
 def load(path: pathlib.Path) -> pd.DataFrame:
@@ -39,7 +40,7 @@ def main():
                    default=str(REPO / "docs/scale_systems_v3.csv.gz"))
     p.add_argument("--graphcast-systems",
                    default=str(REPO / "docs/scale_systems_graphcast_2020-08.csv.gz"))
-    p.add_argument("--out", default=str(REPO / "docs/figures/graphcast_vs_latentsky_6h.png"))
+    p.add_argument("--out", default=str(FIGURES_DIR / "graphcast_vs_latentsky_6h.png"))
     p.add_argument("--scale-min", type=float, default=25.0)
     p.add_argument("--scale-max", type=float, default=600.0)
     p.add_argument("--scale-bins", type=int, default=10)

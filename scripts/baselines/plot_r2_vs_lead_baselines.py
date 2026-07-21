@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 from latentsky.scale_analysis import system_table
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 PIECES_DIR = pathlib.Path(
     "/glade/derecho/scratch/tzhou/splitted_1440x720_9vars_40pieces_v2"
 )
@@ -214,7 +215,7 @@ def main():
     fig.suptitle("LatentSky vs persistence / climatology / random null\n"
                  "P per system, misses→P_p=0, false alarms→P_t=0", fontsize=10)
 
-    out = REPO / "docs/figures/r2_rmse_displacement_vs_lead_baselines_v5fair.png"
+    out = FIGURES_DIR / "r2_rmse_displacement_vs_lead_baselines_v5fair.png"
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"\nwrote {out}", flush=True)
 

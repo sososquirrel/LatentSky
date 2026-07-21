@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 RUNS = pathlib.Path("/glade/derecho/scratch/sabramian/latentsky_runs")
 
 LEADS = [0.25, 0.5, 1, 2, 3, 6]
@@ -61,7 +62,7 @@ axes[1].set_title("Skill vs lead time\n(mseuv + rain_log1p input, 9var+rain)")
 axes[1].legend(fontsize=9, frameon=False)
 axes[1].grid(alpha=0.25)
 
-out = REPO / "docs/figures/rain_sweep_results.png"
+out = FIGURES_DIR / "rain_sweep_results.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

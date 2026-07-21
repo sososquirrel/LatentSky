@@ -13,10 +13,11 @@ import torch
 
 from latentsky import load_run
 from latentsky.inference import _load_model, _infer
+from latentsky.paths import PAPER_FIGURES_DIR
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
-FULL_CACHE = REPO / "docs/paper_figures/_inference_cache.npz"
-OUT = REPO / "docs/paper_figures/_inference_cache_patch64.npz"
+FULL_CACHE = PAPER_FIGURES_DIR / "_inference_cache.npz"
+OUT = PAPER_FIGURES_DIR / "_inference_cache_patch64.npz"
 
 LEADS = [0.0, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0]
 

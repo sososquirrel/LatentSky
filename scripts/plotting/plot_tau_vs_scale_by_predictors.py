@@ -20,6 +20,7 @@ import matplotlib.colors as mcolors
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 CMAP = plt.cm.RdYlGn
 NORM = mcolors.Normalize(vmin=0, vmax=1)
 
@@ -100,7 +101,7 @@ shape_l = [l for l in labels if not l.startswith("  τ")]
 ax.legend(shape_h, shape_l, frameon=False, fontsize=9, loc="upper left")
 ax.grid(alpha=0.25, which="both")
 
-out = REPO / "docs/figures/tau_vs_scale_by_predictors.png"
+out = FIGURES_DIR / "tau_vs_scale_by_predictors.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

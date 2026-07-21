@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 
 def fit_latentsky_power_law():
@@ -105,7 +106,7 @@ axes[1].set_title("Above 1: model beats LatentSky's decay law\nBelow 1: decays f
 axes[1].legend(fontsize=9, frameon=False)
 axes[1].grid(alpha=0.3, which="both")
 
-out = REPO / "docs/figures/retention_vs_latentsky_law.png"
+out = FIGURES_DIR / "retention_vs_latentsky_law.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

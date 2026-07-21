@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
 df = df[df["predictor_set"] == "9var (mse+uv)"]
@@ -77,7 +78,7 @@ ax.set_title("Scale-dependent predictability — LatentSky / DYAMOND\n"
 ax.legend(frameon=False, fontsize=9)
 ax.grid(alpha=0.25, which="both")
 
-out = REPO / "docs/figures/tau_vs_scale.png"
+out = FIGURES_DIR / "tau_vs_scale.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"power law: τ = {a:.3f} · L^{b:.3f}")

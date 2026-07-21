@@ -19,6 +19,7 @@ import matplotlib.cm as cm
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 model_df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
 model_df = model_df[model_df["predictor_set"] == "9var (mse+uv)"]
@@ -163,9 +164,9 @@ def make_overlay_plot(out_path, n_panels=6):
 if __name__ == "__main__":
     for name in ["persistence", "climatology", "random"]:
         make_decay_plot(SERIES[name], name,
-                         REPO / f"docs/figures/pod_decay_{name}.png")
+                         FIGURES_DIR / f"pod_decay_{name}.png")
 
-    make_overlay_plot(REPO / "docs/figures/pod_decay_overlay_all.png")
+    make_overlay_plot(FIGURES_DIR / "pod_decay_overlay_all.png")
 
     print("\n=== τ (h) per scale, per series ===")
     taus = {name: fit_tau_per_scale(df) for name, df in SERIES.items()}

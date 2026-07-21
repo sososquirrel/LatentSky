@@ -14,6 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 
 def r2(y_true, y_pred):
@@ -77,7 +78,7 @@ ax.set_title("Does adding precip as an input help?\n"
 ax.legend(fontsize=9, frameon=False)
 ax.grid(alpha=0.3)
 
-out = REPO / "docs/figures/r2_vs_lead_rain_compare.png"
+out = FIGURES_DIR / "r2_vs_lead_rain_compare.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

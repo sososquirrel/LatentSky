@@ -20,6 +20,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 
 def r2(y_true, y_pred):
@@ -58,7 +59,7 @@ for L, r, n in zip(leads, r2_vals, n_sys):
     ax.annotate(f"{r:.2f}", (L, r), textcoords="offset points",
                 xytext=(0, 8), ha="center", fontsize=8)
 
-out = REPO / "docs/figures/r2_vs_lead_latentsky.png"
+out = FIGURES_DIR / "r2_vs_lead_latentsky.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

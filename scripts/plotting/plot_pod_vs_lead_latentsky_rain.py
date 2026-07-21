@@ -15,6 +15,7 @@ import matplotlib.colors as mcolors
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 
 def free_exp(t, A, tau):
@@ -61,7 +62,7 @@ ax.set_title("LatentSky (9var + rain_log1p input): POD vs lead, by system scale\
              "(dashed: free-amplitude exp fit)", fontsize=10)
 ax.grid(alpha=0.25)
 
-out = REPO / "docs/figures/pod_vs_lead_latentsky_rain.png"
+out = FIGURES_DIR / "pod_vs_lead_latentsky_rain.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

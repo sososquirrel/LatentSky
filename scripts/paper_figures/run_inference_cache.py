@@ -15,9 +15,10 @@ import torch
 from latentsky import load_run
 from latentsky.data import load_piece_arrays
 from latentsky.inference import _load_model, _infer
+from latentsky.paths import PAPER_FIGURES_DIR
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
-OUT = REPO / "docs/paper_figures/_inference_cache.npz"
+OUT = PAPER_FIGURES_DIR / "_inference_cache.npz"
 
 PIECE_ID = 2
 FRAME = 60  # same snapshot used for figs 01, 02, 03 (must satisfy FRAME+delta_index<96 for lead6h)

@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 DOCS = REPO / "docs"
 
 # --- load LatentSky ---
@@ -197,7 +198,7 @@ ax.set_title("Scale-dependent predictability — LatentSky vs GraphCast\n"
 ax.legend(frameon=False, fontsize=9)
 ax.grid(alpha=0.25, which="both")
 
-out = REPO / "docs/figures/tau_vs_scale_wb2_comparison.png"
+out = FIGURES_DIR / "tau_vs_scale_wb2_comparison.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"\nwrote {out}", flush=True)

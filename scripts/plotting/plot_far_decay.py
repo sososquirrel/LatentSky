@@ -10,6 +10,7 @@ import matplotlib.cm as cm
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
 df = df[df["predictor_set"] == "9var (mse+uv)"]
@@ -95,7 +96,7 @@ fig.suptitle(
     fontsize=9,
 )
 
-out = REPO / "docs/figures/far_decay_by_scale.png"
+out = FIGURES_DIR / "far_decay_by_scale.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 

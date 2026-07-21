@@ -1,4 +1,5 @@
 """Predictability-timescale scaling law: tau(L) for dlnA and dlnrho.
+from latentsky.paths import FIGURES_DIR
 
 Fits an exponential decay to the bounded agreement index from
 scripts/plot_info_fraction.py:
@@ -186,7 +187,7 @@ def main() -> None:
     cbar.set_label("dln P at lead 0h  (total-precip gap already\npresent at nowcast time)")
 
     fig.tight_layout()
-    out_fig = repo / f"docs/figures/tau_vs_scale_{args.tag}.png"
+    out_fig = FIGURES_DIR / f"tau_vs_scale_{args.tag}.png"
     out_fig.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_fig, dpi=150, bbox_inches="tight")
     print(f"\nwrote {out_fig}")

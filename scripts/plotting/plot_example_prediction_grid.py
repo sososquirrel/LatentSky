@@ -29,6 +29,7 @@ from latentsky.models import ConditionalDiffusionUNet
 from latentsky.registry import load_run
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 N_TOTAL = 40
 PID, ROW, COL, FI = 8, 1, 4, 0
 
@@ -128,7 +129,7 @@ fig.colorbar(im, ax=axes, shrink=0.6, extend="max", label="rain (mm / 15min, lea
 fig.suptitle(f"Example: piece {PID}, block ({ROW},{COL}), frame {FI}  (patch-split held-out test block)",
              fontsize=12)
 
-out = REPO / "docs/figures/example_prediction_grid_lead3h.png"
+out = FIGURES_DIR / "example_prediction_grid_lead3h.png"
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}")
 
@@ -151,6 +152,6 @@ fig2.colorbar(im, ax=[a for a in axes2.flat if a is not axes2.flat[0]], shrink=0
 fig2.suptitle(f"Prediction error vs. truth: piece {PID}, block ({ROW},{COL}), frame {FI}\n"
               "blue = underprediction, red = overprediction", fontsize=12)
 
-out2 = REPO / "docs/figures/example_prediction_diff_grid_lead3h.png"
+out2 = FIGURES_DIR / "example_prediction_diff_grid_lead3h.png"
 fig2.savefig(out2, dpi=150, bbox_inches="tight")
 print(f"wrote {out2}")

@@ -26,6 +26,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 PIECES_DIR = pathlib.Path(
     "/glade/derecho/scratch/tzhou/splitted_1440x720_9vars_40pieces_v2"
 )
@@ -148,7 +149,7 @@ def _finish(df: pd.DataFrame, out_csv: pathlib.Path) -> None:
     fig.suptitle("Convective regime vs system scale, match vs miss\n"
                  "(left: median + IQR band vs scale; right: marginal distribution) — "
                  "9var(mse+uv) sweep, all leads pooled", fontsize=10)
-    out_fig = REPO / "docs/figures/regime_vs_detection.png"
+    out_fig = FIGURES_DIR / "regime_vs_detection.png"
     fig.savefig(out_fig, dpi=150, bbox_inches="tight")
     print(f"wrote {out_fig}", flush=True)
 

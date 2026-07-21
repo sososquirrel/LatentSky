@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 
 model_df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
 model_df  = model_df[model_df["predictor_set"] == "9var (mse+uv)"]
@@ -119,7 +120,7 @@ ax.set_title("POD vs scale — LatentSky vs persistence vs random null\n"
 ax.legend(handles=style_handles, frameon=False, fontsize=9, loc="upper left")
 ax.grid(alpha=0.25, which="both")
 
-out = REPO / "docs/figures/pod_vs_scale_baselines.png"
+out = FIGURES_DIR / "pod_vs_scale_baselines.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

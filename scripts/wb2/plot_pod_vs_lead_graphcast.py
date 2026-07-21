@@ -16,6 +16,7 @@ import matplotlib.colors as mcolors
 from scipy.optimize import curve_fit
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 LEADS = [6, 12, 18, 24]
 
 
@@ -70,7 +71,7 @@ ax.set_title("GraphCast: POD vs lead, by system scale\n"
              "(dashed: free-amplitude exp fit)", fontsize=10)
 ax.grid(alpha=0.25)
 
-out = REPO / "docs/figures/pod_vs_lead_graphcast.png"
+out = FIGURES_DIR / "pod_vs_lead_graphcast.png"
 out.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(out, dpi=150, bbox_inches="tight")
 print(f"wrote {out}", flush=True)

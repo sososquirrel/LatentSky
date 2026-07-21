@@ -19,6 +19,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from latentsky.registry import REPO_ROOT as REPO
+from latentsky.paths import FIGURES_DIR
 PIECES_DIR = pathlib.Path(
     "/glade/derecho/scratch/tzhou/splitted_1440x720_9vars_40pieces_v2"
 )
@@ -140,7 +141,7 @@ def main():
     fig.suptitle("LatentSky vs persistence / climatology / random null — plain prediction vs truth",
                  fontsize=10)
 
-    out = REPO / "docs/figures/bulk_r2_rmse_vs_lead_baselines.png"
+    out = FIGURES_DIR / "bulk_r2_rmse_vs_lead_baselines.png"
     fig.savefig(out, dpi=150, bbox_inches="tight")
     print(f"\nwrote {out}", flush=True)
 
