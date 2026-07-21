@@ -1,0 +1,48 @@
+# Fine-tune stage of the pretrain-then-fine-tune experiment: identical to
+# twohead_olr_fss_lead3h.yaml (same input_vars/architecture/split/loss),
+# except training starts from configs/pretrain_mask_rain_lead0h.yaml's
+# checkpoint instead of random initialization.
+#
+# NOT runnable until the pretrain run (configs/pretrain_mask_rain_lead0h.yaml)
+# has actually produced runs/pretrain_mask_rain_lead0h/checkpoint.pt --
+# submit the pretrain job first, wait for it to finish, then this one.
+name: twohead_olr_fss_lead3h_finetuned
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: false
+lead_steps_15: 12          # 3h
+
+base_ch: 64
+depth: 5
+out_activation: softplus
+
+patch_size: 128
+patch_stride: 96
+batch_size: 64
+num_epochs: 155
+patience: 10
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+
+test_piece_ids: [1, 13, 23, 32]
+val_piece_ids: [7, 16, 27, 36]
+buffer_piece_ids: [0, 2, 6, 8, 12, 14, 15, 17, 22, 24, 26, 28, 31, 33, 35, 37]
+
+two_head: true
+olr_var_name: olrtoa
+bce_weight: 1.0
+fss_weight: 0.25
+fss_threshold: 0.1
+fss_sharpness: 20.0
+fss_max_kernel_px: 33
+
+pretrain_checkpoint: runs/pretrain_mask_rain_lead0h/checkpoint.pt

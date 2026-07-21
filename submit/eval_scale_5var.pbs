@@ -1,0 +1,38 @@
+#!/bin/bash -l
+#PBS -N eval_scale_5var
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=06:00:00
+#PBS -l select=1:ncpus=8:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -k eod
+
+# Scale-aware object decomposition restricted to the two 5-var predictor
+# sets: "5var (mse)" (runs mse_lead*) and "5var (relhum)" (runs humid_lead*).
+# Excludes the 9var (mse+uv) set. Writes to *_5var artifacts so the
+# canonical docs/scale_{summary,systems} (all runs) are not clobbered.
+#
+# This is the "mse and relhum, 5 vars only" reproduction of the scale
+# decomposition (notebook 04 / P = rho * A per system, stratified by scale).
+#
+# Queue: `develop` routes GPU jobs into the shared `gpudev` queue (6h cap,
+# usually empty -> starts in seconds). Do not add `-l place=pack:shared`
+# (rejected; develop applies shared placement itself).
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+$ENV_PY -u scripts/eval_scale_decomposition.py \
+    --systems-out ${SYSTEMS_OUT:-docs/scale_systems_5var.csv.gz} \
+    --summary-out ${SUMMARY_OUT:-docs/scale_summary_5var.csv} \
+    --max-frames-per-piece ${MAX_FRAMES:-8} \
+    --threshold ${THRESHOLD:-0.1} \
+    --scale-min ${SCALE_MIN:-25} \
+    --scale-max ${SCALE_MAX:-3000} \
+    --scale-bins ${SCALE_BINS:-8} \
+    --predictor-sets "${PREDICTOR_SETS:-5var (mse),5var (relhum)}"

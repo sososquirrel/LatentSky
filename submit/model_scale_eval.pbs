@@ -1,0 +1,62 @@
+#!/bin/bash -l
+#PBS -N model_scale_eval
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=16:mem=64GB
+#PBS -j oe
+#PBS -k eod
+
+# End-to-end scale-aware precip evaluation for a WeatherBench2 model
+# (graphcast | hres) at lead=6h, verified against ERA5, tropical crop.
+#   1. fetch MODEL (lead=6h) + ERA5 truth into local NetCDF cache
+#   2. run scripts/eval_graphcast_scale.py with --model MODEL
+#   3. run scripts/plot_scale_decomposition.py -> 6-panel figure
+#
+# Knobs (qsub -v):
+#   MODEL      graphcast | hres            (default graphcast)
+#   MONTH      YYYY-MM                      (default 2020-08)
+#   THRESHOLD  mm/6h precip threshold       (default 2.4 = 0.4 mm/h,
+#              rate-matched to LatentSky's 0.1 mm/15min)
+# No GPU needed; dask uses 16 workers for the GCS chunk reads.
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+MODEL=${MODEL:-graphcast}
+MONTH=${MONTH:-2020-08}
+THRESHOLD=${THRESHOLD:-2.4}
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+echo "=== 1. Fetch ${MODEL} + ERA5 for ${MONTH} ==="
+$ENV_PY -u scripts/fetch_graphcast_era5.py --month "$MONTH" --models "$MODEL" 2>&1 \
+    | grep -vE "Could not determine|FutureWarning"
+
+echo
+echo "=== 2. Run scale-aware eval (threshold=${THRESHOLD} mm/6h) ==="
+SUF="${MODEL}_${MONTH}_t${THRESHOLD}"
+$ENV_PY -u scripts/eval_graphcast_scale.py --month "$MONTH" --model "$MODEL" \
+    --threshold "$THRESHOLD" \
+    --scale-min ${SCALE_MIN:-25} \
+    --scale-max ${SCALE_MAX:-600} \
+    --scale-bins ${SCALE_BINS:-10} \
+    --out-summary "docs/scale_summary_${SUF}.csv" \
+    --out-systems "docs/scale_systems_${SUF}.csv.gz"
+
+echo
+echo "=== 3. Plot 6-panel scale decomposition figure ==="
+NAME="${MODEL}_${MONTH}_6h"
+$ENV_PY -u scripts/plot_scale_decomposition.py \
+    --systems "docs/scale_systems_${SUF}.csv.gz" \
+    --summary "docs/scale_summary_${SUF}.csv" \
+    --run "$NAME" \
+    --out "docs/figures/scale_decomp_${SUF}.png"
+
+echo
+echo "=== Done ==="
+ls -la docs/figures/scale_decomp_${SUF}.png \
+       docs/scale_systems_${SUF}.csv.gz \
+       docs/scale_summary_${SUF}.csv

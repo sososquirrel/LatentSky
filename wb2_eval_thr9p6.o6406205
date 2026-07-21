@@ -1,0 +1,23 @@
+=== Eval at threshold 9.6 mm/24h (= 0.1 mm/15min x 96 steps) ===
+--- graphcast ---
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 31084  matched=7716  miss=19471  fa=3897
+wrote docs/scale_summary_graphcast_2020-08_24h_thr9p6.csv
+wrote docs/scale_systems_graphcast_2020-08_24h_thr9p6.csv.gz
+--- fuxi ---
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 37491  matched=7494  miss=19693  fa=10304
+wrote docs/scale_summary_fuxi_2020-08_24h_thr9p6.csv
+wrote docs/scale_systems_fuxi_2020-08_24h_thr9p6.csv.gz
+--- gencast ---
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 31190  matched=6655  miss=20532  fa=4003
+wrote docs/scale_summary_gencast_2020-08_24h_thr9p6.csv
+wrote docs/scale_systems_gencast_2020-08_24h_thr9p6.csv.gz
+=== Plot comparison figure ===
+wrote /glade/u/home/sabramian/LatentSky/docs/figures/wb2_model_compare_24h_thr9p6.png
+=== Done ===
+-rw-r--r-- 1 sabramian ncar 235K Jun  9 04:13 docs/figures/wb2_model_compare_24h_thr9p6.png

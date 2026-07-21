@@ -1,0 +1,46 @@
+#!/bin/bash -l
+#PBS -N wb2_compare_6h_thr10
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=01:00:00
+#PBS -l select=1:ncpus=4:mem=32GB
+#PBS -j oe
+#PBS -k eod
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+THR=10.0
+TAG=_thr10
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== GraphCast 6h at ${THR} mm/6h ==="
+$ENV_PY -u scripts/eval_graphcast_scale.py \
+    --model graphcast \
+    --threshold "$THR" \
+    --out-systems "docs/scale_systems_graphcast_2020-08_6h${TAG}.csv.gz" \
+    --out-summary "docs/scale_summary_graphcast_2020-08_6h${TAG}.csv" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== FuXi 6h at ${THR} mm/6h ==="
+$ENV_PY -u scripts/eval_graphcast_scale.py \
+    --model fuxi \
+    --threshold "$THR" \
+    --out-systems "docs/scale_systems_fuxi_2020-08_6h${TAG}.csv.gz" \
+    --out-summary "docs/scale_summary_fuxi_2020-08_6h${TAG}.csv" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Plot comparison ==="
+$ENV_PY -u scripts/plot_wb2_model_compare.py \
+    --lead 6h \
+    --tag "$TAG" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Done ==="
+ls -lh docs/figures/wb2_model_compare_6h${TAG}.png 2>/dev/null

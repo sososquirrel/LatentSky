@@ -1,0 +1,104 @@
+=== Fetch WB2 at leads 6/12/18/24h (idempotent, should be all-cached) ===
+
+=== graphcast ===
+  lead=6h already cached
+  lead=12h already cached
+  lead=18h already cached
+  lead=24h already cached
+
+=== fuxi ===
+  lead=6h already cached
+  lead=12h already cached
+  lead=18h already cached
+  lead=24h already cached
+
+ERA5 already cached: /glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_multilead_tropics.nc
+=== Eval graphcast lead=6h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval graphcast lead=12h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval graphcast lead=18h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval graphcast lead=24h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval fuxi lead=6h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval fuxi lead=12h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval fuxi lead=18h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Eval fuxi lead=24h thr=10 ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 138, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 95, in main
+    truth, pred, valid_times = load_pair(args.month, args.model, lead_h=args.lead_override)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 66, in load_pair
+    if truth.lat.values[0] > truth.lat.values[-1]:
+       ~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0
+=== Done ===

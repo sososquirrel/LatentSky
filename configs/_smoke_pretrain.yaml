@@ -1,0 +1,47 @@
+# Smoke-test only (pretrain-then-finetune verification) -- NOT a real
+# experiment. Minimal split/epoch count to confirm the masking + lead=0
+# pretrain path runs end-to-end.
+name: _smoke_pretrain
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: false
+lead_steps_15: 0
+
+base_ch: 64
+depth: 5
+out_activation: softplus
+
+patch_size: 128
+patch_stride: 96
+batch_size: 64
+num_epochs: 2
+patience: 10
+train_pieces_per_group: 1
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+n_total_pieces: 5
+
+test_piece_ids: [1]
+val_piece_ids: [3]
+buffer_piece_ids: []
+
+two_head: true
+olr_var_name: olrtoa
+bce_weight: 1.0
+fss_weight: 0.25
+fss_threshold: 0.1
+fss_sharpness: 20.0
+fss_max_kernel_px: 33
+
+pretrain_mask_channel: rain_log1p
+pretrain_mask_frac: 0.4
+pretrain_mask_block: 16

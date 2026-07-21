@@ -1,0 +1,17 @@
+# mse predictor set, lead = 0.75h.
+name: mse_lead0.75h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+target_prefix: rain_total
+lead_steps_15: 3
+
+base_ch: 64
+depth: 4
+out_activation: softplus
+
+num_epochs: 155
+patience: 10

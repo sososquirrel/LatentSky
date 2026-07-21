@@ -1,0 +1,57 @@
+#!/bin/bash -l
+#PBS -N eval_scale
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=06:00:00
+#PBS -l select=1:ncpus=8:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -k eod
+
+# Scale-aware object decomposition for every trained run.
+# Writes docs/scale_summary.csv (small, written first) and
+# docs/scale_systems.csv.gz (per-system table; parquet only if pyarrow).
+# Replaces bulk RMSE/correlation framing with P = rho * A per system,
+# stratified by precipitating-system scale (notebook 04).
+#
+# Queue: `develop` routes GPU jobs into the shared `gpudev` queue (6h cap,
+# usually empty -> starts in seconds). `-q main` lands in the slow
+# exclusive-node `gpu` queue instead. Do not add `-l place=pack:shared`
+# (rejected; develop applies shared placement itself).
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+# Address the env by absolute bin/python: `conda activate <path>` is not
+# reliable in non-interactive bash on this host (an auto-activated env can
+# shadow it). PYTHONPATH puts the repo's `latentsky` package on the path.
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+# CUDA libs bundled as pip nvidia-* packages (torch 2.6.0+cu124) — system
+# CUDA module does not provide libcusparseLt; torch import fails without this.
+_NV=/glade/work/${USER}/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=\
+${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:\
+${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:\
+${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:\
+${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:\
+${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+# All knobs overridable via `qsub -v VAR=val,...`; defaults reproduce the
+# canonical run. e.g. retuned bins:
+#   qsub -v SUMMARY_OUT=docs/scale_summary_v2.csv,\
+#           SYSTEMS_OUT=docs/scale_systems_v2.csv.gz,\
+#           SCALE_MAX=600,SCALE_BINS=10 submit/eval_scale.pbs
+$ENV_PY -u scripts/eval_scale_decomposition.py \
+    --systems-out ${SYSTEMS_OUT:-docs/scale_systems.csv.gz} \
+    --summary-out ${SUMMARY_OUT:-docs/scale_summary.csv} \
+    --max-frames-per-piece ${MAX_FRAMES:-8} \
+    --threshold ${THRESHOLD:-0.1} \
+    --scale-min ${SCALE_MIN:-25} \
+    --scale-max ${SCALE_MAX:-3000} \
+    --scale-bins ${SCALE_BINS:-8} \
+    ${KEEP_FRAMES:+--keep-frames "$KEEP_FRAMES"} \
+    ${PREDICTOR_SETS:+--predictor-sets "$PREDICTOR_SETS"} \
+    ${ABLATION:+--ablation "$ABLATION"}

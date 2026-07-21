@@ -1,0 +1,56 @@
+#!/bin/bash -l
+#PBS -N wb2_eval
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=8:mem=64GB
+#PBS -j oe
+#PBS -k eod
+
+# End-to-end WeatherBench2 multi-model evaluation (24-hr precip, August):
+#   graphcast  Aug 2020
+#   fuxi       Aug 2020
+#   gencast    Aug 2020  (ensemble mean)
+#   fgn        Aug 2022  (ensemble mean)
+#
+# Steps for each model:
+#   1. fetch_wb2_precip.py  — pull from GCS, crop to tropics, write NetCDF
+#   2. eval_wb2_models.py   — scale-decomposition eval, write CSV artifacts
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== 1. Fetch all models from WeatherBench2 ==="
+for MODEL in graphcast fuxi gencast; do
+    echo "--- fetch $MODEL ---"
+    $ENV_PY -u scripts/fetch_wb2_precip.py --model "$MODEL" 2>&1 \
+        | grep -vE "$FILTER"
+    echo
+done
+
+echo "=== 2. Scale-aware eval for all models ==="
+for MODEL in graphcast fuxi gencast; do
+    echo "--- eval $MODEL ---"
+    $ENV_PY -u scripts/eval_wb2_models.py --model "$MODEL" \
+        --threshold "${THRESHOLD:-1.0}" \
+        --scale-min "${SCALE_MIN:-25}" \
+        --scale-max "${SCALE_MAX:-600}" \
+        --scale-bins "${SCALE_BINS:-10}"
+    echo
+done
+
+echo "=== 3. Multi-model comparison figure ==="
+$ENV_PY -u scripts/plot_wb2_model_compare.py
+
+echo "=== Done ==="
+ls -la docs/scale_summary_*_24h.csv \
+       docs/scale_systems_*_24h.csv.gz \
+       docs/figures/wb2_model_compare_24h.png 2>/dev/null

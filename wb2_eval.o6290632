@@ -1,0 +1,286 @@
+=== 1. Fetch all models from WeatherBench2 ===
+--- fetch graphcast ---
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 165, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 155, in main
+    model_path = fetch_model(args.model, out_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 94, in fetch_model
+    da = da.isel(time=aug_mask.to_numpy())
+                      ^^^^^^^^^^^^^^^^^
+AttributeError: 'numpy.ndarray' object has no attribute 'to_numpy'
+
+--- fetch fuxi ---
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 165, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 155, in main
+    model_path = fetch_model(args.model, out_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 94, in fetch_model
+    da = da.isel(time=aug_mask.to_numpy())
+                      ^^^^^^^^^^^^^^^^^
+AttributeError: 'numpy.ndarray' object has no attribute 'to_numpy'
+
+--- fetch gencast ---
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 165, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 155, in main
+    model_path = fetch_model(args.model, out_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 94, in fetch_model
+    da = da.isel(time=aug_mask.to_numpy())
+                      ^^^^^^^^^^^^^^^^^
+AttributeError: 'numpy.ndarray' object has no attribute 'to_numpy'
+
+--- fetch fgn ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/core/indexes/timedeltas.py", line 243, in get_loc
+    key = self._data._validate_scalar(key, unbox=False)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/core/arrays/datetimelike.py", line 631, in _validate_scalar
+    raise TypeError(msg)
+TypeError: value should be a 'Timedelta' or 'NaT'. Got 'int' instead.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexes.py", line 878, in sel
+    indexer = self.index.get_loc(label_value)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/core/indexes/timedeltas.py", line 245, in get_loc
+    raise KeyError(key) from err
+KeyError: 24
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 165, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 155, in main
+    model_path = fetch_model(args.model, out_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 87, in fetch_model
+    da = da.sel(prediction_timedelta=24)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataarray.py", line 1722, in sel
+    ds = self._to_temp_dataset().sel(
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset.py", line 3020, in sel
+    query_results = map_index_queries(
+                    ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexing.py", line 214, in map_index_queries
+    results.append(index.sel(labels, **options))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexes.py", line 880, in sel
+    raise KeyError(
+KeyError: "not all values found in index 'prediction_timedelta'. Try setting the `method` keyword argument (example: method='nearest')."
+
+=== 2. Scale-aware eval for all models ===
+--- eval graphcast ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 219, in _acquire_with_cache_info
+    file = self._cache[self._key]
+           ~~~~~~~~~~~^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/lru_cache.py", line 56, in __getitem__
+    value = self._cache[key]
+            ~~~~~~~~~~~^^^^^
+KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/glade/derecho/scratch/sabramian/wb2_eval/graphcast_tp24hr_2020-08_tropics.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), 'b5b0aee6-1ba5-4c54-bf3a-fcac8521cc72']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 126, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 81, in main
+    truth, pred, valid_times = load_pair(args.model)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 38, in load_pair
+    mp = xr.open_dataset(CACHE / f"{model}_tp24hr_{month}_tropics.nc")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 771, in open_dataset
+    store = NetCDF4DataStore.open(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 529, in open
+    return cls(manager, group=group, mode=mode, lock=lock, autoclose=autoclose)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 429, in __init__
+    self.format = self.ds.data_model
+                  ^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 538, in ds
+    return self._acquire()
+           ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 532, in _acquire
+    with self._manager.acquire_context(needs_lock) as root:
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 207, in acquire_context
+    file, cached = self._acquire_with_cache_info(needs_lock)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 225, in _acquire_with_cache_info
+    file = self._opener(*self._args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src/netCDF4/_netCDF4.pyx", line 2521, in netCDF4._netCDF4.Dataset.__init__
+  File "src/netCDF4/_netCDF4.pyx", line 2158, in netCDF4._netCDF4._ensure_nc_success
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/derecho/scratch/sabramian/wb2_eval/graphcast_tp24hr_2020-08_tropics.nc'
+
+--- eval fuxi ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 219, in _acquire_with_cache_info
+    file = self._cache[self._key]
+           ~~~~~~~~~~~^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/lru_cache.py", line 56, in __getitem__
+    value = self._cache[key]
+            ~~~~~~~~~~~^^^^^
+KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/glade/derecho/scratch/sabramian/wb2_eval/fuxi_tp24hr_2020-08_tropics.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), '3ab42c0d-2a8b-489b-8184-b17465bd7d4e']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 126, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 81, in main
+    truth, pred, valid_times = load_pair(args.model)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 38, in load_pair
+    mp = xr.open_dataset(CACHE / f"{model}_tp24hr_{month}_tropics.nc")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 771, in open_dataset
+    store = NetCDF4DataStore.open(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 529, in open
+    return cls(manager, group=group, mode=mode, lock=lock, autoclose=autoclose)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 429, in __init__
+    self.format = self.ds.data_model
+                  ^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 538, in ds
+    return self._acquire()
+           ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 532, in _acquire
+    with self._manager.acquire_context(needs_lock) as root:
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 207, in acquire_context
+    file, cached = self._acquire_with_cache_info(needs_lock)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 225, in _acquire_with_cache_info
+    file = self._opener(*self._args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src/netCDF4/_netCDF4.pyx", line 2521, in netCDF4._netCDF4.Dataset.__init__
+  File "src/netCDF4/_netCDF4.pyx", line 2158, in netCDF4._netCDF4._ensure_nc_success
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/derecho/scratch/sabramian/wb2_eval/fuxi_tp24hr_2020-08_tropics.nc'
+
+--- eval gencast ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 219, in _acquire_with_cache_info
+    file = self._cache[self._key]
+           ~~~~~~~~~~~^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/lru_cache.py", line 56, in __getitem__
+    value = self._cache[key]
+            ~~~~~~~~~~~^^^^^
+KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/glade/derecho/scratch/sabramian/wb2_eval/gencast_tp24hr_2020-08_tropics.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), '78f6c40f-ab14-45bf-bd89-11935ab097ad']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 126, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 81, in main
+    truth, pred, valid_times = load_pair(args.model)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 38, in load_pair
+    mp = xr.open_dataset(CACHE / f"{model}_tp24hr_{month}_tropics.nc")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 771, in open_dataset
+    store = NetCDF4DataStore.open(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 529, in open
+    return cls(manager, group=group, mode=mode, lock=lock, autoclose=autoclose)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 429, in __init__
+    self.format = self.ds.data_model
+                  ^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 538, in ds
+    return self._acquire()
+           ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 532, in _acquire
+    with self._manager.acquire_context(needs_lock) as root:
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 207, in acquire_context
+    file, cached = self._acquire_with_cache_info(needs_lock)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 225, in _acquire_with_cache_info
+    file = self._opener(*self._args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src/netCDF4/_netCDF4.pyx", line 2521, in netCDF4._netCDF4.Dataset.__init__
+  File "src/netCDF4/_netCDF4.pyx", line 2158, in netCDF4._netCDF4._ensure_nc_success
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/derecho/scratch/sabramian/wb2_eval/gencast_tp24hr_2020-08_tropics.nc'
+
+--- eval fgn ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 219, in _acquire_with_cache_info
+    file = self._cache[self._key]
+           ~~~~~~~~~~~^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/lru_cache.py", line 56, in __getitem__
+    value = self._cache[key]
+            ~~~~~~~~~~~^^^^^
+KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/glade/derecho/scratch/sabramian/wb2_eval/fgn_tp24hr_2022-08_tropics.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), 'ad03c9e3-e17a-4433-9d05-43572dc185f8']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 126, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 81, in main
+    truth, pred, valid_times = load_pair(args.model)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 38, in load_pair
+    mp = xr.open_dataset(CACHE / f"{model}_tp24hr_{month}_tropics.nc")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 771, in open_dataset
+    store = NetCDF4DataStore.open(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 529, in open
+    return cls(manager, group=group, mode=mode, lock=lock, autoclose=autoclose)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 429, in __init__
+    self.format = self.ds.data_model
+                  ^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 538, in ds
+    return self._acquire()
+           ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 532, in _acquire
+    with self._manager.acquire_context(needs_lock) as root:
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 207, in acquire_context
+    file, cached = self._acquire_with_cache_info(needs_lock)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 225, in _acquire_with_cache_info
+    file = self._opener(*self._args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src/netCDF4/_netCDF4.pyx", line 2521, in netCDF4._netCDF4.Dataset.__init__
+  File "src/netCDF4/_netCDF4.pyx", line 2158, in netCDF4._netCDF4._ensure_nc_success
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/derecho/scratch/sabramian/wb2_eval/fgn_tp24hr_2022-08_tropics.nc'
+
+=== Done ===

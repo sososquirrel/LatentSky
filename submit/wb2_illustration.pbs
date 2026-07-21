@@ -1,0 +1,28 @@
+#!/bin/bash -l
+#PBS -N wb2_illust
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=4:mem=32GB
+#PBS -j oe
+#PBS -k eod
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== Fetch + plot WB2 illustration (West Africa, 2020-08-15) ==="
+$ENV_PY -u scripts/plot_wb2_illustration.py \
+    --threshold "${THRESHOLD:-0.1}" \
+    --iou-min   "${IOU_MIN:-0.1}" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Done ==="
+ls -lh docs/figures/wb2_illustration_2020-08-15.png 2>/dev/null

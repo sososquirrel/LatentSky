@@ -1,0 +1,21 @@
+=== 1. Fetch GraphCast + ERA5 for 2020-08 ===
+skip (cached): /glade/derecho/scratch/sabramian/graphcast_eval/graphcast_tp6hr_2020-08_tropics.nc
+era5 lazy: {'time': 124, 'lat': 321, 'lon': 1440}
+loading from GCS (parallel)...
+era5 loaded: {'valid_time': 124, 'lat': 321, 'lon': 1440}  range ['2020-08-01T00:00:00.000000000' '2020-08-31T18:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_tropics.nc
+
+=== 2. Run scale-aware eval ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 72636  (9802 matched, 41069 missed, 21765 fa)
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_summary_graphcast_2020-08.csv
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_systems_graphcast_2020-08.csv.gz
+
+=== 3. Plot 6-panel scale decomposition figure ===
+wrote /glade/u/home/sabramian/LatentSky/docs/figures/scale_decomp_graphcast_2020-08_6h.png
+
+=== Done ===
+-rw-r--r-- 1 sabramian ncar  355010 May 21 07:11 docs/figures/scale_decomp_graphcast_2020-08_6h.png
+-rw-r--r-- 1 sabramian ncar    4053 May 21 07:11 docs/scale_summary_graphcast_2020-08.csv
+-rw-r--r-- 1 sabramian ncar 6365509 May 21 07:11 docs/scale_systems_graphcast_2020-08.csv.gz

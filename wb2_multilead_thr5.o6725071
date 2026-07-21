@@ -1,0 +1,73 @@
+=== Fetch WB2 at leads 6/12/18/24h (idempotent, should be all-cached) ===
+
+=== graphcast ===
+  lead=6h already cached
+  lead=12h already cached
+  lead=18h already cached
+  lead=24h already cached
+
+=== fuxi ===
+  lead=6h already cached
+  lead=12h already cached
+  lead=18h already cached
+  lead=24h already cached
+
+=== ERA5 truth ===
+wrote /glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_multilead_tropics.nc  shape=(126, 321, 1440)
+=== Eval graphcast lead=6h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 29043  (7968 matched, 17317 missed, 3758 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead6h_thr5.csv
+wrote docs/scale_systems_graphcast_2020-08_lead6h_thr5.csv.gz
+=== Eval graphcast lead=12h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T12:00:00.000000000 .. 2020-09-01T00:00:00.000000000
+systems: 28399  (8571 matched, 16816 missed, 3012 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead12h_thr5.csv
+wrote docs/scale_systems_graphcast_2020-08_lead12h_thr5.csv.gz
+=== Eval graphcast lead=18h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T18:00:00.000000000 .. 2020-09-01T06:00:00.000000000
+systems: 27719  (6563 matched, 18780 missed, 2376 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead18h_thr5.csv
+wrote docs/scale_systems_graphcast_2020-08_lead18h_thr5.csv.gz
+=== Eval graphcast lead=24h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 28912  (6133 matched, 19320 missed, 3459 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead24h_thr5.csv
+wrote docs/scale_systems_graphcast_2020-08_lead24h_thr5.csv.gz
+=== Eval fuxi lead=6h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 30689  (7730 matched, 17555 missed, 5404 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead6h_thr5.csv
+wrote docs/scale_systems_fuxi_2020-08_lead6h_thr5.csv.gz
+=== Eval fuxi lead=12h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T12:00:00.000000000 .. 2020-09-01T00:00:00.000000000
+systems: 30456  (7059 matched, 18328 missed, 5069 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead12h_thr5.csv
+wrote docs/scale_systems_fuxi_2020-08_lead12h_thr5.csv.gz
+=== Eval fuxi lead=18h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T18:00:00.000000000 .. 2020-09-01T06:00:00.000000000
+systems: 29681  (5728 matched, 19615 missed, 4338 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead18h_thr5.csv
+wrote docs/scale_systems_fuxi_2020-08_lead18h_thr5.csv.gz
+=== Eval fuxi lead=24h thr=5 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 31385  (5516 matched, 19937 missed, 5932 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead24h_thr5.csv
+wrote docs/scale_systems_fuxi_2020-08_lead24h_thr5.csv.gz
+=== Done ===
+-rw-r--r-- 1 sabramian ncar 3.9K Jul 13 13:06 docs/scale_summary_fuxi_2020-08_lead12h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 3.9K Jul 13 13:06 docs/scale_summary_fuxi_2020-08_lead18h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 3.9K Jul 13 13:06 docs/scale_summary_fuxi_2020-08_lead24h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 3.9K Jul 13 13:06 docs/scale_summary_fuxi_2020-08_lead6h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 13 13:06 docs/scale_summary_graphcast_2020-08_lead12h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 13 13:06 docs/scale_summary_graphcast_2020-08_lead18h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 13 13:06 docs/scale_summary_graphcast_2020-08_lead24h_thr5.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 13 13:06 docs/scale_summary_graphcast_2020-08_lead6h_thr5.csv

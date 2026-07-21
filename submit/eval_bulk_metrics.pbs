@@ -1,0 +1,32 @@
+#!/bin/bash -l
+#PBS -N eval_bulk_metrics
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=8:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -k eod
+
+# Plain pixel-level RMSE/R^2 (prediction vs truth, full rain field, mm units)
+# for the 9var(mse+uv) lead sweep -- companion to eval_scale.pbs's object-
+# level decomposition. Writes docs/bulk_metrics_v1.csv.
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+_NV=/glade/work/${USER}/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=\
+${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:\
+${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:\
+${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:\
+${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:\
+${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+$ENV_PY -u scripts/eval_bulk_metrics.py \
+    --max-frames-per-piece ${MAX_FRAMES:-94} \
+    --out ${OUT:-docs/bulk_metrics_v1.csv}

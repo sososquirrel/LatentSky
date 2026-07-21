@@ -1,0 +1,17 @@
+# humid predictor set, lead = 1h.
+name: humid_lead1h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - relhum_500hPa
+  - relhum_850hPa
+target_prefix: rain_total
+lead_steps_15: 4
+
+base_ch: 64
+depth: 4
+out_activation: softplus
+
+num_epochs: 155
+patience: 10

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_horizon_vs_predictors.py", line 15, in <module>
+    from latentsky import list_runs, load_run
+ModuleNotFoundError: No module named 'latentsky'

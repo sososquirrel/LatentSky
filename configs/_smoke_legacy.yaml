@@ -1,0 +1,29 @@
+# Smoke-test only (verification check 6) -- NOT a real experiment.
+# Legacy (two_head unset -> False) path, mirrors mseuv_lead3h.yaml exactly,
+# just with a tiny split/epoch count for a fast regression check.
+name: _smoke_legacy
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+target_prefix: rain_total
+lead_steps_15: 12
+
+base_ch: 64
+depth: 5
+out_activation: softplus
+
+num_epochs: 2
+patience: 10
+train_pieces_per_group: 1
+n_total_pieces: 5
+
+test_piece_ids: [1]
+val_piece_ids: [3]
+buffer_piece_ids: [0, 2]

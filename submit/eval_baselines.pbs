@@ -1,0 +1,21 @@
+#!/bin/bash
+#PBS -N ls_baselines
+#PBS -A UCLB0065
+#PBS -q main
+#PBS -l select=1:ncpus=8:mem=64GB
+#PBS -l walltime=02:00:00
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/sabramian/logs/ls_baselines.log
+
+set -euo pipefail
+cd /glade/u/home/sabramian/LatentSky
+export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
+ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
+
+$ENV_PY scripts/eval_baselines.py \
+    --threshold 0.1 \
+    --iou-min 0.1 \
+    --scale-min 25 \
+    --scale-max 600 \
+    --scale-bins 10 \
+    --out docs/scale_summary_baselines.csv

@@ -1,0 +1,25 @@
+#!/bin/bash -l
+#PBS -N smoke_io
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=00:10:00
+#PBS -l select=1:ncpus=4:mem=16GB
+#PBS -j oe
+#PBS -k eod
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+cd /glade/u/home/${USER}/LatentSky
+
+$ENV_PY -u -c "
+import time, numpy as np
+t0 = time.time()
+p = '/glade/derecho/scratch/sabramian/latentsky_pieces/rain_total_piece02.npy'
+arr = np.load(p, mmap_mode='r')
+print('mmap open:', time.time()-t0, 'shape', arr.shape, flush=True)
+t1 = time.time()
+sub = np.asarray(arr[:6], dtype=np.float32)
+print('slice+materialize 6 frames:', time.time()-t1, 'sum', sub.sum(), flush=True)
+t2 = time.time()
+full = np.asarray(arr, dtype=np.float32)
+print('materialize FULL piece:', time.time()-t2, 'shape', full.shape, flush=True)
+"

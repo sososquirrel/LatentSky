@@ -1,0 +1,24 @@
+=== Fetch FuXi 6hr precip ===
+opening FuXi zarr...
+loading FuXi...
+wrote /glade/derecho/scratch/sabramian/graphcast_eval/fuxi_tp6hr_2020-08_tropics.nc  shape=(62, 321, 1440)
+era5 already cached: /glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_tropics.nc
+=== Eval FuXi 6hr scale systems at 2.4 mm/6h ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 36891  (8772 matched, 21160 missed, 6959 fa)
+wrote docs/scale_summary_fuxi_2020-08_6h.csv
+wrote docs/scale_systems_fuxi_2020-08_6h.csv.gz
+=== Also eval GraphCast at same threshold (2.4 mm/6h) ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35110  (8648 matched, 21284 missed, 5178 fa)
+wrote docs/scale_summary_graphcast_2020-08_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_thr2p4.csv.gz
+=== Plot diurnal figure ===
+LatentSky 6h: 12 valid LST bins (land)
+GraphCast 6h: 12 valid LST bins (land)
+FuXi 6h: 12 valid LST bins (land)
+wrote /glade/u/home/sabramian/LatentSky/docs/figures/diurnal_wb2_vs_latentsky.png
+=== Done ===
+-rw-r--r-- 1 sabramian ncar 118K Jun  9 04:50 docs/figures/diurnal_wb2_vs_latentsky.png

@@ -1,0 +1,22 @@
+filtered to predictor sets: ['9var (mse+uv)']
+scale decomposition for 18 runs, threshold=0.1 mm
+[1/18] 9var (mse+uv)  lead=0.0h  mseuv_lead0h
+[2/18] 9var (mse+uv)  lead=0.25h  mseuv_lead0.25h
+[3/18] 9var (mse+uv)  lead=0.25h  mseuv_rain_lead0.25h
+[4/18] 9var (mse+uv)  lead=0.5h  mseuv_lead0.5h
+[5/18] 9var (mse+uv)  lead=0.5h  mseuv_rain_lead0.5h
+[6/18] 9var (mse+uv)  lead=0.75h  mseuv_lead0.75h
+[7/18] 9var (mse+uv)  lead=1.0h  mseuv_lead1h
+[8/18] 9var (mse+uv)  lead=1.0h  mseuv_rain_lead1h
+[9/18] 9var (mse+uv)  lead=1.5h  mseuv_lead1.5h
+[10/18] 9var (mse+uv)  lead=2.0h  mseuv_lead2h
+[11/18] 9var (mse+uv)  lead=2.0h  mseuv_rain_lead2h
+[12/18] 9var (mse+uv)  lead=3.0h  mseuv_lead3h
+[13/18] 9var (mse+uv)  lead=3.0h  mseuv_rain_lead3h
+[14/18] 9var (mse+uv)  lead=3.0h  mseuv_rain_resid_lead3h
+[15/18] 9var (mse+uv)  lead=4.0h  mseuv_lead4h
+[16/18] 9var (mse+uv)  lead=6.0h  mseuv_lead6h
+[17/18] 9var (mse+uv)  lead=6.0h  mseuv_rain_lead6h
+[18/18] 9var (mse+uv)  lead=6.0h  mseuv_rain_resid_lead6h
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_summary_v5_fullframes.csv  (180 run x scale-bin rows)
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_systems_v5_fullframes.csv.gz  (13303255 systems)

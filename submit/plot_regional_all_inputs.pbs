@@ -1,0 +1,22 @@
+#!/bin/bash -l
+#PBS -N plot_riai
+#PBS -A UNYU0027
+#PBS -q casper
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=4:mem=64GB:ngpus=1
+#PBS -j oe
+#PBS -k eod
+
+# 5-row regional figure (all mseuv input channels) for each run in $RUNS.
+# Example: qsub -v RUNS="mseuv_lead3h mseuv_lead0h" submit/plot_regional_all_inputs.pbs
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/plot_regional_all_inputs.py --runs ${RUNS:-mseuv_lead3h}

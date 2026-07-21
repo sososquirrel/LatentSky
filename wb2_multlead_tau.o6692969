@@ -1,0 +1,314 @@
+=== Fetch WB2 at leads 6/12/18/24h ===
+
+=== graphcast ===
+  lead=6h already cached
+  lead=12h already cached
+  lead=18h already cached
+  lead=24h already cached
+
+=== fuxi ===
+  lead=6h already cached
+  lead=12h already cached
+  lead=18h already cached
+  lead=24h already cached
+
+=== ERA5 truth ===
+_request out of retries on exception: [Errno 32] Broken pipe
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/asyncio/selector_events.py", line 1061, in write
+    n = self._sock.send(data)
+        ^^^^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 153, in retry_request
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 488, in _request
+    async with self.session.request(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 1521, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 788, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 766, in _connect_and_send_request
+    await resp.start(conn)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/streams.py", line 707, in read
+    await self._waiter
+aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe
+_request out of retries on exception: [Errno 32] Broken pipe
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/asyncio/selector_events.py", line 1061, in write
+    n = self._sock.send(data)
+        ^^^^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 153, in retry_request
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 488, in _request
+    async with self.session.request(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 1521, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 788, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 766, in _connect_and_send_request
+    await resp.start(conn)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/streams.py", line 707, in read
+    await self._waiter
+aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe
+_request out of retries on exception: Server disconnected
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 153, in retry_request
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 488, in _request
+    async with self.session.request(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 1521, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 788, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 766, in _connect_and_send_request
+    await resp.start(conn)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/streams.py", line 707, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+_request out of retries on exception: Server disconnected
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 153, in retry_request
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 488, in _request
+    async with self.session.request(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 1521, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 788, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 766, in _connect_and_send_request
+    await resp.start(conn)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/streams.py", line 707, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+_request out of retries on exception: Server disconnected
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 153, in retry_request
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 488, in _request
+    async with self.session.request(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 1521, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 788, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 766, in _connect_and_send_request
+    await resp.start(conn)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/streams.py", line 707, in read
+    await self._waiter
+aiohttp.client_exceptions.ServerDisconnectedError: Server disconnected
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/asyncio/selector_events.py", line 1061, in write
+    n = self._sock.send(data)
+        ^^^^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_multlead.py", line 100, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_multlead.py", line 92, in main
+    da_era5 = da_era5.compute() * 1000.0  # m → mm
+              ^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataarray.py", line 1247, in compute
+    return new.load(**kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataarray.py", line 1173, in load
+    ds = self._to_temp_dataset().load(**kwargs)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset.py", line 569, in load
+    evaluated_data: tuple[np.ndarray[Any, Any], ...] = chunkmanager.compute(
+                                                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/namedarray/daskmanager.py", line 85, in compute
+    return compute(*data, **kwargs)  # type: ignore[no-untyped-call, no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/dask/base.py", line 685, in compute
+    results = schedule(expr, keys, **kwargs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexing.py", line 686, in __array__
+    return np.asarray(self.get_duck_array(), dtype=dtype, copy=copy)
+                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexing.py", line 691, in get_duck_array
+    return self.array.get_duck_array()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexing.py", line 924, in get_duck_array
+    return self.array.get_duck_array()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexing.py", line 764, in get_duck_array
+    array = self.array[self.key]
+            ~~~~~~~~~~^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/zarr.py", line 316, in __getitem__
+    return indexing.explicit_indexing_adapter(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/indexing.py", line 1156, in explicit_indexing_adapter
+    result = raw_indexing_method(raw_key.tuple)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/zarr.py", line 279, in _getitem
+    return self._array[key]
+           ~~~~~~~~~~~^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/array.py", line 2832, in __getitem__
+    return self.get_orthogonal_selection(pure_selection, fields=fields)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/array.py", line 3303, in get_orthogonal_selection
+    return sync(
+           ^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/sync.py", line 159, in sync
+    raise return_result
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/sync.py", line 119, in _runner
+    return await coro
+           ^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/array.py", line 1584, in _get_selection
+    return await _get_selection(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/array.py", line 5616, in _get_selection
+    await codec_pipeline.read(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/codec_pipeline.py", line 475, in read
+    await concurrent_map(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/common.py", line 117, in concurrent_map
+    return await asyncio.gather(*[asyncio.ensure_future(run(item)) for item in items])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/common.py", line 115, in run
+    return await func(*item)
+           ^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/codec_pipeline.py", line 272, in read_batch
+    chunk_bytes_batch = await concurrent_map(
+                        ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/common.py", line 117, in concurrent_map
+    return await asyncio.gather(*[asyncio.ensure_future(run(item)) for item in items])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/common.py", line 115, in run
+    return await func(*item)
+           ^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/storage/_common.py", line 174, in get
+    return await self.store.get(self.path, prototype=prototype, byte_range=byte_range)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/storage/_fsspec.py", line 289, in get
+    value = prototype.buffer.from_bytes(await self.fs._cat_file(path))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/extended_gcsfs.py", line 509, in _cat_file
+    return await super()._cat_file(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 1250, in _cat_file
+    return await self._cat_file_sequential(path, start=start, end=end, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 1194, in _cat_file_sequential
+    headers, out = await self._call("GET", u2, headers=head)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 509, in _call
+    status, headers, info, contents = await self._request(
+                                      ^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/decorator.py", line 224, in fun
+    return await caller(func, *(extras + args), **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 183, in retry_request
+    raise e
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/retry.py", line 153, in retry_request
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/gcsfs/core.py", line 488, in _request
+    async with self.session.request(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 1521, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 788, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client.py", line 766, in _connect_and_send_request
+    await resp.start(conn)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/client_reqrep.py", line 539, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/aiohttp/streams.py", line 707, in read
+    await self._waiter
+aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe
+=== Eval graphcast lead=6h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35110  (8648 matched, 21284 missed, 5178 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead6h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead6h_thr2p4.csv.gz
+=== Eval graphcast lead=12h thr=2.4 ===
+loaded 61 frames, grid (321, 1440)
+valid_times: 2020-08-01T12:00:00.000000000 .. 2020-08-31T12:00:00.000000000
+systems: 31646  (8657 matched, 19627 missed, 3362 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead12h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead12h_thr2p4.csv.gz
+=== Eval graphcast lead=18h thr=2.4 ===
+loaded 61 frames, grid (321, 1440)
+valid_times: 2020-08-01T18:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 32520  (7076 matched, 22400 missed, 3044 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead18h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead18h_thr2p4.csv.gz
+=== Eval graphcast lead=24h thr=2.4 ===
+loaded 60 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-08-31T12:00:00.000000000
+systems: 31416  (6196 matched, 21578 missed, 3642 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead24h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead24h_thr2p4.csv.gz
+=== Eval fuxi lead=6h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 36891  (8772 matched, 21160 missed, 6959 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead6h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead6h_thr2p4.csv.gz
+=== Eval fuxi lead=12h thr=2.4 ===
+loaded 61 frames, grid (321, 1440)
+valid_times: 2020-08-01T12:00:00.000000000 .. 2020-08-31T12:00:00.000000000
+systems: 33671  (7680 matched, 20604 missed, 5387 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead12h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead12h_thr2p4.csv.gz
+=== Eval fuxi lead=18h thr=2.4 ===
+loaded 61 frames, grid (321, 1440)
+valid_times: 2020-08-01T18:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35023  (6894 matched, 22582 missed, 5547 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead18h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead18h_thr2p4.csv.gz
+=== Eval fuxi lead=24h thr=2.4 ===
+loaded 60 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-08-31T12:00:00.000000000
+systems: 33991  (6201 matched, 21573 missed, 6217 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead24h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead24h_thr2p4.csv.gz
+=== Done ===
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 10 08:18 docs/scale_summary_graphcast_2020-08_lead12h_thr2p4.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 10 08:18 docs/scale_summary_graphcast_2020-08_lead18h_thr2p4.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 10 08:18 docs/scale_summary_graphcast_2020-08_lead24h_thr2p4.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul 10 08:17 docs/scale_summary_graphcast_2020-08_lead6h_thr2p4.csv

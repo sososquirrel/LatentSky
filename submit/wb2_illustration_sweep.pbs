@@ -1,0 +1,30 @@
+#!/bin/bash -l
+#PBS -N wb2_illust_sweep
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=12:mem=64GB
+#PBS -j oe
+#PBS -k eod
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== Running threshold sweep in parallel ==="
+for THR in 0.25 0.5 1 2 5 10; do
+    echo "--- launching thr=${THR} ---"
+    $ENV_PY -u scripts/plot_wb2_illustration.py --threshold "$THR" \
+        2>&1 | grep -vE "$FILTER" | sed "s/^/[thr=${THR}] /" &
+done
+
+wait
+echo "=== All done ==="
+ls -lh docs/figures/wb2_illustration_2020-08-15_thr*.png 2>/dev/null

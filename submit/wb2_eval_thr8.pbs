@@ -1,0 +1,41 @@
+#!/bin/bash -l
+#PBS -N wb2_eval_thr8
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=8:mem=64GB
+#PBS -j oe
+#PBS -k eod
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+THR=8.0
+TAG=_thr8
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== Eval at threshold ${THR} mm/24h ==="
+for MODEL in graphcast fuxi gencast; do
+    echo "--- ${MODEL} ---"
+    MONTH=2020-08
+    $ENV_PY -u scripts/eval_wb2_models.py \
+        --model "$MODEL" \
+        --threshold "$THR" \
+        --out-summary "docs/scale_summary_${MODEL}_${MONTH}_24h${TAG}.csv" \
+        --out-systems "docs/scale_systems_${MODEL}_${MONTH}_24h${TAG}.csv.gz" \
+        2>&1 | grep -vE "$FILTER"
+done
+
+echo "=== Plot comparison figure ==="
+$ENV_PY -u scripts/plot_wb2_model_compare.py \
+    --tag "$TAG" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Done ==="
+ls -lh docs/figures/wb2_model_compare_24h${TAG}.png 2>/dev/null

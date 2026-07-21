@@ -1,0 +1,5 @@
+predictor_set,eval_set,R2_all,RMSE,n_pixels,n_pieces,ensemble_size
+regression_only,patchsplit_test_blocks,-0.020863255993290863,0.05161387521211035,16384,,
+diffusion_refine_tstart50,patchsplit_test_blocks,-0.013133991131332623,0.051418111822285124,16384,1.0,2.0
+diffusion_refine_tstart150,patchsplit_test_blocks,-0.0130931929448026,0.05141707652643344,16384,1.0,2.0
+diffusion_refine_tstart400,patchsplit_test_blocks,-0.07296839213933182,0.05291467651813052,16384,1.0,2.0

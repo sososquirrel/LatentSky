@@ -1,0 +1,58 @@
+# Pretrain stage for the pretrain-then-fine-tune experiment (see
+# latentsky/masking.py). Same architecture/loss/input_vars as
+# twohead_olr_fss_lead3h.yaml so the resulting checkpoint's weights load
+# directly into that fine-tune config -- but at lead=0 (predict current
+# rain from current everything), with rain_log1p randomly block-masked so
+# the model can't just shortcut-copy it and is forced to learn rain from
+# the other physical variables instead.
+#
+# Uses the SAME test/val_piece_ids as the fine-tune config, so those 8
+# pieces stay completely unseen across BOTH stages (pretraining still
+# counts as "seeing" data for leakage purposes, even though the task
+# itself has no forecast horizon). buffer_piece_ids is empty here (unlike
+# the fine-tune config) because the lead=0 diagnostic task has no
+# temporal-adjacency leakage risk -- this is the concrete benefit of
+# pretraining: it can use all 32 non-test/val pieces instead of just the
+# 16 left over for the leakage-safe forecast fine-tune.
+name: pretrain_mask_rain_lead0h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: false
+lead_steps_15: 0
+
+base_ch: 64
+depth: 5
+out_activation: softplus
+
+patch_size: 128
+patch_stride: 96
+batch_size: 64
+num_epochs: 155
+patience: 10
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+
+test_piece_ids: [1, 13, 23, 32]
+val_piece_ids: [7, 16, 27, 36]
+buffer_piece_ids: []
+
+two_head: true
+olr_var_name: olrtoa
+bce_weight: 1.0
+fss_weight: 0.25
+fss_threshold: 0.1
+fss_sharpness: 20.0
+fss_max_kernel_px: 33
+
+pretrain_mask_channel: rain_log1p
+pretrain_mask_frac: 0.4
+pretrain_mask_block: 16

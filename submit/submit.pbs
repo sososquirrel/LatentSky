@@ -1,0 +1,29 @@
+#!/bin/bash -l
+#PBS -N latentsky
+#PBS -A UNYU0027
+#PBS -q casper
+#PBS -l walltime=23:59:00
+#PBS -l select=1:ncpus=8:mpiprocs=4:ompthreads=2:mem=128GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -k eod
+
+# Generic submit script. Pass the config via:
+#   qsub -v CONFIG=configs/mseuv_lead3h.yaml -N mseuv_lead3h submit/submit.pbs
+
+if [ -z "$CONFIG" ]; then
+    echo "ERROR: CONFIG env var not set. Use: qsub -v CONFIG=configs/<name>.yaml ..."
+    exit 1
+fi
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+module --force purge
+module load ncarenv/24.12
+module load conda/latest
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+cd /glade/u/home/${USER}/LatentSky
+
+python -m latentsky.train --config "$CONFIG"

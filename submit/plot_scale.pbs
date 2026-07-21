@@ -1,0 +1,24 @@
+#!/bin/bash -l
+#PBS -N plot_scale
+#PBS -A UCLB0066
+#PBS -q cpu
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=4:mem=32GB
+#PBS -j oe
+#PBS -k eod
+
+# Scale-aware decomposition figures from the eval artifacts. Pure CSV/parquet
+# plotting (no GPU) — runs fine on the login node too; here for batch parity.
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/plot_scale_decomposition.py --run mseuv_lead3h
+python -u scripts/plot_scale_decomposition.py --run humid_lead3h
+python -u scripts/plot_scale_decomposition.py --run mse_lead3h

@@ -1,0 +1,90 @@
+=== Fetch WB2 at leads 6/12/18/24h ===
+
+=== graphcast ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_multlead.py", line 99, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_multlead.py", line 49, in main
+    ds = xr.open_zarr(fsspec.get_mapper(url, anon=True), consolidated=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/zarr.py", line 1658, in open_zarr
+    ds = open_dataset(
+         ^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/zarr.py", line 1732, in open_dataset
+    store = ZarrStore.open_group(
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/zarr.py", line 771, in open_group
+    ) = _get_open_params(
+        ^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/zarr.py", line 1936, in _get_open_params
+    zarr_root_group = zarr.open_consolidated(store, **open_kwargs)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/api/synchronous.py", line 238, in open_consolidated
+    sync(async_api.open_consolidated(*args, use_consolidated=use_consolidated, **kwargs))
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/sync.py", line 159, in sync
+    raise return_result
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/core/sync.py", line 119, in _runner
+    return await coro
+           ^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/api/asynchronous.py", line 415, in open_consolidated
+    return await open_group(*args, use_consolidated=use_consolidated, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/zarr/api/asynchronous.py", line 881, in open_group
+    raise GroupNotFoundError(msg)
+zarr.errors.GroupNotFoundError: No group found in store <fsspec.mapping.FSMap object at 0x14cc26218f90> at path ''
+=== Eval graphcast lead=6h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35110  (8648 matched, 21284 missed, 5178 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead6h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead6h_thr2p4.csv.gz
+=== Eval graphcast lead=12h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35110  (8648 matched, 21284 missed, 5178 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead12h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead12h_thr2p4.csv.gz
+=== Eval graphcast lead=18h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35110  (8648 matched, 21284 missed, 5178 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead18h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead18h_thr2p4.csv.gz
+=== Eval graphcast lead=24h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 35110  (8648 matched, 21284 missed, 5178 fa)
+wrote docs/scale_summary_graphcast_2020-08_lead24h_thr2p4.csv
+wrote docs/scale_systems_graphcast_2020-08_lead24h_thr2p4.csv.gz
+=== Eval fuxi lead=6h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 36891  (8772 matched, 21160 missed, 6959 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead6h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead6h_thr2p4.csv.gz
+=== Eval fuxi lead=12h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 36891  (8772 matched, 21160 missed, 6959 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead12h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead12h_thr2p4.csv.gz
+=== Eval fuxi lead=18h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 36891  (8772 matched, 21160 missed, 6959 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead18h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead18h_thr2p4.csv.gz
+=== Eval fuxi lead=24h thr=2.4 ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 36891  (8772 matched, 21160 missed, 6959 fa)
+wrote docs/scale_summary_fuxi_2020-08_lead24h_thr2p4.csv
+wrote docs/scale_systems_fuxi_2020-08_lead24h_thr2p4.csv.gz
+=== Done ===
+-rw-r--r-- 1 sabramian ncar 4.0K Jul  8 06:27 docs/scale_summary_graphcast_2020-08_lead12h_thr2p4.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul  8 06:27 docs/scale_summary_graphcast_2020-08_lead18h_thr2p4.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul  8 06:27 docs/scale_summary_graphcast_2020-08_lead24h_thr2p4.csv
+-rw-r--r-- 1 sabramian ncar 4.0K Jul  8 06:26 docs/scale_summary_graphcast_2020-08_lead6h_thr2p4.csv

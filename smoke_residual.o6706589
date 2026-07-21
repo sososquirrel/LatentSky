@@ -1,0 +1,17 @@
+delta_index: 2
+=== 1. load_piece_arrays with return_persisted, n_frames=4 ===
+X (4, 10, 320, 1440) Y (4, 1, 320, 1440) P (4, 1, 320, 1440)
+Y range 0.0 21.342514
+P range 0.0 24.516186
+resid range -18.797024 15.076715
+=== 2. _load_xy (train-time helper), full piece ===
+Xt (94, 10, 320, 1440) Yt (2ch: resid,mask) (94, 2, 320, 1440)
+mask channel mean (frac wet-or-persisted): 0.76416767
+y_target torch.Size([4, 1, 320, 1440]) mask torch.Size([4, 1, 320, 1440]) torch.bool mask sum 1395496
+=== 3. forward pass through UNet2D with identity activation ===
+model output shape torch.Size([2, 1, 128, 128]) min -0.6992103457450867 max 3.234443187713623
+identity activation confirmed unclamped (softplus would force >=0)
+=== 4. inference reconstruction (predict_piece-style) ===
+Y_pred_raw shape (4, 1, 320, 1440) min 0.0 max 25.93855
+reconstruction non-negative: OK
+ALL SMOKE TESTS PASSED

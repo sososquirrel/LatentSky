@@ -1,0 +1,21 @@
+=== 1. Fetch hres + ERA5 for 2020-08 ===
+hres lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+loading from GCS (parallel)...
+hres loaded: {'valid_time': 62, 'lat': 321, 'lon': 1440}  range ['2020-08-01T06:00:00.000000000' '2020-08-31T18:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/graphcast_eval/hres_tp6hr_2020-08_tropics.nc
+skip (cached): /glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_tropics.nc
+
+=== 2. Run scale-aware eval (threshold=2.4 mm/6h) ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 74768  (7803 matched, 22129 missed, 44836 fa)
+wrote docs/scale_summary_hres_2020-08_t2.4.csv
+wrote docs/scale_systems_hres_2020-08_t2.4.csv.gz
+
+=== 3. Plot 6-panel scale decomposition figure ===
+wrote /glade/u/home/sabramian/LatentSky/docs/figures/scale_decomp_hres_2020-08_t2.4.png
+
+=== Done ===
+-rw-r--r-- 1 sabramian ncar  340584 May 21 10:00 docs/figures/scale_decomp_hres_2020-08_t2.4.png
+-rw-r--r-- 1 sabramian ncar    3978 May 21 10:00 docs/scale_summary_hres_2020-08_t2.4.csv
+-rw-r--r-- 1 sabramian ncar 5919818 May 21 10:00 docs/scale_systems_hres_2020-08_t2.4.csv.gz

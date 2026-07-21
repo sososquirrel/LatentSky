@@ -1,0 +1,25 @@
+# mseuv + rain input, RESIDUAL target (predict rain_total - persisted, not
+# rain_total directly), lead = 0.25h.
+name: mseuv_rain_resid_lead0.25h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: true
+lead_steps_15: 1
+
+base_ch: 64
+depth: 5
+out_activation: identity
+
+num_epochs: 155
+patience: 10
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces

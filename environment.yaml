@@ -1,0 +1,23 @@
+name: latentsky-env
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  # core
+  - numpy
+  - pandas
+  - pyyaml
+  - matplotlib
+  - tqdm
+  - scipy        # required: latentsky.scale_analysis (connected components)
+  - pyarrow      # optional: parquet I/O; eval falls back to gzip CSV without it
+  # torch with CUDA 12.x for A100 on Casper
+  - pytorch
+  - torchvision
+  - pytorch-cuda=12.1
+  # notebook tooling
+  - jupyterlab
+  - ipykernel
+  - nbformat

@@ -1,0 +1,46 @@
+=== 1. Fetch all models from WeatherBench2 ===
+--- fetch graphcast ---
+graphcast lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+graphcast: {'valid_time': 62, 'lat': 321, 'lon': 1440}  ['2020-08-02T00:00:00.000000000' '2020-09-01T12:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/wb2_eval/graphcast_tp24hr_2020-08_tropics.nc
+era5 lazy: {'time': 132, 'lat': 321, 'lon': 1440}
+era5: {'valid_time': 62, 'lat': 321, 'lon': 1440}  ['2020-08-02T00:00:00.000000000' '2020-09-01T12:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2020-08_tropics.nc
+
+--- fetch fuxi ---
+fuxi lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+fuxi: {'valid_time': 62, 'lat': 321, 'lon': 1440}  ['2020-08-02T00:00:00.000000000' '2020-09-01T12:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/wb2_eval/fuxi_tp24hr_2020-08_tropics.nc
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2020-08_tropics.nc
+
+--- fetch gencast ---
+gencast lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+gencast: {'valid_time': 62, 'lat': 321, 'lon': 1440}  ['2020-08-02T00:00:00.000000000' '2020-09-01T12:00:00.000000000']
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 173, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 163, in main
+    model_path = fetch_model(args.model, out_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 115, in fetch_model
+    da.to_netcdf(out)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataarray.py", line 4243, in to_netcdf
+    return to_netcdf(  # type: ignore[return-value]  # mypy cannot resolve the overloads:(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/writers.py", line 441, in to_netcdf
+    dump_to_store(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/writers.py", line 491, in dump_to_store
+    store.store(variables, attrs, check_encoding, writer, unlimited_dims=unlimited_dims)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/common.py", line 537, in store
+    self.set_variables(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/common.py", line 575, in set_variables
+    target, source = self.prepare_variable(
+                     ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 667, in prepare_variable
+    nc4_var.setncatts(attrs)
+  File "src/netCDF4/_netCDF4.pyx", line 4767, in netCDF4._netCDF4.Variable.setncatts
+  File "src/netCDF4/_netCDF4.pyx", line 1888, in netCDF4._netCDF4._set_att
+TypeError: illegal data type for attribute b'_jax_coord', must be one of dict_keys(['S1', 'i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'i8', 'u8', 'f4', 'f8']), got b1
+
+--- fetch fgn ---
+=>> PBS: job killed: walltime 7236 exceeded limit 7200

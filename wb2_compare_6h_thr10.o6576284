@@ -1,0 +1,21 @@
+=== GraphCast 6h at 10.0 mm/6h ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 17314  (5427 matched, 9969 missed, 1918 fa)
+wrote docs/scale_summary_graphcast_2020-08_6h_thr10.csv
+wrote docs/scale_systems_graphcast_2020-08_6h_thr10.csv.gz
+=== FuXi 6h at 10.0 mm/6h ===
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-01T06:00:00.000000000 .. 2020-08-31T18:00:00.000000000
+systems: 17979  (5100 matched, 10296 missed, 2583 fa)
+wrote docs/scale_summary_fuxi_2020-08_6h_thr10.csv
+wrote docs/scale_systems_fuxi_2020-08_6h_thr10.csv.gz
+=== Plot comparison ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/plot_wb2_model_compare.py", line 136, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/plot_wb2_model_compare.py", line 74, in main
+    for (_, _, label), color in zip(MODELS, COLORS):
+                                    ^^^^^^
+NameError: name 'MODELS' is not defined. Did you mean: 'MODELS_6H'?
+=== Done ===

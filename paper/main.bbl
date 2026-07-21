@@ -1,0 +1,561 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{nyt/global//global/global/global}
+  \entry{davis2006}{article}{}{}
+    \name{author}{3}{}{%
+      {{hash=DCA}{%
+         family={Davis},
+         familyi={D\bibinitperiod},
+         given={Christopher\bibnamedelima A.},
+         giveni={C\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+      {{hash=BB}{%
+         family={Brown},
+         familyi={B\bibinitperiod},
+         given={Barbara},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=BR}{%
+         family={Bullock},
+         familyi={B\bibinitperiod},
+         given={Randy},
+         giveni={R\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{DCABBBR1}
+    \strng{fullhash}{DCABBBR1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2006}
+    \field{labeldatesource}{}
+    \field{sortinit}{D}
+    \field{sortinithash}{D}
+    \verb{doi}
+    \verb 10.1175/MWR3145.1
+    \endverb
+    \field{number}{7}
+    \field{pages}{1772\bibrangedash 1784}
+    \field{title}{Object-based verification of precipitation forecasts. {Part
+  I}: Methodology and application to mesoscale rain areas}
+    \field{volume}{134}
+    \field{journaltitle}{Monthly Weather Review}
+    \field{year}{2006}
+  \endentry
+
+  \entry{feng2025mpas}{article}{}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{1}{}{%
+      {{hash=FZ}{%
+         family={Feng},
+         familyi={F\bibinitperiod},
+         given={Zhe},
+         giveni={Z\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{FZ+1}
+    \strng{fullhash}{FZ+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2025}
+    \field{labeldatesource}{}
+    \field{sortinit}{F}
+    \field{sortinithash}{F}
+    \field{note}{Citation details unverified --- please confirm journal,
+  volume, and DOI.}
+    \field{title}{Evaluation of precipitation and convective organization in
+  {DYAMOND} global storm-resolving simulations}
+    \field{journaltitle}{Journal of Geophysical Research: Atmospheres}
+    \field{year}{2025}
+  \endentry
+
+  \entry{gilleland2009}{article}{}{}
+    \name{author}{5}{}{%
+      {{hash=GE}{%
+         family={Gilleland},
+         familyi={G\bibinitperiod},
+         given={Eric},
+         giveni={E\bibinitperiod},
+      }}%
+      {{hash=AD}{%
+         family={Ahijevych},
+         familyi={A\bibinitperiod},
+         given={David},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=BBG}{%
+         family={Brown},
+         familyi={B\bibinitperiod},
+         given={Barbara\bibnamedelima G.},
+         giveni={B\bibinitperiod\bibinitdelim G\bibinitperiod},
+      }}%
+      {{hash=CB}{%
+         family={Casati},
+         familyi={C\bibinitperiod},
+         given={Barbara},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=EEE}{%
+         family={Ebert},
+         familyi={E\bibinitperiod},
+         given={Elizabeth\bibnamedelima E.},
+         giveni={E\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{GE+1}
+    \strng{fullhash}{GEADBBGCBEEE1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2009}
+    \field{labeldatesource}{}
+    \field{sortinit}{G}
+    \field{sortinithash}{G}
+    \verb{doi}
+    \verb 10.1175/2009WAF2222269.1
+    \endverb
+    \field{number}{5}
+    \field{pages}{1416\bibrangedash 1430}
+    \field{title}{Intercomparison of spatial forecast verification methods}
+    \field{volume}{24}
+    \field{journaltitle}{Weather and Forecasting}
+    \field{year}{2009}
+  \endentry
+
+  \entry{hohenegger2007predictability}{article}{}{}
+    \name{author}{2}{}{%
+      {{hash=HC}{%
+         family={Hohenegger},
+         familyi={H\bibinitperiod},
+         given={Cathy},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=SC}{%
+         family={Sch{\"a}r},
+         familyi={S\bibinitperiod},
+         given={Christoph},
+         giveni={C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HCSC1}
+    \strng{fullhash}{HCSC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2007}
+    \field{labeldatesource}{}
+    \field{sortinit}{H}
+    \field{sortinithash}{H}
+    \verb{doi}
+    \verb 10.1175/2007JAS2143.1
+    \endverb
+    \field{number}{12}
+    \field{pages}{4467\bibrangedash 4478}
+    \field{title}{Predictability and error growth dynamics in cloud-resolving
+  models}
+    \field{volume}{64}
+    \field{journaltitle}{Journal of the Atmospheric Sciences}
+    \field{year}{2007}
+  \endentry
+
+  \entry{judt2018insights}{article}{}{}
+    \name{author}{1}{}{%
+      {{hash=JF}{%
+         family={Judt},
+         familyi={J\bibinitperiod},
+         given={Falko},
+         giveni={F\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{JF1}
+    \strng{fullhash}{JF1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2018}
+    \field{labeldatesource}{}
+    \field{sortinit}{J}
+    \field{sortinithash}{J}
+    \verb{doi}
+    \verb 10.1175/JAS-D-17-0343.1
+    \endverb
+    \field{number}{5}
+    \field{pages}{1477\bibrangedash 1497}
+    \field{title}{Insights into atmospheric predictability through global
+  convection-permitting model simulations}
+    \field{volume}{75}
+    \field{journaltitle}{Journal of the Atmospheric Sciences}
+    \field{year}{2018}
+  \endentry
+
+  \entry{lam2023graphcast}{article}{}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{10}{}{%
+      {{hash=LR}{%
+         family={Lam},
+         familyi={L\bibinitperiod},
+         given={Remi},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=SGA}{%
+         family={Sanchez-Gonzalez},
+         familyi={S\bibinithyphendelim G\bibinitperiod},
+         given={Alvaro},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=WM}{%
+         family={Willson},
+         familyi={W\bibinitperiod},
+         given={Matthew},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=WP}{%
+         family={Wirnsberger},
+         familyi={W\bibinitperiod},
+         given={Peter},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=FM}{%
+         family={Fortunato},
+         familyi={F\bibinitperiod},
+         given={Meire},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=AF}{%
+         family={Alet},
+         familyi={A\bibinitperiod},
+         given={Ferran},
+         giveni={F\bibinitperiod},
+      }}%
+      {{hash=RS}{%
+         family={Ravuri},
+         familyi={R\bibinitperiod},
+         given={Suman},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=ET}{%
+         family={Ewalds},
+         familyi={E\bibinitperiod},
+         given={Timo},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=ERZ}{%
+         family={Eaton-Rosen},
+         familyi={E\bibinithyphendelim R\bibinitperiod},
+         given={Zach},
+         giveni={Z\bibinitperiod},
+      }}%
+      {{hash=HW}{%
+         family={Hu},
+         familyi={H\bibinitperiod},
+         given={Weihua},
+         giveni={W\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{LR+1}
+    \strng{fullhash}{LRSGAWMWPFMAFRSETERZHW+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2023}
+    \field{labeldatesource}{}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \verb{doi}
+    \verb 10.1126/science.adi2336
+    \endverb
+    \field{number}{6677}
+    \field{pages}{1416\bibrangedash 1421}
+    \field{title}{Learning skillful medium-range global weather forecasting}
+    \field{volume}{382}
+    \field{journaltitle}{Science}
+    \field{year}{2023}
+  \endentry
+
+  \entry{lorenz1969predictability}{article}{}{}
+    \name{author}{1}{}{%
+      {{hash=LEN}{%
+         family={Lorenz},
+         familyi={L\bibinitperiod},
+         given={Edward\bibnamedelima N.},
+         giveni={E\bibinitperiod\bibinitdelim N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{LEN1}
+    \strng{fullhash}{LEN1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1969}
+    \field{labeldatesource}{}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \verb{doi}
+    \verb 10.3402/tellusa.v21i3.10086
+    \endverb
+    \field{number}{3}
+    \field{pages}{289\bibrangedash 307}
+    \field{title}{The predictability of a flow which possesses many scales of
+  motion}
+    \field{volume}{21}
+    \field{journaltitle}{Tellus}
+    \field{year}{1969}
+  \endentry
+
+  \entry{ravuri2021}{article}{}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{10}{}{%
+      {{hash=RS}{%
+         family={Ravuri},
+         familyi={R\bibinitperiod},
+         given={Suman},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=LK}{%
+         family={Lenc},
+         familyi={L\bibinitperiod},
+         given={Karel},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=WM}{%
+         family={Willson},
+         familyi={W\bibinitperiod},
+         given={Matthew},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=KD}{%
+         family={Kangin},
+         familyi={K\bibinitperiod},
+         given={Dmitry},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=LR}{%
+         family={Lam},
+         familyi={L\bibinitperiod},
+         given={Remi},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=MP}{%
+         family={Mirowski},
+         familyi={M\bibinitperiod},
+         given={Piotr},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=FM}{%
+         family={Fitzsimons},
+         familyi={F\bibinitperiod},
+         given={Megan},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=AM}{%
+         family={Athanassiadou},
+         familyi={A\bibinitperiod},
+         given={Maria},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=KS}{%
+         family={Kashem},
+         familyi={K\bibinitperiod},
+         given={Sheleem},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=MS}{%
+         family={Madge},
+         familyi={M\bibinitperiod},
+         given={Sam},
+         giveni={S\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{RS+1}
+    \strng{fullhash}{RSLKWMKDLRMPFMAMKSMS+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2021}
+    \field{labeldatesource}{}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \verb{doi}
+    \verb 10.1038/s41586-021-03854-z
+    \endverb
+    \field{number}{7878}
+    \field{pages}{672\bibrangedash 677}
+    \field{title}{Skilful precipitation nowcasting using deep generative models
+  of radar}
+    \field{volume}{597}
+    \field{journaltitle}{Nature}
+    \field{year}{2021}
+  \endentry
+
+  \entry{satoh2019global}{article}{}{}
+    \name{author}{7}{}{%
+      {{hash=SM}{%
+         family={Satoh},
+         familyi={S\bibinitperiod},
+         given={Masaki},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=SB}{%
+         family={Stevens},
+         familyi={S\bibinitperiod},
+         given={Bjorn},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=JF}{%
+         family={Judt},
+         familyi={J\bibinitperiod},
+         given={Falko},
+         giveni={F\bibinitperiod},
+      }}%
+      {{hash=KM}{%
+         family={Khairoutdinov},
+         familyi={K\bibinitperiod},
+         given={Marat},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=LSJ}{%
+         family={Lin},
+         familyi={L\bibinitperiod},
+         given={Shian-Jiann},
+         giveni={S\bibinithyphendelim J\bibinitperiod},
+      }}%
+      {{hash=PWM}{%
+         family={Putman},
+         familyi={P\bibinitperiod},
+         given={William\bibnamedelima M.},
+         giveni={W\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=DP}{%
+         family={D{\"u}ben},
+         familyi={D\bibinitperiod},
+         given={Peter},
+         giveni={P\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{SM+1}
+    \strng{fullhash}{SMSBJFKMLSJPWMDP1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2019}
+    \field{labeldatesource}{}
+    \field{sortinit}{S}
+    \field{sortinithash}{S}
+    \verb{doi}
+    \verb 10.1007/s40641-019-00131-0
+    \endverb
+    \field{pages}{172\bibrangedash 184}
+    \field{title}{Global cloud-resolving models}
+    \field{volume}{5}
+    \field{journaltitle}{Current Climate Change Reports}
+    \field{year}{2019}
+  \endentry
+
+  \entry{stevens2019dyamond}{article}{}{}
+    \true{moreauthor}
+    \true{morelabelname}
+    \name{author}{3}{}{%
+      {{hash=SB}{%
+         family={Stevens},
+         familyi={S\bibinitperiod},
+         given={Bjorn},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=SM}{%
+         family={Satoh},
+         familyi={S\bibinitperiod},
+         given={Masaki},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=AL}{%
+         family={Auger},
+         familyi={A\bibinitperiod},
+         given={Ludovic},
+         giveni={L\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{SBSMAL+1}
+    \strng{fullhash}{SBSMAL+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2019}
+    \field{labeldatesource}{}
+    \field{sortinit}{S}
+    \field{sortinithash}{S}
+    \verb{doi}
+    \verb 10.1186/s40645-019-0304-z
+    \endverb
+    \field{number}{1}
+    \field{pages}{61}
+    \field{title}{{DYAMOND}: the {DY}namics of the {A}tmospheric general
+  circulation {M}odeled {O}n {N}on-hydrostatic {D}omains}
+    \field{volume}{6}
+    \field{journaltitle}{Progress in Earth and Planetary Science}
+    \field{year}{2019}
+  \endentry
+
+  \entry{zhang2007mesoscale}{article}{}{}
+    \name{author}{5}{}{%
+      {{hash=ZF}{%
+         family={Zhang},
+         familyi={Z\bibinitperiod},
+         given={Fuqing},
+         giveni={F\bibinitperiod},
+      }}%
+      {{hash=BN}{%
+         family={Bei},
+         familyi={B\bibinitperiod},
+         given={Naifang},
+         giveni={N\bibinitperiod},
+      }}%
+      {{hash=RR}{%
+         family={Rotunno},
+         familyi={R\bibinitperiod},
+         given={Richard},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=SC}{%
+         family={Snyder},
+         familyi={S\bibinitperiod},
+         given={Chris},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=ECC}{%
+         family={Epifanio},
+         familyi={E\bibinitperiod},
+         given={Craig\bibnamedelima C.},
+         giveni={C\bibinitperiod\bibinitdelim C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{ZF+1}
+    \strng{fullhash}{ZFBNRRSCECC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2007}
+    \field{labeldatesource}{}
+    \field{sortinit}{Z}
+    \field{sortinithash}{Z}
+    \verb{doi}
+    \verb 10.1175/JAS4028.1
+    \endverb
+    \field{number}{10}
+    \field{pages}{3579\bibrangedash 3594}
+    \field{title}{Mesoscale predictability of moist baroclinic waves:
+  Convection-permitting experiments and multistage error growth dynamics}
+    \field{volume}{64}
+    \field{journaltitle}{Journal of the Atmospheric Sciences}
+    \field{year}{2007}
+  \endentry
+\enddatalist
+\endinput

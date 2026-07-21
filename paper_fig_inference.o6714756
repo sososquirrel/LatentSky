@@ -1,0 +1,30 @@
+device: cuda
+=== mseuv_lead0h ===
+  Yp range: 0.000 13.035
+=== mseuv_lead0.25h ===
+  Yp range: 0.000 14.864
+=== mseuv_lead0.5h ===
+  Yp range: 0.000 12.456
+=== mseuv_lead0.75h ===
+  Yp range: 0.000 12.400
+=== mseuv_lead1h ===
+  Yp range: 0.000 9.954
+=== mseuv_lead1.5h ===
+  Yp range: 0.000 10.837
+=== mseuv_lead2h ===
+  Yp range: 0.000 7.759
+=== mseuv_lead3h ===
+  Yp range: 0.000 7.604
+=== mseuv_lead4h ===
+  Yp range: 0.000 4.593
+=== mseuv_lead6h ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/paper_figures/run_inference_cache.py", line 106, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/paper_figures/run_inference_cache.py", line 54, in main
+    Yp = _infer(model, X1, Y1, batch_size=1, device=device)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/latentsky/inference.py", line 79, in _infer
+    return np.concatenate(preds, axis=0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: need at least one array to concatenate

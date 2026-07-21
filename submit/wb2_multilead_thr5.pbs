@@ -1,0 +1,38 @@
+#!/bin/bash -l
+#PBS -N wb2_multilead_thr5
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=02:00:00
+#PBS -l select=1:ncpus=4:mem=48GB
+#PBS -j oe
+#PBS -k eod
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+THR=5
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== Fetch WB2 at leads 6/12/18/24h (idempotent, should be all-cached) ==="
+$ENV_PY -u scripts/fetch_wb2_multlead.py 2>&1 | grep -vE "$FILTER"
+
+for MODEL in graphcast fuxi; do
+  for LEAD in 6 12 18 24; do
+    echo "=== Eval ${MODEL} lead=${LEAD}h thr=${THR} ==="
+    $ENV_PY -u scripts/eval_graphcast_scale.py \
+      --model "$MODEL" \
+      --threshold "$THR" \
+      --lead-override "$LEAD" \
+      --out-systems "docs/scale_systems_${MODEL}_2020-08_lead${LEAD}h_thr5.csv.gz" \
+      --out-summary "docs/scale_summary_${MODEL}_2020-08_lead${LEAD}h_thr5.csv" \
+      2>&1 | grep -vE "$FILTER"
+  done
+done
+
+echo "=== Done ==="
+ls -lh docs/scale_summary_{graphcast,fuxi}_2020-08_lead*_thr5.csv 2>/dev/null

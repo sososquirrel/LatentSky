@@ -1,0 +1,22 @@
+device: cuda
+=== mseuv_lead0h ===
+  Yp range: 0.000 11.463
+=== mseuv_lead0.25h ===
+  Yp range: 0.000 14.828
+=== mseuv_lead0.5h ===
+  Yp range: 0.000 13.545
+=== mseuv_lead0.75h ===
+  Yp range: 0.000 12.368
+=== mseuv_lead1h ===
+  Yp range: 0.000 10.055
+=== mseuv_lead1.5h ===
+  Yp range: 0.000 12.331
+=== mseuv_lead2h ===
+  Yp range: 0.000 10.520
+=== mseuv_lead3h ===
+  Yp range: 0.000 6.519
+=== mseuv_lead4h ===
+  Yp range: 0.000 4.896
+=== mseuv_lead6h ===
+  Yp range: 0.000 3.707
+wrote /glade/u/home/sabramian/LatentSky/docs/paper_figures/_inference_cache.npz

@@ -1,0 +1,22 @@
+#!/bin/bash -l
+#PBS -N plot_riwi
+#PBS -A UNYU0027
+#PBS -q casper
+#PBS -l walltime=00:45:00
+#PBS -l select=1:ncpus=4:mem=64GB:ngpus=1
+#PBS -j oe
+#PBS -k eod
+
+# regional_with_inputs PNG for each run in $RUNS.
+# Example: qsub -v RUNS="humid_lead3h mse_lead3h" submit/plot_regional_with_inputs_multi.pbs
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/plot_regional_with_inputs_multi.py --runs ${RUNS:-humid_lead3h mse_lead3h}

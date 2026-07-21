@@ -1,0 +1,24 @@
+#!/bin/bash -l
+#PBS -N eval_horizon
+#PBS -A UNYU0027
+#PBS -q casper
+#PBS -l walltime=06:00:00
+#PBS -l select=1:ncpus=4:mem=64GB:ngpus=1
+#PBS -j oe
+#PBS -k eod
+
+# Evaluate every trained run and write docs/horizon_vs_predictors.csv.
+# Replaces the evaluate_run() loop in notebooks/01_horizon_vs_predictors.ipynb.
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/eval_horizon_vs_predictors.py \
+    --out docs/horizon_vs_predictors.csv \
+    --max-frames-per-piece 8

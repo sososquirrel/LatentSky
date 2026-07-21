@@ -1,0 +1,22 @@
+#!/bin/bash -l
+#PBS -N peek_scale
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=00:30:00
+#PBS -l select=1:ncpus=8:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -k eod
+
+# 2-case peek at scale decomposition; separate *_peek.* outputs so it
+# never collides with the canonical eval_scale job's docs/scale_systems.*
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/peek_scale_decomp.py

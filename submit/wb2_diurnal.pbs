@@ -1,0 +1,46 @@
+#!/bin/bash -l
+#PBS -N wb2_diurnal
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=01:30:00
+#PBS -l select=1:ncpus=4:mem=32GB
+#PBS -j oe
+#PBS -k eod
+
+export TMPDIR=${SCRATCH}/temp
+mkdir -p "$TMPDIR"
+
+ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
+REPO=/glade/u/home/${USER}/LatentSky
+THR=2.4   # = 0.1 mm/15min x 24 steps/6h
+
+cd "$REPO"
+export PYTHONPATH="$REPO:${PYTHONPATH}"
+
+FILTER='Could not determine|FutureWarning|frozen _collections'
+
+echo "=== Fetch FuXi 6hr precip ==="
+$ENV_PY -u scripts/fetch_fuxi_6hr.py 2>&1 | grep -vE "$FILTER"
+
+echo "=== Eval FuXi 6hr scale systems at ${THR} mm/6h ==="
+$ENV_PY -u scripts/eval_graphcast_scale.py \
+    --model fuxi \
+    --threshold "$THR" \
+    --out-systems "docs/scale_systems_fuxi_2020-08_6h.csv.gz" \
+    --out-summary "docs/scale_summary_fuxi_2020-08_6h.csv" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Also eval GraphCast at same threshold (${THR} mm/6h) ==="
+$ENV_PY -u scripts/eval_graphcast_scale.py \
+    --model graphcast \
+    --threshold "$THR" \
+    --out-systems "docs/scale_systems_graphcast_2020-08_thr2p4.csv.gz" \
+    --out-summary "docs/scale_summary_graphcast_2020-08_thr2p4.csv" \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Plot diurnal figure ==="
+$ENV_PY -u scripts/plot_diurnal_wb2.py \
+    2>&1 | grep -vE "$FILTER"
+
+echo "=== Done ==="
+ls -lh docs/figures/diurnal_wb2_vs_latentsky.png 2>/dev/null

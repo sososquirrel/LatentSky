@@ -1,0 +1,102 @@
+=== 1. Fetch GraphCast + ERA5 for 2020-08 ===
+graphcast lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+loading from GCS (parallel)...
+graphcast loaded: {'valid_time': 62, 'lat': 321, 'lon': 1440}  range ['2020-08-01T06:00:00.000000000' '2020-08-31T18:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/graphcast_eval/graphcast_tp6hr_2020-08_tropics.nc
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_graphcast_era5.py", line 97, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_graphcast_era5.py", line 93, in main
+    fetch_era5(args.month,    out_dir / f"era5_tp6hr_{args.month}_tropics.nc")
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_graphcast_era5.py", line 72, in fetch_era5
+    da = crop_lat(da)
+         ^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_graphcast_era5.py", line 34, in crop_lat
+    if da.lat.values[0] > da.lat.values[-1]:
+       ^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/common.py", line 306, in __getattr__
+    raise AttributeError(
+AttributeError: 'DataArray' object has no attribute 'lat'
+
+=== 2. Run scale-aware eval ===
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 219, in _acquire_with_cache_info
+    file = self._cache[self._key]
+           ~~~~~~~~~~~^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/lru_cache.py", line 56, in __getitem__
+    value = self._cache[key]
+            ~~~~~~~~~~~^^^^^
+KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_tropics.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), '29f8d23f-4c4e-4f02-aebf-8f541ce773f1']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 122, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 79, in main
+    truth, pred, valid_times = load_pair(args.month)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_graphcast_scale.py", line 41, in load_pair
+    er = xr.open_dataset(CACHE / f"era5_tp6hr_{month}_tropics.nc")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 771, in open_dataset
+    store = NetCDF4DataStore.open(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 529, in open
+    return cls(manager, group=group, mode=mode, lock=lock, autoclose=autoclose)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 429, in __init__
+    self.format = self.ds.data_model
+                  ^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 538, in ds
+    return self._acquire()
+           ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 532, in _acquire
+    with self._manager.acquire_context(needs_lock) as root:
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 207, in acquire_context
+    file, cached = self._acquire_with_cache_info(needs_lock)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 225, in _acquire_with_cache_info
+    file = self._opener(*self._args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src/netCDF4/_netCDF4.pyx", line 2521, in netCDF4._netCDF4.Dataset.__init__
+  File "src/netCDF4/_netCDF4.pyx", line 2158, in netCDF4._netCDF4._ensure_nc_success
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/derecho/scratch/sabramian/graphcast_eval/era5_tp6hr_2020-08_tropics.nc'
+
+=== 3. Plot 6-panel scale decomposition figure ===
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/plot_scale_decomposition.py", line 153, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/plot_scale_decomposition.py", line 52, in main
+    else pd.read_csv(sys_path))
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 873, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 300, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 1645, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/io/parsers/readers.py", line 1904, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/pandas/io/common.py", line 809, in get_handle
+    handle = gzip.GzipFile(  # type: ignore[assignment]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/gzip.py", line 174, in __init__
+    fileobj = self.myfileobj = builtins.open(filename, mode or 'rb')
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/u/home/sabramian/LatentSky/docs/scale_systems_graphcast_2020-08.csv.gz'
+
+=== Done ===
+ls: cannot access 'docs/figures/scale_decomp_graphcast_2020-08_6h.png': No such file or directory
+ls: cannot access 'docs/scale_systems_graphcast_2020-08.csv.gz': No such file or directory
+ls: cannot access 'docs/scale_summary_graphcast_2020-08.csv': No such file or directory

@@ -1,0 +1,23 @@
+device: cuda
+X_patch shape: (9, 64, 64)
+=== mseuv_lead0h ===
+  Yp range: 0.000 4.243
+=== mseuv_lead0.25h ===
+  Yp range: 0.000 5.546
+=== mseuv_lead0.5h ===
+  Yp range: 0.000 4.292
+=== mseuv_lead0.75h ===
+  Yp range: 0.000 4.144
+=== mseuv_lead1h ===
+  Yp range: 0.000 2.496
+=== mseuv_lead1.5h ===
+  Yp range: 0.000 2.640
+=== mseuv_lead2h ===
+  Yp range: 0.001 1.574
+=== mseuv_lead3h ===
+  Yp range: 0.001 1.245
+=== mseuv_lead4h ===
+  Yp range: 0.001 0.633
+=== mseuv_lead6h ===
+  Yp range: 0.001 0.542
+wrote /glade/u/home/sabramian/LatentSky/docs/paper_figures/_inference_cache_patch64.npz

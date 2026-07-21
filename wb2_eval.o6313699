@@ -1,0 +1,22 @@
+=== 1. Fetch all models from WeatherBench2 ===
+--- fetch graphcast ---
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/graphcast_tp24hr_2020-08_tropics.nc
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2020-08_tropics.nc
+
+--- fetch fuxi ---
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/fuxi_tp24hr_2020-08_tropics.nc
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2020-08_tropics.nc
+
+--- fetch gencast ---
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/gencast_tp24hr_2020-08_tropics.nc
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 188, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 181, in main
+    valid_times = ds_m.valid_time.values
+                  ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/common.py", line 306, in __getattr__
+    raise AttributeError(
+AttributeError: 'Dataset' object has no attribute 'valid_time'
+
+--- fetch fgn ---

@@ -1,0 +1,23 @@
+#!/bin/bash
+#PBS -N ls_eval_baselines_newsplits
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=01:00:00
+#PBS -l select=1:ncpus=4:mem=64GB
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/sabramian/logs/ls_eval_baselines_newsplits.log
+
+# Persistence/climatology/random baselines at lead=3h, evaluated on the
+# SAME held-out data as each new two-head model (fixes the mismatched test
+# sets in the first comparison pass). CPU-only, no model inference needed.
+
+set -euo pipefail
+
+export TMPDIR=/glade/derecho/scratch/sabramian/tmp
+mkdir -p "$TMPDIR"
+export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
+
+cd /glade/u/home/sabramian/LatentSky
+
+ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
+$ENV_PY -u scripts/eval_baselines_lead3h_newsplits.py

@@ -1,0 +1,38 @@
+#!/bin/bash
+#PBS -N ls_pretrain_mask
+#PBS -A UCLB0066
+#PBS -q main
+#PBS -l select=1:ncpus=8:mem=128GB:ngpus=1:gpu_type=a100
+#PBS -l walltime=12:00:00
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/sabramian/logs/ls_pretrain_mask.log
+
+# Pretrain stage of the pretrain-then-fine-tune experiment: masked
+# reconstruction of rain_log1p at lead=0, using all 32 non-test/val pieces
+# (no buffer needed -- see configs/pretrain_mask_rain_lead0h.yaml). Once
+# this finishes, configs/twohead_olr_fss_lead3h_finetuned.yaml loads its
+# checkpoint to initialize the real 3h-lead fine-tune run.
+
+set -euo pipefail
+
+CONFIG=configs/pretrain_mask_rain_lead0h.yaml
+
+export TMPDIR=/glade/derecho/scratch/sabramian/tmp
+export LATENTSKY_RUNS_DIR=/glade/derecho/scratch/sabramian/LatentSky_runs
+mkdir -p "$TMPDIR"
+export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
+
+# CUDA libs bundled as pip nvidia-* packages (torch 2.6.0+cu124)
+_NV=/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=\
+${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:\
+${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:\
+${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:\
+${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:\
+${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+cd /glade/u/home/sabramian/LatentSky
+
+ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
+echo "=== ${CONFIG} ==="
+$ENV_PY -m latentsky.train --config "$CONFIG"

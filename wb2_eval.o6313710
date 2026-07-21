@@ -1,0 +1,191 @@
+=== 1. Fetch all models from WeatherBench2 ===
+--- fetch graphcast ---
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/graphcast_tp24hr_2020-08_tropics.nc
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2020-08_tropics.nc
+
+--- fetch fuxi ---
+fuxi lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+fuxi: {'valid_time': 62, 'lat': 321, 'lon': 1440}  ['2020-08-02T00:00:00.000000000' '2020-09-01T12:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/wb2_eval/fuxi_tp24hr_2020-08_tropics.nc
+skip (cached): /glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2020-08_tropics.nc
+
+--- fetch gencast ---
+gencast lazy: {'time': 62, 'lat': 321, 'lon': 1440}
+gencast: {'valid_time': 62, 'lat': 321, 'lon': 1440}  ['2020-08-02T00:00:00.000000000' '2020-09-01T12:00:00.000000000']
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 192, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 182, in main
+    model_path = fetch_model(args.model, out_dir)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 134, in fetch_model
+    da.to_netcdf(out)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataarray.py", line 4243, in to_netcdf
+    return to_netcdf(  # type: ignore[return-value]  # mypy cannot resolve the overloads:(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/writers.py", line 441, in to_netcdf
+    dump_to_store(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/writers.py", line 491, in dump_to_store
+    store.store(variables, attrs, check_encoding, writer, unlimited_dims=unlimited_dims)
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/common.py", line 537, in store
+    self.set_variables(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/common.py", line 575, in set_variables
+    target, source = self.prepare_variable(
+                     ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 667, in prepare_variable
+    nc4_var.setncatts(attrs)
+  File "src/netCDF4/_netCDF4.pyx", line 4767, in netCDF4._netCDF4.Variable.setncatts
+  File "src/netCDF4/_netCDF4.pyx", line 1888, in netCDF4._netCDF4._set_att
+TypeError: illegal data type for attribute b'_jax_coord', must be one of dict_keys(['S1', 'i1', 'u1', 'i2', 'u2', 'i4', 'u4', 'i8', 'u8', 'f4', 'f8']), got b1
+
+--- fetch fgn ---
+fgn lazy: {'time': 124, 'lat': 321, 'lon': 1440}
+fgn: {'valid_time': 124, 'lat': 321, 'lon': 1440}  ['2022-08-02T00:00:00.000000000' '2022-09-01T18:00:00.000000000']
+wrote /glade/derecho/scratch/sabramian/wb2_eval/fgn_tp24hr_2022-08_tropics.nc
+era5 lazy: {'time': 0, 'lat': 321, 'lon': 1440}
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 192, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 188, in main
+    fetch_era5(MODEL_CFG[args.model]["month"], valid_times, out_dir)
+  File "/glade/u/home/sabramian/LatentSky/scripts/fetch_wb2_precip.py", line 161, in fetch_era5
+    da_24 = da.rolling(time=4, min_periods=4).sum()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/computation/rolling.py", line 180, in method
+    return self._array_reduce(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/computation/rolling.py", line 770, in _array_reduce
+    return self.reduce(array_agg_func, keep_attrs=keep_attrs, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/computation/rolling.py", line 568, in reduce
+    windows = self._construct(
+              ^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/computation/rolling.py", line 455, in _construct
+    window = obj.variable.rolling_window(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/util/deprecation_helpers.py", line 119, in inner
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/variable.py", line 2241, in rolling_window
+    duck_array_ops.sliding_window_view(
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/duck_array_ops.py", line 147, in sliding_window_view
+    return func(array, window_shape, axis=axis, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/duck_array_ops.py", line 107, in f
+    return wrapped(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/numpy/lib/_stride_tricks_impl.py", line 365, in sliding_window_view
+    raise ValueError(
+ValueError: window shape cannot be larger than input array shape
+
+=== 2. Scale-aware eval for all models ===
+--- eval graphcast ---
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 61630  matched=8430  miss=46028  fa=7172
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_summary_graphcast_2020-08_24h.csv
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_systems_graphcast_2020-08_24h.csv.gz
+
+--- eval fuxi ---
+loaded 62 frames, grid (321, 1440)
+valid_times: 2020-08-02T00:00:00.000000000 .. 2020-09-01T12:00:00.000000000
+systems: 81542  matched=9730  miss=44728  fa=27084
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_summary_fuxi_2020-08_24h.csv
+wrote /glade/u/home/sabramian/LatentSky/docs/scale_systems_fuxi_2020-08_24h.csv.gz
+
+--- eval gencast ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset.py", line 1248, in _construct_dataarray
+    variable = self._variables[name]
+               ~~~~~~~~~~~~~~~^^^^^^
+KeyError: 'total_precipitation_24hr'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset.py", line 1355, in __getitem__
+    return self._construct_dataarray(key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset.py", line 1250, in _construct_dataarray
+    _, name, variable = _get_virtual_variable(self._variables, name, self.sizes)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset_utils.py", line 79, in _get_virtual_variable
+    raise KeyError(key)
+KeyError: 'total_precipitation_24hr'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 126, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 81, in main
+    truth, pred, valid_times = load_pair(args.model)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 40, in load_pair
+    pred = mp["total_precipitation_24hr"]
+           ~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/core/dataset.py", line 1368, in __getitem__
+    raise KeyError(message) from e
+KeyError: "No variable named 'total_precipitation_24hr'. Variables on the dataset include ['lead_time_secs']"
+
+--- eval fgn ---
+Traceback (most recent call last):
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 219, in _acquire_with_cache_info
+    file = self._cache[self._key]
+           ~~~~~~~~~~~^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/lru_cache.py", line 56, in __getitem__
+    value = self._cache[key]
+            ~~~~~~~~~~~^^^^^
+KeyError: [<class 'netCDF4._netCDF4.Dataset'>, ('/glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2022-08_tropics.nc',), 'r', (('clobber', True), ('diskless', False), ('format', 'NETCDF4'), ('persist', False)), 'ad43540b-58cc-4344-b22c-6ab1d8e96b5b']
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 126, in <module>
+    main()
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 81, in main
+    truth, pred, valid_times = load_pair(args.model)
+                               ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/u/home/sabramian/LatentSky/scripts/eval_wb2_models.py", line 39, in load_pair
+    er = xr.open_dataset(CACHE / f"era5_tp24hr_{month}_tropics.nc")
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/api.py", line 607, in open_dataset
+    backend_ds = backend.open_dataset(
+                 ^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 771, in open_dataset
+    store = NetCDF4DataStore.open(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 529, in open
+    return cls(manager, group=group, mode=mode, lock=lock, autoclose=autoclose)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 429, in __init__
+    self.format = self.ds.data_model
+                  ^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 538, in ds
+    return self._acquire()
+           ^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/netCDF4_.py", line 532, in _acquire
+    with self._manager.acquire_context(needs_lock) as root:
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 207, in acquire_context
+    file, cached = self._acquire_with_cache_info(needs_lock)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/xarray/backends/file_manager.py", line 225, in _acquire_with_cache_info
+    file = self._opener(*self._args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src/netCDF4/_netCDF4.pyx", line 2521, in netCDF4._netCDF4.Dataset.__init__
+  File "src/netCDF4/_netCDF4.pyx", line 2158, in netCDF4._netCDF4._ensure_nc_success
+FileNotFoundError: [Errno 2] No such file or directory: '/glade/derecho/scratch/sabramian/wb2_eval/era5_tp24hr_2022-08_tropics.nc'
+
+=== 3. Multi-model comparison figure ===
+missing: /glade/u/home/sabramian/LatentSky/docs/scale_summary_gencast_2020-08_24h.csv
+missing: /glade/u/home/sabramian/LatentSky/docs/scale_summary_fgn_2022-08_24h.csv
+wrote /glade/u/home/sabramian/LatentSky/docs/figures/wb2_model_compare_24h.png
+=== Done ===
+-rw-r--r-- 1 sabramian ncar  166546 May 30 08:50 docs/figures/wb2_model_compare_24h.png
+-rw-r--r-- 1 sabramian ncar    3990 May 30 08:50 docs/scale_summary_fuxi_2020-08_24h.csv
+-rw-r--r-- 1 sabramian ncar    4098 May 30 08:49 docs/scale_summary_graphcast_2020-08_24h.csv
+-rw-r--r-- 1 sabramian ncar 6463271 May 30 08:50 docs/scale_systems_fuxi_2020-08_24h.csv.gz
+-rw-r--r-- 1 sabramian ncar 5278047 May 30 08:49 docs/scale_systems_graphcast_2020-08_24h.csv.gz
