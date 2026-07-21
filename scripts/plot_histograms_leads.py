@@ -34,7 +34,7 @@ def main() -> None:
     p.add_argument("--outdir", default="docs/figures")
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     outdir = (repo / args.outdir).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
 

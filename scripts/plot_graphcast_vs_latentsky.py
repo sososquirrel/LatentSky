@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 
 def load(path: pathlib.Path) -> pd.DataFrame:

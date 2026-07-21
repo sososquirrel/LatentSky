@@ -38,7 +38,7 @@ def main() -> None:
     p.add_argument("--out", default=None)
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     sp = repo / args.systems
     sysdf = (pd.read_parquet(sp) if str(sp).endswith(".parquet")
              else pd.read_csv(sp))

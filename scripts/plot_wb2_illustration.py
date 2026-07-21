@@ -32,7 +32,7 @@ from latentsky.scale_analysis import (
     cell_area_km2, label_systems, _overlap_matrix,
 )
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 GC6_CACHE = (pathlib.Path("/glade/derecho/scratch") / os.environ["USER"]
              / "graphcast_eval" / "graphcast_tp6hr_2020-08_tropics.nc")
 

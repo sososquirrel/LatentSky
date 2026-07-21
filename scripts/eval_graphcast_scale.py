@@ -26,7 +26,7 @@ from latentsky.scale_analysis import (
     system_table, summarize_by_scale, default_scale_edges,
 )
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 CACHE = pathlib.Path("/glade/derecho/scratch") / os.environ["USER"] / "graphcast_eval"
 
 

@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 from latentsky.scale_analysis import system_table
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 PIECES_DIR = pathlib.Path(
     "/glade/derecho/scratch/tzhou/splitted_1440x720_9vars_40pieces_v2"
 )

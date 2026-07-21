@@ -28,7 +28,7 @@ from latentsky.inference import _load_model
 from latentsky.models import ConditionalDiffusionUNet
 from latentsky.registry import load_run
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 N_TOTAL = 40
 PID, ROW, COL, FI = 8, 1, 4, 0
 

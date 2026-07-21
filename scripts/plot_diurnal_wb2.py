@@ -26,7 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 SMALL_KM   = 65          # same threshold as existing diurnal_graphcast figure
 LST_EDGES  = np.arange(0, 25, 2)          # 2-h bins for smoother curves

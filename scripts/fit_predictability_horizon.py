@@ -24,7 +24,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 SYS = REPO / "docs" / "scale_systems_v3.csv.gz"
 OUT_CSV = REPO / "docs" / "predictability_horizon.csv"
 OUT_FIG = REPO / "docs" / "figures" / "predictability_horizon.png"

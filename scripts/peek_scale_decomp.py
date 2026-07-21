@@ -22,7 +22,7 @@ DEFAULT_RUNS = ["humid_lead0h", "mseuv_lead0h"]
 
 def main() -> None:
     names = sys.argv[1:] or DEFAULT_RUNS
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     edges = default_scale_edges(25.0, 3000.0, 8)
 
     sys_frames, summary_rows = [], []

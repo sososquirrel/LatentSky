@@ -32,7 +32,7 @@ from latentsky.scale_analysis import (
     _DEFAULT_LAT_EXTENT, _DEFAULT_LON_EXTENT,
 )
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 OUT_DIR = REPO / "docs" / "figures" / "patch_examples"
 
 # Set of geographic crops worth showcasing. (lat_lo, lat_hi, lon_lo, lon_hi)

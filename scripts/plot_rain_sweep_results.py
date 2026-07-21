@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 RUNS = pathlib.Path("/glade/derecho/scratch/sabramian/latentsky_runs")
 
 LEADS = [0.25, 0.5, 1, 2, 3, 6]

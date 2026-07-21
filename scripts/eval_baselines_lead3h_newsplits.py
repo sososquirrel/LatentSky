@@ -22,7 +22,7 @@ import pandas as pd
 
 from latentsky.patch_split import blocks_for_piece, compute_patch_grid, make_patch_split
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 PIECES_DIR = pathlib.Path("/glade/derecho/scratch/sabramian/latentsky_pieces")
 DELTA_3H = 13  # lead_steps_15=12 -> delta_index=13
 N_TOTAL = 40

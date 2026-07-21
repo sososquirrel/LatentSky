@@ -9,7 +9,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 baselines = pd.read_csv(REPO / "docs/baselines_lead3h_newsplits.csv")
 baselines = baselines[baselines["eval_set"] == "patchsplit_test_blocks"]

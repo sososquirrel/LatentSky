@@ -30,7 +30,7 @@ from latentsky.scale_analysis import (
 PIECES_DIR = pathlib.Path(
     "/glade/derecho/scratch/tzhou/splitted_1440x720_9vars_40pieces_v2"
 )
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 TEST_PIECES = [2, 12, 22, 32]
 

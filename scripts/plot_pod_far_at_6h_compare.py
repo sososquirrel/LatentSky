@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 series = [
     ("no-rain input", "docs/scale_summary.csv", "mseuv_lead6h", "#1f77b4", "o"),

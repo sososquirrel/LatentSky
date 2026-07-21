@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-REPO = Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 SYS = REPO / "docs" / "scale_systems_v3.csv.gz"
 OUT = REPO / "docs" / "figures" / "diurnal_small_systems.png"
 

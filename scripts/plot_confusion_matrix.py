@@ -14,7 +14,7 @@ import torch
 from latentsky import load_run
 from latentsky.inference import predict_piece
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 OUT = REPO / "docs" / "figures" / "confusion_matrix.png"
 
 # Rain-rate category edges (mm per 15-min accumulation).

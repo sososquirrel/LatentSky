@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 LS_SUMMARY = REPO / "docs/scale_summary_v3.csv"
 GC_SUMMARY = REPO / "docs/scale_summary_graphcast_2020-08_6h_thr2p4.csv"

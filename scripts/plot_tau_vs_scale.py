@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
 df = df[df["predictor_set"] == "9var (mse+uv)"]

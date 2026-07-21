@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from scipy.optimize import curve_fit
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 CMAP = plt.cm.RdYlGn
 NORM = mcolors.Normalize(vmin=0, vmax=1)
 

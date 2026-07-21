@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 OUT = REPO / "docs" / "figures" / "dist_compare_graphcast_latentsky_6h.png"
 
 LS_SYS = REPO / "docs" / "scale_systems_v3.csv.gz"

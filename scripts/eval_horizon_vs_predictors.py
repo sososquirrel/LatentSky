@@ -44,7 +44,7 @@ def main() -> None:
     )
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
 
     groups = defaultdict(list)
     for n in list_runs():

@@ -14,7 +14,7 @@ import pandas as pd
 from latentsky.inference import evaluate_run
 from latentsky.registry import load_run
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 run = load_run("mseuv_rain_resid_lead3h")
 metrics = evaluate_run(run, max_frames_per_piece=16)

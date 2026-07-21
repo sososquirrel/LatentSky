@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 model_df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
 model_df  = model_df[model_df["predictor_set"] == "9var (mse+uv)"]

@@ -46,7 +46,7 @@ def main() -> None:
                    help="Default docs/figures/scale_decomp_<run>.png")
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     sys_path = repo / args.systems
     sysdf = (pd.read_parquet(sys_path) if str(sys_path).endswith(".parquet")
              else pd.read_csv(sys_path))

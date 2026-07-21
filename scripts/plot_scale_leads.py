@@ -36,7 +36,7 @@ def main() -> None:
                    help="Default docs/figures/scale_leads_<predictor>.png")
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     df = pd.read_csv(repo / args.summary)
 
     g = df[df["predictor_set"] == args.predictor_set]

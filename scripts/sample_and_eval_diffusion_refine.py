@@ -33,7 +33,7 @@ from latentsky.models import ConditionalDiffusionUNet
 from latentsky.patch_split import blocks_for_piece, compute_patch_grid, make_patch_split
 from latentsky.registry import load_run
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 
 def r2(y_true, y_pred):

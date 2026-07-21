@@ -27,7 +27,7 @@ def main() -> None:
     )
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     df = pd.read_csv(repo / args.csv)
     df = df.sort_values(["predictor_set", "lead_h"]).reset_index(drop=True)
     print(f"{len(df)} rows, {df['predictor_set'].nunique()} predictor sets", flush=True)

@@ -16,7 +16,7 @@ import pandas as pd
 from latentsky import list_runs, load_run
 from latentsky.inference import evaluate_run
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 RUNS = ["mseuv_lead0h", "mseuv_lead0.25h", "mseuv_lead0.5h", "mseuv_lead0.75h",
         "mseuv_lead1h", "mseuv_lead1.5h", "mseuv_lead2h", "mseuv_lead3h",
         "mseuv_lead4h", "mseuv_lead6h"]

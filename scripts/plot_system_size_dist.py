@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde
 
-REPO = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 
 L_MIN, L_MAX = 30, 2000   # km
 L_GRID = np.geomspace(L_MIN, L_MAX, 300)

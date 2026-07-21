@@ -24,7 +24,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-REPO     = pathlib.Path(__file__).resolve().parents[1]
+from latentsky.registry import REPO_ROOT as REPO
 SMALL_KM = 65
 LST_EDGES = np.arange(0, 25, 2)
 LST_MID   = 0.5 * (LST_EDGES[:-1] + LST_EDGES[1:])

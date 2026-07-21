@@ -94,7 +94,7 @@ def main() -> None:
     p.add_argument("--tag", default="v3")
     args = p.parse_args()
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     df = pd.read_csv(repo / args.summary)
     g = df[df["predictor_set"] == args.predictor_set]
     if g.empty:

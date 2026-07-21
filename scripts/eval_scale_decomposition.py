@@ -74,7 +74,7 @@ def main() -> None:
         input_transform = daily_mean_ablation(kill)
         print(f"ablation: daily-mean replacement of channels {kill}", flush=True)
 
-    repo = pathlib.Path(__file__).resolve().parents[1]
+    from latentsky.registry import REPO_ROOT as repo
     edges = default_scale_edges(args.scale_min, args.scale_max, args.scale_bins)
 
     keep = None
