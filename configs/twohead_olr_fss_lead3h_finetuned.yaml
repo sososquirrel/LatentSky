@@ -4,7 +4,7 @@
 # checkpoint instead of random initialization.
 #
 # NOT runnable until the pretrain run (configs/pretrain_mask_rain_lead0h.yaml)
-# has actually produced runs/pretrain_mask_rain_lead0h/checkpoint.pt --
+# has actually produced runs/unet_models/two_head/10var/pretrain_mask_rain_lead0h/checkpoint.pt --
 # submit the pretrain job first, wait for it to finish, then this one.
 name: twohead_olr_fss_lead3h_finetuned
 input_vars:
@@ -45,4 +45,4 @@ fss_threshold: 0.1
 fss_sharpness: 20.0
 fss_max_kernel_px: 33
 
-pretrain_checkpoint: runs/pretrain_mask_rain_lead0h/checkpoint.pt
+pretrain_checkpoint: runs/unet_models/two_head/10var/pretrain_mask_rain_lead0h/checkpoint.pt

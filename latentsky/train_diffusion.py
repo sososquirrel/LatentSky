@@ -45,7 +45,7 @@ from latentsky.data import build_filtered_patch_loader, load_piece_arrays
 from latentsky.diffusion import GaussianDiffusion
 from latentsky.models import ConditionalDiffusionUNet
 from latentsky.patch_split import blocks_for_piece, compute_patch_grid, make_patch_split
-from latentsky.registry import REPO_ROOT
+from latentsky.registry import REPO_ROOT, classify_new_run
 
 
 def _git_sha() -> str:
@@ -141,7 +141,7 @@ def _run_epoch(
 def train(cfg: ExperimentConfig) -> Path:
     import os
     runs_base = Path(os.environ.get("LATENTSKY_RUNS_DIR", str(REPO_ROOT / "runs")))
-    run_dir = runs_base / cfg.name
+    run_dir = runs_base / classify_new_run(cfg, kind="gen") / cfg.name
     run_dir.mkdir(parents=True, exist_ok=True)
     log_f = open(run_dir / "train.log", "w")
 

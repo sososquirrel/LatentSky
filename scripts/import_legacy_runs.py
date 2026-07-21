@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from latentsky.config import ExperimentConfig
-from latentsky.registry import REPO_ROOT
+from latentsky.registry import REPO_ROOT, classify_new_run
 
 LEGACY_MODELS_DIR = Path("/glade/u/home/tzhou/LatentSky/models")
 
@@ -72,7 +72,7 @@ def import_one(pt_name: str, cfg_name: str) -> bool:
         return False
 
     cfg = ExperimentConfig.from_yaml(cfg_path)
-    dst = REPO_ROOT / "runs" / cfg.name
+    dst = REPO_ROOT / "runs" / classify_new_run(cfg, kind="unet") / cfg.name
     dst.mkdir(parents=True, exist_ok=True)
     shutil.copy2(pt_src, dst / "checkpoint.pt")
 

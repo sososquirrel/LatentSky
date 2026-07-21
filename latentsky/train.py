@@ -35,7 +35,7 @@ from latentsky.losses import combined_loss, scale_kernel_sizes
 from latentsky.masking import random_block_mask_channel
 from latentsky.models import UNet2D, UNet2DTwoHead
 from latentsky.patch_split import blocks_for_piece, compute_patch_grid, make_patch_split
-from latentsky.registry import REPO_ROOT
+from latentsky.registry import REPO_ROOT, classify_new_run
 
 
 def _git_sha() -> str:
@@ -266,7 +266,7 @@ def _run_epoch_patch_mode(model, optimizer, criterion, kernel_sizes, device,
 def train(cfg: ExperimentConfig) -> Path:
     import os
     runs_base = Path(os.environ.get("LATENTSKY_RUNS_DIR", str(REPO_ROOT / "runs")))
-    run_dir = runs_base / cfg.name
+    run_dir = runs_base / classify_new_run(cfg, kind="unet") / cfg.name
     run_dir.mkdir(parents=True, exist_ok=True)
     log_path = run_dir / "train.log"
     log_f = open(log_path, "w")

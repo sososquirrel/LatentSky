@@ -1,0 +1,14 @@
+GPUs: 1
+=== Training mseuv_rain_lead1h ===
+
+Epoch 1/155  2026-07-09T09:28:55
+  [Train] Group 1/8 pieces=[19, 10, 31, 7]
+  [Train] Group 2/8 pieces=[27, 18, 34, 29]
+  [Train] Group 3/8 pieces=[25, 39, 5, 38]
+  [Train] Group 4/8 pieces=[21, 14, 35, 13]
+  [Train] Group 5/8 pieces=[3, 20, 1, 37]
+  [Train] Group 6/8 pieces=[28, 0, 9, 17]
+  [Train] Group 7/8 pieces=[11, 24, 4, 23]
+  [Train] Group 8/8 pieces=[15, 30, 33, 8]
+  -> lr=1.000e-03 train=0.047985 val=0.038275
+  ** val improved, saving checkpoint
