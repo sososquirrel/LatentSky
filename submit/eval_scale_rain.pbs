@@ -34,7 +34,7 @@ export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
 RUNS="mseuv_rain_lead0.25h,mseuv_rain_lead0.5h,mseuv_rain_lead1h,mseuv_rain_lead2h,mseuv_rain_lead3h,mseuv_rain_lead6h"
 
-$ENV_PY -u scripts/eval_scale_decomposition.py \
+$ENV_PY -u scripts/analysis/eval_scale_decomposition.py \
     --systems-out docs/scale_systems_rain.csv.gz \
     --summary-out docs/scale_summary_rain.csv \
     --max-frames-per-piece 8 \

@@ -18,6 +18,6 @@ ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-$ENV_PY -u scripts/plot_patch_examples.py \
+$ENV_PY -u scripts/plotting/plot_patch_examples.py \
     --max-examples ${MAX_EXAMPLES:-24} \
     --keep-frames ${KEEP_FRAMES:-24}

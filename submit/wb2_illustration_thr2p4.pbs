@@ -19,7 +19,7 @@ export PYTHONPATH="$REPO:${PYTHONPATH}"
 FILTER='Could not determine|FutureWarning|frozen _collections'
 
 echo "=== WB2 illustration at 2.4 mm/6h (= 0.1 mm/15min x 24 steps) ==="
-$ENV_PY -u scripts/plot_wb2_illustration.py \
+$ENV_PY -u scripts/wb2/plot_wb2_illustration.py \
     --threshold 2.4 \
     --iou-min 0.1 \
     2>&1 | grep -vE "$FILTER"

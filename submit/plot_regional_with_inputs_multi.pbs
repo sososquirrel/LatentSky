@@ -19,4 +19,4 @@ conda activate /glade/work/${USER}/conda-envs/latentsky-env
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-python -u scripts/plot_regional_with_inputs_multi.py --runs ${RUNS:-humid_lead3h mse_lead3h}
+python -u scripts/plotting/plot_regional_with_inputs_multi.py --runs ${RUNS:-humid_lead3h mse_lead3h}

@@ -20,10 +20,10 @@ export PYTHONPATH="$REPO:${PYTHONPATH}"
 FILTER='Could not determine|FutureWarning|frozen _collections'
 
 echo "=== Fetch FuXi 6hr precip ==="
-$ENV_PY -u scripts/fetch_fuxi_6hr.py 2>&1 | grep -vE "$FILTER"
+$ENV_PY -u scripts/wb2/fetch_fuxi_6hr.py 2>&1 | grep -vE "$FILTER"
 
 echo "=== Eval FuXi 6hr scale systems at ${THR} mm/6h ==="
-$ENV_PY -u scripts/eval_graphcast_scale.py \
+$ENV_PY -u scripts/wb2/eval_graphcast_scale.py \
     --model fuxi \
     --threshold "$THR" \
     --out-systems "docs/scale_systems_fuxi_2020-08_6h.csv.gz" \
@@ -31,7 +31,7 @@ $ENV_PY -u scripts/eval_graphcast_scale.py \
     2>&1 | grep -vE "$FILTER"
 
 echo "=== Also eval GraphCast at same threshold (${THR} mm/6h) ==="
-$ENV_PY -u scripts/eval_graphcast_scale.py \
+$ENV_PY -u scripts/wb2/eval_graphcast_scale.py \
     --model graphcast \
     --threshold "$THR" \
     --out-systems "docs/scale_systems_graphcast_2020-08_thr2p4.csv.gz" \
@@ -39,7 +39,7 @@ $ENV_PY -u scripts/eval_graphcast_scale.py \
     2>&1 | grep -vE "$FILTER"
 
 echo "=== Plot diurnal figure ==="
-$ENV_PY -u scripts/plot_diurnal_wb2.py \
+$ENV_PY -u scripts/wb2/plot_diurnal_wb2.py \
     2>&1 | grep -vE "$FILTER"
 
 echo "=== Done ==="

@@ -25,6 +25,6 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 cd /glade/u/home/sabramian/LatentSky
 
 ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
-$ENV_PY -u scripts/sample_and_eval_diffusion.py \
+$ENV_PY -u scripts/analysis/sample_and_eval_diffusion.py \
     --max-pieces 1 --blocks-per-piece 1 --frames-per-piece 1 --ensemble-size 1 \
     --out-csv docs/_smoke_diffusion_eval.csv

@@ -24,7 +24,7 @@ cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
 # Zoomed crop: lat 0-17N, lon 17W-17E (vs the original's -5..20N, ~20W..20E).
-$ENV_PY -u scripts/plot_method_illustration.py \
+$ENV_PY -u scripts/plotting/plot_method_illustration.py \
     --lat-lo 0 --lat-hi 17 \
     --lon-lo -17 --lon-hi 17 \
     --region-name "West Africa (zoom)" \

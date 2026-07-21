@@ -25,4 +25,4 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 cd /glade/u/home/sabramian/LatentSky
 
 ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
-$ENV_PY -u scripts/eval_original_latentsky.py
+$ENV_PY -u scripts/baselines/eval_original_latentsky.py

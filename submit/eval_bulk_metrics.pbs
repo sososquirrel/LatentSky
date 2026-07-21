@@ -27,6 +27,6 @@ ${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:\
 ${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:\
 ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 
-$ENV_PY -u scripts/eval_bulk_metrics.py \
+$ENV_PY -u scripts/analysis/eval_bulk_metrics.py \
     --max-frames-per-piece ${MAX_FRAMES:-94} \
     --out ${OUT:-docs/bulk_metrics_v1.csv}

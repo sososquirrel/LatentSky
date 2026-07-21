@@ -19,12 +19,12 @@ export PYTHONPATH="$REPO:${PYTHONPATH}"
 FILTER='Could not determine|FutureWarning|frozen _collections'
 
 echo "=== Fetch WB2 at leads 6/12/18/24h ==="
-$ENV_PY -u scripts/fetch_wb2_multlead.py 2>&1 | grep -vE "$FILTER"
+$ENV_PY -u scripts/wb2/fetch_wb2_multlead.py 2>&1 | grep -vE "$FILTER"
 
 for MODEL in graphcast fuxi; do
   for LEAD in 6 12 18 24; do
     echo "=== Eval ${MODEL} lead=${LEAD}h thr=${THR} ==="
-    $ENV_PY -u scripts/eval_graphcast_scale.py \
+    $ENV_PY -u scripts/wb2/eval_graphcast_scale.py \
       --model "$MODEL" \
       --threshold "$THR" \
       --lead-override "$LEAD" \

@@ -19,5 +19,5 @@ conda activate /glade/work/${USER}/conda-envs/latentsky-env
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-python -u scripts/plot_qualitative_maps.py
-python -u scripts/plot_contingency.py
+python -u scripts/plotting/plot_qualitative_maps.py
+python -u scripts/plotting/plot_contingency.py

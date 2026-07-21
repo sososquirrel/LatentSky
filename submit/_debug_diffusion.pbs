@@ -25,4 +25,4 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 cd /glade/u/home/sabramian/LatentSky
 
 ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
-$ENV_PY -u scripts/debug_diffusion_patch_scale.py
+$ENV_PY -u scripts/analysis/debug_diffusion_patch_scale.py

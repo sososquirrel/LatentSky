@@ -10,8 +10,8 @@
 # End-to-end GraphCast evaluation:
 #   1. fetch GraphCast (lead=6h) + ERA5 truth from WeatherBench2 for the
 #      requested month, tropical crop, into local NetCDF cache
-#   2. run scripts/eval_graphcast_scale.py (uses our scale_analysis pipeline)
-#   3. run scripts/plot_scale_decomposition.py to produce the 6-panel figure
+#   2. run scripts/wb2/eval_graphcast_scale.py (uses our scale_analysis pipeline)
+#   3. run scripts/plotting/plot_scale_decomposition.py to produce the 6-panel figure
 #      in the same format as scale_decomp_mseuv_lead3h_v2.png
 #
 # Notes:
@@ -29,12 +29,12 @@ cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
 echo "=== 1. Fetch GraphCast + ERA5 for ${MONTH} ==="
-$ENV_PY -u scripts/fetch_graphcast_era5.py --month "$MONTH" 2>&1 \
+$ENV_PY -u scripts/wb2/fetch_graphcast_era5.py --month "$MONTH" 2>&1 \
     | grep -vE "Could not determine|FutureWarning"
 
 echo
 echo "=== 2. Run scale-aware eval ==="
-$ENV_PY -u scripts/eval_graphcast_scale.py --month "$MONTH" \
+$ENV_PY -u scripts/wb2/eval_graphcast_scale.py --month "$MONTH" \
     --threshold ${THRESHOLD:-0.1} \
     --scale-min ${SCALE_MIN:-25} \
     --scale-max ${SCALE_MAX:-600} \
@@ -43,7 +43,7 @@ $ENV_PY -u scripts/eval_graphcast_scale.py --month "$MONTH" \
 echo
 echo "=== 3. Plot 6-panel scale decomposition figure ==="
 NAME="graphcast_${MONTH}_6h"
-$ENV_PY -u scripts/plot_scale_decomposition.py \
+$ENV_PY -u scripts/plotting/plot_scale_decomposition.py \
     --systems "docs/scale_systems_graphcast_${MONTH}.csv.gz" \
     --summary "docs/scale_summary_graphcast_${MONTH}.csv" \
     --run "$NAME" \

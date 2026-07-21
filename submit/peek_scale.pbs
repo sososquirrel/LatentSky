@@ -19,4 +19,4 @@ conda activate /glade/work/${USER}/conda-envs/latentsky-env
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-python -u scripts/peek_scale_decomp.py
+python -u scripts/analysis/peek_scale_decomp.py

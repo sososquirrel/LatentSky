@@ -25,6 +25,6 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 cd /glade/u/home/sabramian/LatentSky
 
 ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
-$ENV_PY -u scripts/sample_and_eval_diffusion.py \
+$ENV_PY -u scripts/analysis/sample_and_eval_diffusion.py \
     --max-pieces 12 --blocks-per-piece 2 --frames-per-piece 3 --ensemble-size 5 \
     --out-csv docs/diffusion_vs_baselines_lead3h.csv

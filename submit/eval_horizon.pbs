@@ -19,6 +19,6 @@ conda activate /glade/work/${USER}/conda-envs/latentsky-env
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-python -u scripts/eval_horizon_vs_predictors.py \
+python -u scripts/analysis/eval_horizon_vs_predictors.py \
     --out docs/horizon_vs_predictors.csv \
     --max-frames-per-piece 8

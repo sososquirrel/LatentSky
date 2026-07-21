@@ -19,7 +19,7 @@ export PYTHONPATH="$REPO:${PYTHONPATH}"
 FILTER='Could not determine|FutureWarning|frozen _collections'
 
 echo "=== Fetch + plot WB2 illustration (West Africa, 2020-08-15) ==="
-$ENV_PY -u scripts/plot_wb2_illustration.py \
+$ENV_PY -u scripts/wb2/plot_wb2_illustration.py \
     --threshold "${THRESHOLD:-0.1}" \
     --iou-min   "${IOU_MIN:-0.1}" \
     2>&1 | grep -vE "$FILTER"

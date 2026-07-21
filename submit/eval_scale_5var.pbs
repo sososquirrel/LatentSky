@@ -27,7 +27,7 @@ ENV_PY=/glade/work/${USER}/conda-envs/latentsky-env/bin/python
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-$ENV_PY -u scripts/eval_scale_decomposition.py \
+$ENV_PY -u scripts/analysis/eval_scale_decomposition.py \
     --systems-out ${SYSTEMS_OUT:-docs/scale_systems_5var.csv.gz} \
     --summary-out ${SUMMARY_OUT:-docs/scale_summary_5var.csv} \
     --max-frames-per-piece ${MAX_FRAMES:-8} \

@@ -12,7 +12,7 @@ cd /glade/u/home/sabramian/LatentSky
 export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
 ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
 
-$ENV_PY scripts/eval_baselines.py \
+$ENV_PY scripts/baselines/eval_baselines.py \
     --threshold 0.1 \
     --iou-min 0.1 \
     --scale-min 25 \

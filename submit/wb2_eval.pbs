@@ -31,7 +31,7 @@ FILTER='Could not determine|FutureWarning|frozen _collections'
 echo "=== 1. Fetch all models from WeatherBench2 ==="
 for MODEL in graphcast fuxi gencast; do
     echo "--- fetch $MODEL ---"
-    $ENV_PY -u scripts/fetch_wb2_precip.py --model "$MODEL" 2>&1 \
+    $ENV_PY -u scripts/wb2/fetch_wb2_precip.py --model "$MODEL" 2>&1 \
         | grep -vE "$FILTER"
     echo
 done
@@ -39,7 +39,7 @@ done
 echo "=== 2. Scale-aware eval for all models ==="
 for MODEL in graphcast fuxi gencast; do
     echo "--- eval $MODEL ---"
-    $ENV_PY -u scripts/eval_wb2_models.py --model "$MODEL" \
+    $ENV_PY -u scripts/wb2/eval_wb2_models.py --model "$MODEL" \
         --threshold "${THRESHOLD:-1.0}" \
         --scale-min "${SCALE_MIN:-25}" \
         --scale-max "${SCALE_MAX:-600}" \
@@ -48,7 +48,7 @@ for MODEL in graphcast fuxi gencast; do
 done
 
 echo "=== 3. Multi-model comparison figure ==="
-$ENV_PY -u scripts/plot_wb2_model_compare.py
+$ENV_PY -u scripts/wb2/plot_wb2_model_compare.py
 
 echo "=== Done ==="
 ls -la docs/scale_summary_*_24h.csv \

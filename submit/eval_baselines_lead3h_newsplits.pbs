@@ -20,4 +20,4 @@ export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
 cd /glade/u/home/sabramian/LatentSky
 
 ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
-$ENV_PY -u scripts/eval_baselines_lead3h_newsplits.py
+$ENV_PY -u scripts/baselines/eval_baselines_lead3h_newsplits.py

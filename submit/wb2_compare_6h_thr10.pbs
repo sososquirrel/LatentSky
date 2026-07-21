@@ -21,7 +21,7 @@ export PYTHONPATH="$REPO:${PYTHONPATH}"
 FILTER='Could not determine|FutureWarning|frozen _collections'
 
 echo "=== GraphCast 6h at ${THR} mm/6h ==="
-$ENV_PY -u scripts/eval_graphcast_scale.py \
+$ENV_PY -u scripts/wb2/eval_graphcast_scale.py \
     --model graphcast \
     --threshold "$THR" \
     --out-systems "docs/scale_systems_graphcast_2020-08_6h${TAG}.csv.gz" \
@@ -29,7 +29,7 @@ $ENV_PY -u scripts/eval_graphcast_scale.py \
     2>&1 | grep -vE "$FILTER"
 
 echo "=== FuXi 6h at ${THR} mm/6h ==="
-$ENV_PY -u scripts/eval_graphcast_scale.py \
+$ENV_PY -u scripts/wb2/eval_graphcast_scale.py \
     --model fuxi \
     --threshold "$THR" \
     --out-systems "docs/scale_systems_fuxi_2020-08_6h${TAG}.csv.gz" \
@@ -37,7 +37,7 @@ $ENV_PY -u scripts/eval_graphcast_scale.py \
     2>&1 | grep -vE "$FILTER"
 
 echo "=== Plot comparison ==="
-$ENV_PY -u scripts/plot_wb2_model_compare.py \
+$ENV_PY -u scripts/wb2/plot_wb2_model_compare.py \
     --lead 6h \
     --tag "$TAG" \
     2>&1 | grep -vE "$FILTER"

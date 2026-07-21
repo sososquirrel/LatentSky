@@ -44,7 +44,7 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 #   qsub -v SUMMARY_OUT=docs/scale_summary_v2.csv,\
 #           SYSTEMS_OUT=docs/scale_systems_v2.csv.gz,\
 #           SCALE_MAX=600,SCALE_BINS=10 submit/eval_scale.pbs
-$ENV_PY -u scripts/eval_scale_decomposition.py \
+$ENV_PY -u scripts/analysis/eval_scale_decomposition.py \
     --systems-out ${SYSTEMS_OUT:-docs/scale_systems.csv.gz} \
     --summary-out ${SUMMARY_OUT:-docs/scale_summary.csv} \
     --max-frames-per-piece ${MAX_FRAMES:-8} \

@@ -10,8 +10,8 @@
 # End-to-end scale-aware precip evaluation for a WeatherBench2 model
 # (graphcast | hres) at lead=6h, verified against ERA5, tropical crop.
 #   1. fetch MODEL (lead=6h) + ERA5 truth into local NetCDF cache
-#   2. run scripts/eval_graphcast_scale.py with --model MODEL
-#   3. run scripts/plot_scale_decomposition.py -> 6-panel figure
+#   2. run scripts/wb2/eval_graphcast_scale.py with --model MODEL
+#   3. run scripts/plotting/plot_scale_decomposition.py -> 6-panel figure
 #
 # Knobs (qsub -v):
 #   MODEL      graphcast | hres            (default graphcast)
@@ -32,13 +32,13 @@ cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
 echo "=== 1. Fetch ${MODEL} + ERA5 for ${MONTH} ==="
-$ENV_PY -u scripts/fetch_graphcast_era5.py --month "$MONTH" --models "$MODEL" 2>&1 \
+$ENV_PY -u scripts/wb2/fetch_graphcast_era5.py --month "$MONTH" --models "$MODEL" 2>&1 \
     | grep -vE "Could not determine|FutureWarning"
 
 echo
 echo "=== 2. Run scale-aware eval (threshold=${THRESHOLD} mm/6h) ==="
 SUF="${MODEL}_${MONTH}_t${THRESHOLD}"
-$ENV_PY -u scripts/eval_graphcast_scale.py --month "$MONTH" --model "$MODEL" \
+$ENV_PY -u scripts/wb2/eval_graphcast_scale.py --month "$MONTH" --model "$MODEL" \
     --threshold "$THRESHOLD" \
     --scale-min ${SCALE_MIN:-25} \
     --scale-max ${SCALE_MAX:-600} \
@@ -49,7 +49,7 @@ $ENV_PY -u scripts/eval_graphcast_scale.py --month "$MONTH" --model "$MODEL" \
 echo
 echo "=== 3. Plot 6-panel scale decomposition figure ==="
 NAME="${MODEL}_${MONTH}_6h"
-$ENV_PY -u scripts/plot_scale_decomposition.py \
+$ENV_PY -u scripts/plotting/plot_scale_decomposition.py \
     --systems "docs/scale_systems_${SUF}.csv.gz" \
     --summary "docs/scale_summary_${SUF}.csv" \
     --run "$NAME" \

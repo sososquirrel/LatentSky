@@ -21,7 +21,7 @@ FILTER='Could not determine|FutureWarning|frozen _collections'
 echo "=== Running threshold sweep in parallel ==="
 for THR in 0.25 0.5 1 2 5 10; do
     echo "--- launching thr=${THR} ---"
-    $ENV_PY -u scripts/plot_wb2_illustration.py --threshold "$THR" \
+    $ENV_PY -u scripts/wb2/plot_wb2_illustration.py --threshold "$THR" \
         2>&1 | grep -vE "$FILTER" | sed "s/^/[thr=${THR}] /" &
 done
 

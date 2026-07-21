@@ -24,7 +24,7 @@ echo "=== Eval at threshold ${THR} mm/24h ==="
 for MODEL in graphcast fuxi gencast; do
     echo "--- ${MODEL} ---"
     MONTH=2020-08
-    $ENV_PY -u scripts/eval_wb2_models.py \
+    $ENV_PY -u scripts/wb2/eval_wb2_models.py \
         --model "$MODEL" \
         --threshold "$THR" \
         --out-summary "docs/scale_summary_${MODEL}_${MONTH}_24h${TAG}.csv" \
@@ -33,7 +33,7 @@ for MODEL in graphcast fuxi gencast; do
 done
 
 echo "=== Plot comparison figure ==="
-$ENV_PY -u scripts/plot_wb2_model_compare.py \
+$ENV_PY -u scripts/wb2/plot_wb2_model_compare.py \
     --tag "$TAG" \
     2>&1 | grep -vE "$FILTER"
 

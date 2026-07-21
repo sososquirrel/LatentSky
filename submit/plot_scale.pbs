@@ -19,6 +19,6 @@ conda activate /glade/work/${USER}/conda-envs/latentsky-env
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-python -u scripts/plot_scale_decomposition.py --run mseuv_lead3h
-python -u scripts/plot_scale_decomposition.py --run humid_lead3h
-python -u scripts/plot_scale_decomposition.py --run mse_lead3h
+python -u scripts/plotting/plot_scale_decomposition.py --run mseuv_lead3h
+python -u scripts/plotting/plot_scale_decomposition.py --run humid_lead3h
+python -u scripts/plotting/plot_scale_decomposition.py --run mse_lead3h

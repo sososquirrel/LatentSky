@@ -18,4 +18,4 @@ conda activate /glade/work/${USER}/conda-envs/latentsky-env
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-python -u scripts/plot_contingency_compare_leads.py --leads 0 1 2
+python -u scripts/plotting/plot_contingency_compare_leads.py --leads 0 1 2

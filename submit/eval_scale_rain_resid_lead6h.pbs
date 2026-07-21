@@ -28,7 +28,7 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-$ENV_PY -u scripts/eval_scale_decomposition.py \
+$ENV_PY -u scripts/analysis/eval_scale_decomposition.py \
     --systems-out docs/scale_systems_rain_resid_lead6h.csv.gz \
     --summary-out docs/scale_summary_rain_resid_lead6h.csv \
     --max-frames-per-piece 8 \

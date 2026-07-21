@@ -23,4 +23,4 @@ ${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
 cd /glade/u/home/${USER}/LatentSky
 export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
 
-$ENV_PY -u scripts/plot_method_illustration.py
+$ENV_PY -u scripts/plotting/plot_method_illustration.py
