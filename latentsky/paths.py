@@ -1,18 +1,18 @@
-"""Shared path constants for docs/figures output locations.
+"""Shared path constants for figures/docs output locations.
 
-Introduced as a zero-behavior-change prep step for the docs/ reorganization:
-today every script hardcodes its own literal "docs/figures/..." or
-"docs/<name>.csv" string, with no shared source of truth (the same string is
-independently duplicated across writer and reader scripts). This module
-gives them one place to point at.
+Originally introduced as a zero-behavior-change prep step for the docs/
+reorganization (every script used to hardcode its own literal
+"docs/figures/..." string, with no shared source of truth). The actual
+figures move has now happened: docs/figures/ -> figures/main/,
+docs/paper_figures/ -> figures/paper/. `docs/figures` and
+`docs/paper_figures` are left as symlinks to the new locations, so any
+script still using a hardcoded "docs/figures/..." literal (not yet
+repointed at these constants) keeps working unchanged -- same safety net
+used for the large CSV files moved to scratch earlier tonight.
 
-This pass only introduces the constants and repoints existing scripts at
-them -- **nothing physically moves yet**, so every constant below resolves
-to exactly where its content lives on disk today. The actual reorg (moving
-docs/figures/ -> figures/main/, docs/paper_figures/ -> figures/paper/, and
-the ~50-60 small final-summary CSVs -> docs/results/) is a deferred future
-session: when that happens, only these four definitions need to change, not
-the ~100+ call sites that import them.
+The ~50-60 small final-summary CSVs -> docs/results/ move is still
+deferred (too many independently-hardcoded path duplicates to do safely at
+the same time as this pass).
 """
 from __future__ import annotations
 
@@ -21,8 +21,8 @@ from pathlib import Path
 from latentsky.registry import REPO_ROOT
 
 DOCS_DIR = REPO_ROOT / "docs"
-FIGURES_DIR = DOCS_DIR / "figures"            # future: REPO_ROOT / "figures" / "main"
-PAPER_FIGURES_DIR = DOCS_DIR / "paper_figures"  # future: REPO_ROOT / "figures" / "paper"
+FIGURES_DIR = REPO_ROOT / "figures" / "main"
+PAPER_FIGURES_DIR = REPO_ROOT / "figures" / "paper"
 DOCS_RESULTS_DIR = DOCS_DIR                    # future: DOCS_DIR / "results"
 
 
