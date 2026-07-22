@@ -129,6 +129,13 @@ def main() -> None:
     norm = LogNorm(vmin=min(scales), vmax=max(scales))
     cmap = cm.viridis
 
+    if args.normalize_lead0 and not (g["lead_h"] == 0.0).any():
+        print(f"note: --normalize-lead0 requested but {label} has no lead=0h data at all "
+              f"(leads present: {sorted(g['lead_h'].unique())}) -- every scale bin would be "
+              "skipped, producing a blank figure. Skipping normalized-panel generation entirely "
+              "rather than writing empty PNGs.")
+        args.normalize_lead0 = False
+
     panels = [
         ("dlnP_med", "dln P  —  total precip log-bias", "median dln P"),
         ("dlnA_med", "dln A  —  area (size) log-bias", "median dln A"),
