@@ -78,11 +78,13 @@ def main() -> None:
     df = pd.read_csv(repo / args.summary)
     if args.runs is not None:
         g = df[df["name"].isin(args.runs)]
+        label = args.tag
         if g.empty:
             opts = sorted(df["name"].unique())
             raise SystemExit(f"no rows for runs {args.runs!r}; available: {opts}")
     else:
         g = df[df["predictor_set"] == args.predictor_set]
+        label = args.predictor_set
         if g.empty:
             opts = sorted(df["predictor_set"].unique())
             raise SystemExit(f"no rows for predictor set {args.predictor_set!r}; "
@@ -127,18 +129,34 @@ def main() -> None:
 
     # dlnP at lead 0 per scale — the total-precip gap already present at
     # nowcast time, used to color the tau markers (not fit to anything).
-    dlnP0 = (g[g["lead_h"] == 0.0].set_index("scale_mid")["dlnP_med"]
-             .reindex(scales).to_numpy())
-    vmax = max(abs(np.nanmin(dlnP0)), abs(np.nanmax(dlnP0)), 1e-6)
-    cnorm = TwoSlopeNorm(vcenter=0.0, vmin=-vmax, vmax=vmax)
-    cmap = cm.RdYlGn
+    # Some run families (e.g. old-LatentSky, only ever trained/evaluated at
+    # 3h/6h) have no lead=0h row at all -- reindex() against an empty frame
+    # then silently gives all-NaN, and matplotlib renders NaN-colored
+    # scatter points as fully transparent (cmap "bad" color defaults to
+    # alpha=0), which looks like "nothing plotted" even though the
+    # errorbar dashes still render. Fall back to a plain fixed color and
+    # skip the colorbar rather than silently producing invisible markers.
+    has_lead0 = (g["lead_h"] == 0.0).any()
+    if has_lead0:
+        dlnP0 = (g[g["lead_h"] == 0.0].set_index("scale_mid")["dlnP_med"]
+                 .reindex(scales).to_numpy())
+        vmax = max(abs(np.nanmin(dlnP0)), abs(np.nanmax(dlnP0)), 1e-6)
+        cnorm = TwoSlopeNorm(vcenter=0.0, vmin=-vmax, vmax=vmax)
+        cmap = cm.RdYlGn
+    else:
+        print(f"note: no lead=0h data for {label} -- markers won't be colored by "
+              "dln P at lead 0h (doesn't exist for this run family)")
+        dlnP0_by_scale = {}
+        cnorm = None
+        cmap = None
 
     # --- headline plot: tau_A(L) and tau_rho(L) ---------------------------
     fig, ax = plt.subplots(figsize=(8.2, 6))
     styles = {"A": dict(marker="o", line_color="C0", label="tau_A  (area)"),
              "rho": dict(marker="s", line_color="C3", label="tau_ρ  (intensity)")}
     Lgrid = np.geomspace(scales.min(), scales.max(), 100)
-    dlnP0_by_scale = dict(zip(scales, dlnP0))
+    if has_lead0:
+        dlnP0_by_scale = dict(zip(scales, dlnP0))
 
     for qname, style in styles.items():
         sub = fits[fits["quantity"] == qname].sort_values("scale_mid")
@@ -146,13 +164,18 @@ def main() -> None:
         tau = sub["tau"].to_numpy()
         tau_se = sub["tau_se"].to_numpy()
         m = np.isfinite(tau)
-        c = np.array([dlnP0_by_scale[l] for l in L])
 
         ax.errorbar(L[m], tau[m], yerr=tau_se[m], fmt="none",
                     ecolor="0.6", capsize=3, zorder=2)
-        sc = ax.scatter(L[m], tau[m], c=c[m], cmap=cmap, norm=cnorm,
-                        marker=style["marker"], s=70, edgecolors="k",
-                        linewidths=0.6, zorder=3, label=style["label"])
+        if has_lead0:
+            c = np.array([dlnP0_by_scale[l] for l in L])
+            sc = ax.scatter(L[m], tau[m], c=c[m], cmap=cmap, norm=cnorm,
+                            marker=style["marker"], s=70, edgecolors="k",
+                            linewidths=0.6, zorder=3, label=style["label"])
+        else:
+            ax.scatter(L[m], tau[m], color=style["line_color"],
+                       marker=style["marker"], s=70, edgecolors="k",
+                       linewidths=0.6, zorder=3, label=style["label"])
 
         pl = powerlaws[qname]
         if np.isfinite(pl["beta"]):
@@ -164,12 +187,13 @@ def main() -> None:
     ax.set_yscale("log")
     ax.set_xlabel("system scale L = √A  (km)")
     ax.set_ylabel("tau  (h)   [info_X(t) = I0 exp(-t/tau)]")
-    ax.set_title(f"Agreement-decay timescale vs scale — {args.predictor_set}")
+    ax.set_title(f"Agreement-decay timescale vs scale — {label}")
     ax.grid(True, which="both", alpha=0.25)
     ax.legend(fontsize=9, loc="best")
 
-    cbar = fig.colorbar(cm.ScalarMappable(norm=cnorm, cmap=cmap), ax=ax)
-    cbar.set_label("dln P at lead 0h  (total-precip gap already\npresent at nowcast time)")
+    if has_lead0:
+        cbar = fig.colorbar(cm.ScalarMappable(norm=cnorm, cmap=cmap), ax=ax)
+        cbar.set_label("dln P at lead 0h  (total-precip gap already\npresent at nowcast time)")
 
     fig.tight_layout()
     out_fig = FIGURES_DIR / f"tau_vs_scale_{args.tag}.png"
