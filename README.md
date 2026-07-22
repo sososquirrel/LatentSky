@@ -36,13 +36,16 @@ scripts/      analysis/    scaling-law / tau-fitting / decomposition compute scr
               paper_figures/  scripts behind the paper's numbered figures
               (root)       one-off utilities: import_legacy_runs.py, make_rain_input.py,
                            make_split.py, setup_env.sh
-docs/         CSV/figure outputs of the scripts above. `docs/figures/` and
-              `docs/paper_figures/` hold PNGs; docs/*.csv[.gz] hold summary
-              tables. Large regenerable `scale_systems_*.csv.gz` intermediate
+figures/      main/  all non-paper PNGs; paper/  the paper's own figures.
+              `docs/figures` and `docs/paper_figures` are symlinks here, for
+              any script not yet repointed at `latentsky/paths.py`'s
+              `FIGURES_DIR`/`PAPER_FIGURES_DIR` constants -- new scripts
+              should import those constants rather than hardcode either path.
+docs/         CSV outputs of the scripts above (docs/*.csv[.gz], summary
+              tables). Large regenerable `scale_systems_*.csv.gz` intermediate
               tables live on scratch (`/glade/derecho/scratch/$USER/
               LatentSky_docs_data/`) with symlinks left in place at their
-              usual docs/ path. Scripts read/write these paths via the
-              shared constants in `latentsky/paths.py`, not ad hoc strings.
+              usual docs/ path.
 submit/       Generic PBS script + helper to submit every config, plus one
               PBS script per one-off analysis/eval/plot job.
 logs/         Archived PBS stdout/stderr (*.o<jobid>) log files.
