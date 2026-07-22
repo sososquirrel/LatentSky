@@ -1,0 +1,82 @@
+#!/bin/bash
+#PBS -N ls_phase_d_figures
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=00:45:00
+#PBS -l select=1:ncpus=8:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/sabramian/logs/ls_phase_d_figures.log
+
+set -euo pipefail
+
+export TMPDIR=/glade/derecho/scratch/sabramian/tmp
+export LATENTSKY_RUNS_DIR=/glade/derecho/scratch/sabramian/LatentSky_runs
+mkdir -p "$TMPDIR"
+export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
+
+_NV=/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=\
+${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:\
+${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:\
+${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:\
+${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:\
+${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+cd /glade/u/home/sabramian/LatentSky
+ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
+SUMMARY=docs/scale_summary_modelcompare.csv
+SYSTEMS=docs/scale_systems_modelcompare.csv.gz
+OUTDIR=figures/main/model_comparison
+TWOHEAD_LEADS="patchsplit_twohead_olr_fss_lead0.25h patchsplit_twohead_olr_fss_lead0.5h patchsplit_twohead_olr_fss_lead1h patchsplit_twohead_olr_fss_lead2h patchsplit_twohead_olr_fss_lead3h patchsplit_twohead_olr_fss_lead6h"
+
+echo "=== Fig 6: method illustration ==="
+$ENV_PY -u scripts/plotting/plot_method_illustration.py --run mseuv_rain_resid_lead3h --tag old_latentsky \
+    --out $OUTDIR/method_illustration_old_latentsky.png
+$ENV_PY -u scripts/plotting/plot_method_illustration.py --run patchsplit_twohead_olr_fss_lead3h --tag two_head \
+    --out $OUTDIR/method_illustration_two_head.png
+
+echo "=== Fig 7: POD/FAR vs scale (overlay), lead3h and lead6h ==="
+$ENV_PY -u scripts/plotting/plot_pod_far_vs_scale.py --summary $SUMMARY \
+    --runs mseuv_rain_resid_lead3h patchsplit_twohead_olr_fss_lead3h \
+    --labels "old LatentSky" "two-head" --tag compare \
+    --out $OUTDIR/pod_far_vs_scale_compare_lead3h.png
+$ENV_PY -u scripts/plotting/plot_pod_far_vs_scale.py --summary $SUMMARY \
+    --runs mseuv_rain_resid_lead6h patchsplit_twohead_olr_fss_lead6h \
+    --labels "old LatentSky" "two-head" --tag compare \
+    --out $OUTDIR/pod_far_vs_scale_compare_lead6h.png
+
+echo "=== Fig 8: scale decomposition, per run ==="
+for r in mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h $TWOHEAD_LEADS; do
+    $ENV_PY -u scripts/plotting/plot_scale_decomposition.py --systems $SYSTEMS --summary $SUMMARY \
+        --run "$r" --out $OUTDIR/scale_decomp_${r}.png
+done
+
+echo "=== Fig 9: POD decay vs lead (raw + normalized) ==="
+$ENV_PY -u scripts/plotting/plot_pod_decay.py --summary $SUMMARY \
+    --runs mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h --tag old_latentsky \
+    --out $OUTDIR/pod_decay_by_scale_old_latentsky.png
+$ENV_PY -u scripts/plotting/plot_pod_decay.py --summary $SUMMARY \
+    --runs $TWOHEAD_LEADS --tag two_head \
+    --out $OUTDIR/pod_decay_by_scale_two_head.png
+
+echo "=== Fig 10: POD scaling law (tau vs scale) ==="
+$ENV_PY -u scripts/plotting/plot_tau_vs_scale.py --summary $SUMMARY \
+    --runs mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h --tag old_latentsky \
+    --out $OUTDIR/tau_vs_scale_old_latentsky.png
+$ENV_PY -u scripts/plotting/plot_tau_vs_scale.py --summary $SUMMARY \
+    --runs $TWOHEAD_LEADS --tag two_head \
+    --out $OUTDIR/tau_vs_scale_two_head.png
+
+echo "=== Fig 11: dlnA/dlnrho vs lead (raw + normalized) ==="
+$ENV_PY -u scripts/plotting/plot_dln_vs_lead.py --summary $SUMMARY \
+    --runs mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h --tag old_latentsky --normalize-lead0
+$ENV_PY -u scripts/plotting/plot_dln_vs_lead.py --summary $SUMMARY \
+    --runs $TWOHEAD_LEADS --tag two_head --normalize-lead0
+
+echo "=== Fig 12: dlnA/dlnrho scaling law ==="
+$ENV_PY -u scripts/analysis/fit_dln_tau_scaling.py --summary $SUMMARY \
+    --runs mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h --tag old_latentsky_dln
+$ENV_PY -u scripts/analysis/fit_dln_tau_scaling.py --summary $SUMMARY \
+    --runs $TWOHEAD_LEADS --tag two_head_dln
+
+echo "=== DONE ==="

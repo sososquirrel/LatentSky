@@ -40,12 +40,25 @@ def fit_exp_decay(t, norm_value, tau_bounds=(0.1, 200.0), p0=2.0) -> dict:
         return {"tau": float("nan"), "tau_se": float("nan")}
 
 
+_NAN_LINREG = {"slope": float("nan"), "intercept": float("nan"),
+               "slope_se": float("nan"), "r2": float("nan")}
+
+
 def fit_weighted_linreg(x, y, w) -> dict:
-    """OLS slope/intercept weighted by w, with slope std error and R2."""
-    x, y, w = np.asarray(x), np.asarray(y), np.asarray(w)
+    """OLS slope/intercept weighted by w, with slope std error and R2.
+    Returns all-NaN if there's fewer than 2 points, weights sum to zero
+    (e.g. a scale bin with zero matched systems in a sparse lead sweep --
+    encountered on old-LatentSky's 2-lead coverage), or x has no spread
+    (Sxx==0) -- same "insufficient data -> NaN" convention used by
+    fit_exp_decay/fit_powerlaw rather than letting np.average raise."""
+    x, y, w = np.asarray(x, dtype=float), np.asarray(y, dtype=float), np.asarray(w, dtype=float)
+    if len(x) < 2 or np.sum(w) <= 0:
+        return dict(_NAN_LINREG)
     xbar = np.average(x, weights=w)
     ybar = np.average(y, weights=w)
     Sxx = np.sum(w * (x - xbar) ** 2)
+    if Sxx <= 0:
+        return dict(_NAN_LINREG)
     slope = np.sum(w * (x - xbar) * (y - ybar)) / Sxx
     intercept = ybar - slope * xbar
 
