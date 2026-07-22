@@ -24,7 +24,7 @@ from latentsky.scale_analysis import (
 )
 
 from latentsky.registry import REPO_ROOT as REPO
-OUT = REPO / "docs" / "figures" / "method_illustration.png"
+from latentsky.paths import figure_path
 
 # Defaults: West Africa, lead=1h, frame 15 of 24 (LST ~ 15.8 h).
 DEFAULTS = dict(
@@ -98,8 +98,11 @@ def main():
     p.add_argument("--threshold", type=float, default=0.1)
     p.add_argument("--iou-min", type=float, default=0.1)
     p.add_argument("--keep-frames", type=int, default=24)
-    p.add_argument("--out", default=str(OUT))
+    p.add_argument("--tag", default=None,
+                    help="model-family label for output filename; defaults to --run's name")
+    p.add_argument("--out", default=None)
     args = p.parse_args()
+    tag = args.tag if args.tag is not None else args.run
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device: {device}", flush=True)
@@ -226,7 +229,7 @@ def main():
         f"Threshold = {args.threshold} mm, IoU ≥ {args.iou_min}.",
         y=1.04, fontsize=11)
 
-    out = pathlib.Path(args.out)
+    out = pathlib.Path(args.out) if args.out else figure_path("method_illustration", tag)
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=160, bbox_inches="tight")
     print(f"wrote {out}", flush=True)

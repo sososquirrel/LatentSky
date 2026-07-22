@@ -1,0 +1,54 @@
+#!/bin/bash
+#PBS -N ls_phase_c_figures
+#PBS -A UCLB0066
+#PBS -q develop
+#PBS -l walltime=00:45:00
+#PBS -l select=1:ncpus=8:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/sabramian/logs/ls_phase_c_figures.log
+
+set -euo pipefail
+
+export TMPDIR=/glade/derecho/scratch/sabramian/tmp
+export LATENTSKY_RUNS_DIR=/glade/derecho/scratch/sabramian/LatentSky_runs
+mkdir -p "$TMPDIR"
+export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
+
+_NV=/glade/work/sabramian/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=\
+${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:\
+${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:\
+${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:\
+${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:\
+${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+cd /glade/u/home/sabramian/LatentSky
+ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
+
+echo "=== Fig 1: confusion matrix ==="
+$ENV_PY -u scripts/plotting/plot_confusion_matrix.py \
+    --runs mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h --tag old_latentsky
+$ENV_PY -u scripts/plotting/plot_confusion_matrix.py \
+    --runs patchsplit_twohead_olr_fss_lead3h patchsplit_twohead_olr_fss_lead6h --tag two_head
+
+echo "=== Fig 2: distribution ==="
+$ENV_PY -u scripts/plotting/plot_histograms_leads.py \
+    --prefix mseuv_rain_resid --leads 3 6 --piece 32
+$ENV_PY -u scripts/plotting/plot_histograms_leads.py \
+    --prefix patchsplit_twohead_olr_fss --leads 3 6 --piece 32
+
+echo "=== Fig 3: R2/RMSE vs lead ==="
+$ENV_PY -u scripts/plotting/plot_r2_rmse_vs_lead_generic.py \
+    --runs mseuv_rain_resid_lead3h mseuv_rain_resid_lead6h --tag old_latentsky
+$ENV_PY -u scripts/plotting/plot_r2_rmse_vs_lead_generic.py \
+    --runs patchsplit_twohead_olr_fss_lead3h patchsplit_twohead_olr_fss_lead6h --tag two_head
+
+echo "=== Fig 4: tropic-wide map ==="
+$ENV_PY -u scripts/plotting/plot_qualitative_maps.py --run mseuv_rain_resid_lead3h
+$ENV_PY -u scripts/plotting/plot_qualitative_maps.py --run patchsplit_twohead_olr_fss_lead3h
+
+echo "=== Fig 5: input+output zoom ==="
+$ENV_PY -u scripts/plotting/plot_regional_with_inputs_multi.py \
+    --runs mseuv_rain_resid_lead3h patchsplit_twohead_olr_fss_lead3h --piece 32
+
+echo "=== DONE ==="

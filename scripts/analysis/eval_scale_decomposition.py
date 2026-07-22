@@ -18,11 +18,43 @@ import argparse
 import pathlib
 from collections import defaultdict
 
+import numpy as np
 import pandas as pd
 
 from latentsky import list_runs, load_run
 from latentsky.inference import evaluate_run_systems, daily_mean_ablation
+from latentsky.patch_split import blocks_for_piece, compute_patch_grid, make_patch_split
 from latentsky.scale_analysis import default_scale_edges, summarize_by_scale
+
+
+def _restrict_to_patch_test_blocks(df: pd.DataFrame, run) -> pd.DataFrame:
+    """For a patch-split run, `run.config.test_piece_ids` is the day-level
+    default ([2,12,22,32]) and doesn't apply -- the real test set is
+    scattered patches within every piece. Keep only systems whose (row,col)
+    centroid falls in that piece's actual held-out test blocks (always
+    populated regardless of role: truth centroid for match/miss, pred
+    centroid for false_alarm -- see scale_analysis.match_systems)."""
+    if df.empty:
+        return df
+    cfg = run.config
+    P = cfg.patch_size
+    probe = np.load(f"{cfg.pieces_dir}/{cfg.input_vars[0]}_piece00.npy", mmap_mode="r")
+    _, H, W = probe.shape
+    nrows, ncols = compute_patch_grid(H, W, P)
+    _, _, test_blocks = make_patch_split(
+        cfg.n_total_pieces, nrows, ncols, cfg.patch_split_seed,
+        cfg.patch_split_train_frac, cfg.patch_split_val_frac,
+    )
+    keep = np.zeros(len(df), dtype=bool)
+    for pid, sub in df.groupby("piece"):
+        blocks = set(blocks_for_piece(test_blocks, pid))
+        if not blocks:
+            continue
+        prow = (sub["row"].to_numpy() // P).astype(int)
+        pcol = (sub["col"].to_numpy() // P).astype(int)
+        in_test = np.array([(r, c) in blocks for r, c in zip(prow, pcol)])
+        keep[sub.index.to_numpy()] = in_test
+    return df[keep].reset_index(drop=True)
 
 # Reuse the predictor-set labeller from the horizon eval so the CSVs join.
 from eval_horizon_vs_predictors import predictor_label  # type: ignore
@@ -112,16 +144,25 @@ def main() -> None:
     for label, runs in groups.items():
         for r in runs:
             i += 1
-            print(f"[{i}/{total}] {label}  lead={r.lead_hours}h  {r.name}",
+            is_patch_split = getattr(r.config, "split_mode", "piece") == "patch"
+            print(f"[{i}/{total}] {label}  lead={r.lead_hours}h  {r.name}"
+                  f"{'  (patch-split: scanning all pieces, filtering to test blocks)' if is_patch_split else ''}",
                   flush=True)
+            piece_ids = range(r.config.n_total_pieces) if is_patch_split else None
             df = evaluate_run_systems(
                 r,
+                piece_ids=piece_ids,
                 max_frames_per_piece=args.max_frames_per_piece,
                 threshold=args.threshold,
                 iou_min=args.iou_min,
                 keep_frames=args.keep_frames,
                 input_transform=input_transform,
             )
+            if is_patch_split and not df.empty:
+                n_before = len(df)
+                df = _restrict_to_patch_test_blocks(df, r)
+                print(f"  patch-split filter: {n_before} -> {len(df)} systems "
+                      f"(restricted to held-out test blocks)", flush=True)
             if df.empty:
                 print(f"  no systems for {r.name}", flush=True)
                 continue

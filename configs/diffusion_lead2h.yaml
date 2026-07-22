@@ -1,0 +1,45 @@
+# Conditional DDPM alternative to the regression LatentSky models, at 3h
+# lead. Same input_vars and patch-level split methodology as
+# patchsplit_twohead_olr_fss_lead3h.yaml (today's best-performing split),
+# for a fair eventual comparison. Trained with latentsky.train_diffusion,
+# not latentsky.train -- see that module's docstring for why it's separate.
+#
+# Training only (predicts noise, epsilon-MSE loss) -- no sampler yet, so
+# this run establishes whether the denoising network converges cleanly;
+# turning it into actual rain forecasts needs a follow-up sampling script.
+name: diffusion_lead2h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: false
+lead_steps_15: 8          # 2h
+
+base_ch: 64
+depth: 5
+dropout_p: 0.05
+
+patch_size: 128
+patch_stride: null         # must be non-overlapping for the patch-level split
+batch_size: 64
+num_epochs: 155
+patience: 10
+lr: 0.0002                 # lower than the regression runs' 1e-3 -- more typical for DDPM training stability
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+
+patch_split_seed: 1919810
+patch_split_train_frac: 0.7
+patch_split_val_frac: 0.15
+
+diffusion_timesteps: 1000
+diffusion_schedule: cosine
+diffusion_time_emb_dim: 128
+diffusion_target_scale: 2.0

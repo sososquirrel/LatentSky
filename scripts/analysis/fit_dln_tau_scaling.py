@@ -1,5 +1,4 @@
 """Predictability-timescale scaling law: tau(L) for dlnA and dlnrho.
-from latentsky.paths import FIGURES_DIR
 
 Fits an exponential decay to the bounded agreement index from
 scripts/plot_info_fraction.py:
@@ -42,66 +41,52 @@ import pandas as pd
 from matplotlib import cm
 from matplotlib.colors import TwoSlopeNorm
 
-
-def _weighted_linreg(x, y, w):
-    """OLS slope/intercept weighted by w, with slope std error and R2."""
-    xbar = np.average(x, weights=w)
-    ybar = np.average(y, weights=w)
-    Sxx = np.sum(w * (x - xbar) ** 2)
-    slope = np.sum(w * (x - xbar) * (y - ybar)) / Sxx
-    intercept = ybar - slope * xbar
-
-    yhat = intercept + slope * x
-    resid = y - yhat
-    dof = max(len(x) - 2, 1)
-    reduced_chi2 = np.sum(w * resid ** 2) / dof
-    slope_se = np.sqrt(reduced_chi2 / Sxx)
-    ss_tot = np.sum(w * (y - ybar) ** 2)
-    r2 = 1 - np.sum(w * resid ** 2) / ss_tot if ss_tot > 0 else np.nan
-    return slope, intercept, slope_se, r2
+from latentsky.fits import fit_tau_from_neg_abs_dln, fit_powerlaw
+from latentsky.paths import FIGURES_DIR
 
 
 def _fit_tau(t, dlnX, n):
-    """tau from a weighted linear fit of -|dlnX(t)| vs t (see module docstring)."""
-    y = -np.abs(dlnX)
-    slope, intercept, slope_se, r2 = _weighted_linreg(t, y, n)
-    if slope >= 0:
-        return dict(I0=np.exp(intercept), tau=np.nan, tau_se=np.nan, R2=r2)
-    tau = -1 / slope
-    tau_se = tau ** 2 * slope_se  # delta method: d(tau)/d(slope) = 1/slope^2
-    return dict(I0=np.exp(intercept), tau=tau, tau_se=tau_se, R2=r2)
+    """tau from a weighted linear fit of -|dlnX(t)| vs t (see module docstring).
+    Thin wrapper over latentsky.fits.fit_tau_from_neg_abs_dln to keep this
+    script's existing dict-key names (I0/tau/tau_se/R2)."""
+    fit = fit_tau_from_neg_abs_dln(t, dlnX, n)
+    return dict(I0=fit["I0"], tau=fit["tau"], tau_se=fit["tau_se"], R2=fit["R2"])
 
 
 def _powerlaw_fit(scale, tau, tau_se):
-    """tau = tau_ref * (scale / L_ref)^beta via weighted log-log linear fit."""
+    """tau = tau_ref * (scale / L_ref)^beta via weighted log-log linear fit,
+    weight = fit precision (1/relative_se^2). Thin wrapper over
+    latentsky.fits.fit_powerlaw."""
+    tau, tau_se = np.asarray(tau), np.asarray(tau_se)
     m = np.isfinite(tau) & np.isfinite(tau_se) & (tau > 0) & (tau_se > 0)
-    if m.sum() < 2:
-        return dict(L_ref=np.nan, tau_ref=np.nan, beta=np.nan, beta_se=np.nan,
-                    R2=np.nan, n_used=int(m.sum()), n_total=len(scale))
-    x = np.log(scale[m])
-    y = np.log(tau[m])
-    w = 1 / (tau_se[m] / tau[m]) ** 2
-    beta, _intercept, beta_se, r2 = _weighted_linreg(x, y, w)
-    L_ref = np.exp(np.average(x, weights=w))
-    tau_ref = np.exp(np.average(y, weights=w))  # fitted value at x = xbar = log(L_ref)
-    return dict(L_ref=L_ref, tau_ref=tau_ref, beta=beta, beta_se=beta_se,
-                R2=r2, n_used=int(m.sum()), n_total=len(scale))
+    w = np.full_like(tau, np.nan)
+    w[m] = 1 / (tau_se[m] / tau[m]) ** 2
+    return fit_powerlaw(scale, tau, weights=w)
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--summary", default="docs/scale_summary_v3.csv")
-    p.add_argument("--predictor-set", default="9var (mse+uv)")
+    p.add_argument("--predictor-set", default="9var (mse+uv)",
+                    help="Ignored if --runs is given -- see plot_pod_decay.py for why.")
+    p.add_argument("--runs", nargs="+", default=None,
+                    help="Filter to these exact `name` values instead of --predictor-set.")
     p.add_argument("--tag", default="v3")
     args = p.parse_args()
 
     from latentsky.registry import REPO_ROOT as repo
     df = pd.read_csv(repo / args.summary)
-    g = df[df["predictor_set"] == args.predictor_set]
-    if g.empty:
-        opts = sorted(df["predictor_set"].unique())
-        raise SystemExit(f"no rows for predictor set {args.predictor_set!r}; "
-                         f"available: {opts}")
+    if args.runs is not None:
+        g = df[df["name"].isin(args.runs)]
+        if g.empty:
+            opts = sorted(df["name"].unique())
+            raise SystemExit(f"no rows for runs {args.runs!r}; available: {opts}")
+    else:
+        g = df[df["predictor_set"] == args.predictor_set]
+        if g.empty:
+            opts = sorted(df["predictor_set"].unique())
+            raise SystemExit(f"no rows for predictor set {args.predictor_set!r}; "
+                             f"available: {opts}")
 
     quantities = {"A": "dlnA_med", "rho": "dlnrho_med"}
     scales = np.array(sorted(g["scale_mid"].unique()))

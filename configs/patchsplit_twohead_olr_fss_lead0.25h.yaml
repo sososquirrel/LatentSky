@@ -1,0 +1,47 @@
+# Patch-level split experiment: same architecture/loss as
+# twohead_olr_fss_lead3h.yaml (two-head + OLR-FiLM + multi-scale FSS loss),
+# but train/val/test are individual non-overlapping spatial patches
+# randomly assigned across ALL 40 days (see latentsky/patch_split.py),
+# instead of whole days. Every day contributes to train/val/test, just at
+# different spatial locations -- no buffer_piece_ids needed since patches
+# are non-overlapping (patch_stride == patch_size, enforced in train.py).
+name: patchsplit_twohead_olr_fss_lead0.25h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: false
+lead_steps_15: 1          # 0.25h
+
+base_ch: 64
+depth: 5
+out_activation: softplus
+
+patch_size: 128
+patch_stride: null         # must be non-overlapping for split_mode=patch
+batch_size: 64
+num_epochs: 155
+patience: 10
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+
+split_mode: patch
+patch_split_seed: 1919810
+patch_split_train_frac: 0.7
+patch_split_val_frac: 0.15
+# test_frac = 1 - 0.7 - 0.15 = 0.15, held out, unused by this training run
+
+two_head: true
+olr_var_name: olrtoa
+bce_weight: 1.0
+fss_weight: 0.25
+fss_threshold: 0.1
+fss_sharpness: 20.0
+fss_max_kernel_px: 33

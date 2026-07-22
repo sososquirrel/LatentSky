@@ -16,8 +16,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from scipy.optimize import curve_fit
 
+from latentsky.fits import fit_exp_decay
 from latentsky.registry import REPO_ROOT as REPO
 from latentsky.paths import FIGURES_DIR
 
@@ -39,10 +39,6 @@ STYLE = {
 }
 
 
-def exp_decay(t, tau):
-    return np.exp(-t / tau)
-
-
 def fit_tau_per_scale(df):
     scales = sorted(df["scale_mid"].unique())
     pod0 = df[df["lead_h"] == 0.0].set_index("scale_mid")["POD"]
@@ -54,11 +50,7 @@ def fit_tau_per_scale(df):
         if not np.isfinite(p0) or p0 <= 0:
             continue
         norm = (sub["POD"] / p0).values
-        try:
-            popt, _ = curve_fit(exp_decay, t, norm, p0=[2.0], bounds=([0.1], [200.0]))
-            out[scale] = popt[0]
-        except Exception:
-            out[scale] = np.nan
+        out[scale] = fit_exp_decay(t, norm)["tau"]
     return out
 
 
@@ -82,12 +74,10 @@ def make_decay_plot(df, name, out_path):
             continue
         norm = (sub["POD"] / p0).values
         ax_norm.plot(t, norm, color=color, lw=0, marker="o", ms=5)
-        try:
-            popt, _ = curve_fit(exp_decay, t, norm, p0=[2.0], bounds=([0.1], [200.0]))
-            ax_norm.plot(t_fine, exp_decay(t_fine, popt[0]), color=color, lw=1.8,
-                         alpha=0.85, label=f"{scale:.0f} km  τ={popt[0]:.1f}h")
-        except Exception:
-            pass
+        tau = fit_exp_decay(t, norm)["tau"]
+        if np.isfinite(tau):
+            ax_norm.plot(t_fine, np.exp(-t_fine / tau), color=color, lw=1.8,
+                         alpha=0.85, label=f"{scale:.0f} km  τ={tau:.1f}h")
 
     ax_raw.set_xlabel("lead time [h]", fontsize=11)
     ax_raw.set_ylabel("POD", fontsize=11)
