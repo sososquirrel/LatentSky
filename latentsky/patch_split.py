@@ -69,3 +69,39 @@ def blocks_for_piece(
     """Filter a (piece,row,col) block set down to the (row,col) pairs
     belonging to one specific piece -- what FilteredGridPatchDataset needs."""
     return {(r, c) for (p, r, c) in blocks if p == piece_id}
+
+
+def restrict_to_patch_test_blocks(df, run) -> "pd.DataFrame":
+    """For a patch-split run, `run.config.test_piece_ids` is the day-level
+    default ([2,12,22,32]) and doesn't apply -- the real test set is
+    scattered patches within every piece. Keep only rows (e.g. from
+    latentsky.scale_analysis.system_table) whose (row,col) centroid falls
+    in that piece's actual held-out test blocks (always populated
+    regardless of role: truth centroid for match/miss, pred centroid for
+    false_alarm -- see scale_analysis.match_systems). Shared by both the
+    regression (evaluate_run_systems) and diffusion
+    (evaluate_run_systems_diffusion) evaluation paths -- diffusion is
+    warm-started from a patch-split regression run and shares the same
+    train/test patch assignment, so it needs the identical filter."""
+    import numpy as np
+    if df.empty:
+        return df
+    cfg = run.config
+    P = cfg.patch_size
+    probe = np.load(f"{cfg.pieces_dir}/{cfg.input_vars[0]}_piece00.npy", mmap_mode="r")
+    _, H, W = probe.shape
+    nrows, ncols = compute_patch_grid(H, W, P)
+    _, _, test_blocks = make_patch_split(
+        cfg.n_total_pieces, nrows, ncols, cfg.patch_split_seed,
+        cfg.patch_split_train_frac, cfg.patch_split_val_frac,
+    )
+    keep = np.zeros(len(df), dtype=bool)
+    for pid, sub in df.groupby("piece"):
+        blocks = set(blocks_for_piece(test_blocks, pid))
+        if not blocks:
+            continue
+        prow = (sub["row"].to_numpy() // P).astype(int)
+        pcol = (sub["col"].to_numpy() // P).astype(int)
+        in_test = np.array([(r, c) in blocks for r, c in zip(prow, pcol)])
+        keep[sub.index.to_numpy()] = in_test
+    return df[keep].reset_index(drop=True)

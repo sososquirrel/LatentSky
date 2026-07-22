@@ -22,7 +22,10 @@ regression models.
 """
 from __future__ import annotations
 
+from typing import Iterable
+
 import numpy as np
+import pandas as pd
 import torch
 
 from latentsky.diffusion import GaussianDiffusion
@@ -30,6 +33,7 @@ from latentsky.inference import _load_model, predict_piece
 from latentsky.models import ConditionalDiffusionUNet
 from latentsky.patch_split import compute_patch_grid
 from latentsky.registry import Run, load_run
+from latentsky.scale_analysis import system_table
 
 
 def predict_piece_diffusion(
@@ -114,3 +118,59 @@ def predict_piece_diffusion(
                     Y_pred[t, :, i:i + P, j:j + P] = patch_pred.cpu().numpy()[0]
 
     return X, Y, Y_pred
+
+
+def evaluate_run_systems_diffusion(
+    run: Run,
+    piece_ids: Iterable[int],
+    max_frames_per_piece: int = 2,
+    threshold: float = 0.1,
+    iou_min: float = 0.1,
+    t_start: int = 100,
+    ensemble_size: int = 3,
+    regression_run_name: str | None = None,
+) -> pd.DataFrame:
+    """Diffusion-track equivalent of latentsky.inference.evaluate_run_systems:
+    same output schema (system_table + a `piece` column), so it plugs into
+    the same downstream figure scripts (plot_pod_far_vs_scale.py,
+    plot_scale_decomposition.py, plot_pod_decay.py, plot_tau_vs_scale.py,
+    plot_dln_vs_lead.py, fit_dln_tau_scaling.py -- anything that reads a
+    `--summary`/`--systems` CSV) unmodified.
+
+    Unlike evaluate_run_systems, `piece_ids` has no default -- diffusion
+    sampling is expensive enough (t_start+1 forward passes per patch per
+    frame per ensemble draw) that sweeping the full test-piece set the way
+    regression models do would take far too long; callers must explicitly
+    bound the scope, same spirit as
+    scripts/analysis/sample_and_eval_diffusion_refine.py.
+    """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    cfg = run.config
+    if regression_run_name is None:
+        regression_run_name = f"patchsplit_twohead_olr_fss_lead{cfg.lead_hours:g}h"
+    reg_run = load_run(regression_run_name)
+
+    diff_model = ConditionalDiffusionUNet(
+        cond_ch=cfg.in_channels, base_ch=cfg.base_ch, depth=cfg.depth,
+        dropout_p=cfg.dropout_p, time_emb_dim=cfg.diffusion_time_emb_dim,
+    )
+    diff_model.load_state_dict(torch.load(run.checkpoint_path, map_location=device))
+    diff_model = diff_model.to(device).eval()
+    diffusion = GaussianDiffusion(cfg.diffusion_timesteps, cfg.diffusion_schedule, device=device)
+    reg_model = _load_model(reg_run, device)
+
+    frames = []
+    for pid in piece_ids:
+        X, Y, Yp = predict_piece_diffusion(
+            run, pid, max_frames=max_frames_per_piece,
+            regression_run_name=regression_run_name, t_start=t_start,
+            ensemble_size=ensemble_size, device=device,
+            diff_model=diff_model, diffusion=diffusion, reg_model=reg_model,
+        )
+        df = system_table(Y, Yp, threshold=threshold, iou_min=iou_min)
+        if not df.empty:
+            df.insert(0, "piece", pid)
+            frames.append(df)
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
