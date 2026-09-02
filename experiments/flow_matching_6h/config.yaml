@@ -7,7 +7,7 @@ depth: 5
 time_emb_dim: 128
 patch_size: 128
 batch_size: 64
-num_epochs: 45
+num_epochs: 32
 patience: 8
 lr: 2.0e-4
 weight_decay: 1.0e-5

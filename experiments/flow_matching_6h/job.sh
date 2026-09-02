@@ -3,7 +3,7 @@
 #PBS -A UCLB0066
 #PBS -q casper
 #PBS -l select=1:ncpus=4:mem=64GB:ngpus=1:gpu_type=a100
-#PBS -l walltime=11:30:00
+#PBS -l walltime=07:00:00
 #PBS -j oe
 #PBS -o /glade/derecho/scratch/sabramian/logs/ls_flow6h.log
 set -euo pipefail
