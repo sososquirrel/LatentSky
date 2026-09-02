@@ -229,5 +229,37 @@ def main():
     print(info)
 
 
+def fig_error_maps():
+    """Error maps truth − model, shared symlog scale; reads example_fields.npz
+    so it runs on a login node without the GPU pipeline."""
+    from matplotlib.colors import SymLogNorm
+    d = np.load(OUT / "example_fields.npz")
+    truth, det, draw = d["truth"], d["det"], d["final"]
+    e_det, e_diff = truth - det, truth - draw
+    lim = max(float(np.abs(e_det).max()), float(np.abs(e_diff).max()), 0.5)
+    norm = SymLogNorm(linthresh=0.1, vmin=-lim, vmax=lim)
+    plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
+    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.1))
+    for ax, e, title, color in [
+        (axes[0], e_det, "truth − two-head (+3 h)", "#2166ac"),
+        (axes[1], e_diff, "truth − diffusion draw 1 (+3 h)", "#b2182b"),
+    ]:
+        im = ax.imshow(e, origin="lower", cmap="RdBu", norm=norm,
+                       interpolation="nearest")
+        ax.set_title(title, fontsize=8, color=color)
+        for sp in ax.spines.values():
+            sp.set_color(color); sp.set_linewidth(2)
+        ax.set_xticks([]); ax.set_yticks([])
+    cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.02)
+    cb.set_label("Δ rain (mm)", fontsize=8)
+    fig.savefig(OUT / "example_error_maps.png", dpi=140, bbox_inches="tight")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if "--errmaps-only" in sys.argv:
+        fig_error_maps()
+    else:
+        main()
+        fig_error_maps()
