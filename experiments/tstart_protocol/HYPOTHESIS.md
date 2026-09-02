@@ -34,8 +34,29 @@ gives only 0.70, and the 3-draw mean pulls it back to 0.64. t_start=100 was orig
 chosen by bulk pixel R² — a double-penalty metric that structurally prefers smooth
 fields; protocol metrics for a generative model must be distributional (spectrum,
 intensity quantiles), computed on single draws.
-**Next:** lead-dependent t_start (Sophie's hypothesis: the noise budget should grow
-with lead). Rule under test in `run_tstart_by_lead.py`: t*(lead) = smallest t with
-(1−ᾱ_t) ≥ ᾱ_t·MSE_z(lead), MSE_z = two-head forecast error in z-space. Then:
-sensitivity on a second piece; adopt in FRAME; rerun the R3 decomposition under the
-new protocol.
+**Part 2 — lead-dependent t_start (jobs 5805622/5805627, `run_tstart_by_lead.py`).**
+Sophie's hypothesis (noise budget grows with lead): *supported in shape, analytic rule
+too weak in magnitude, and a hard ceiling found at 6 h.*
+- Full-field MSE_z rule failed (dry-pixel dilution → t* = 5–25, no gain at
+  verification). Wet-masked MSE_z (mask truth>0.1 ∪ det>0.1) grows monotonically with
+  lead: 0.010/0.014/0.021/0.029/0.035/0.043-ish → rule t* = 56/67/84/100/110/124.
+  Monotone ✓, but ~2–5× below the empirical need, worse at long leads.
+- Empirical band-ratio-to-truth vs t_start (single draws, piece 8):
+  lead 0.25 h crosses 1 near t≈150 (0.97@100, 1.03@250); 1 h near t≈230
+  (0.90@100, 1.02@250); 3 h near t≈550 (0.89@250, 0.96@500); **6 h never crosses —
+  saturates at 0.80 (0.80@500 = 0.80@750)** with a persistent wet-area deficit
+  (0.038 vs truth 0.047, −20 %).
+- Stability ceiling: beyond t≈500 the wet fraction inflates at short leads
+  (1 h: 0.056@500 → 0.21@750) — the one-sided clip drift.
+- **Interpretation:** protocol fixed for ≤3 h (use the empirical t*(lead) table);
+  at 6 h the model itself under-disperses — even with full generative freedom it
+  restores only 80 % of truth's small-scale power and cannot create the missing
+  rainy area. A perfect conditional generative model should restore ~100 % of
+  small-scale variance distributionally even when placement is unpredictable, so
+  this saturation is a real R3-relevant property, not a sampling artifact —
+  unless it is the per-tile chain decoherence capping it (testable: full-mosaic
+  single-chain sampling).
+**Next:** (1) sensitivity: repeat empirical crossings on a second piece;
+(2) full-mosaic sampling test at 6 h to separate model limit from tile decoherence;
+(3) adopt t*(lead) table in FRAME after (1)–(2); (4) re-derive the R3 decomposition
+per-draw (FRAME ensemble scoring rule) under the adopted protocol.
