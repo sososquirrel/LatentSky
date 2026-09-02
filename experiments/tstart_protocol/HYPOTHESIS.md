@@ -56,7 +56,16 @@ too weak in magnitude, and a hard ceiling found at 6 h.*
   this saturation is a real R3-relevant property, not a sampling artifact —
   unless it is the per-tile chain decoherence capping it (testable: full-mosaic
   single-chain sampling).
+**Part 3 — full-mosaic coherence test at 6 h (job 5805633,
+`run_fullmosaic_6h.py`): tile decoherence exonerated.** One reverse chain over the
+whole 256×1408 field (fully convolutional, 4 frames): band ratio 0.756 at t_start=500
+and 0.625 at 750 — no better than tiled (0.80), wet fraction lower still (0.030–0.032
+vs truth 0.047). The 6 h saturation is a property of the trained conditional model
+(under-dispersion given 6-h-stale conditioning), not of per-tile sampling. (Full-field
+inference also takes the net outside its 128-px training statistics, which may explain
+the slight degradation — either way, no unlock.)
 **Next:** (1) sensitivity: repeat empirical crossings on a second piece;
-(2) full-mosaic sampling test at 6 h to separate model limit from tile decoherence;
-(3) adopt t*(lead) table in FRAME after (1)–(2); (4) re-derive the R3 decomposition
-per-draw (FRAME ensemble scoring rule) under the adopted protocol.
+(2) adopt the t*(lead) table in FRAME after (1); (3) re-derive the R3 decomposition
+per-draw (FRAME ensemble scoring rule) under the adopted protocol — expecting the 6 h
+under-dispersion to appear as a genuine, reportable limit of the model class
+comparison.
