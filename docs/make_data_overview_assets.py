@@ -59,7 +59,7 @@ def grid_lines(ax):
 def fig_domain():
     pw = load("precipw")
     fig, ax = plt.subplots(figsize=(10.5, 2.9))
-    im = ax.imshow(pw, origin="lower", cmap="RdBu_r", vmin=-3, vmax=3,
+    im = ax.imshow(pw, origin="lower", cmap="BrBG", vmin=-3, vmax=3,
                    interpolation="nearest", aspect="equal",
                    extent=[0, W, 0, H])
     add_coastlines(ax)
