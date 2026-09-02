@@ -145,10 +145,14 @@ def fig_split():
             ax.add_patch(Rectangle((c * P, r * P), P, P,
                                    fc=COL[role(PIECE, r, c)], ec="0.2", lw=0.6,
                                    alpha=0.55))
+            ax.text(c * P + P / 2, r * P + P / 2, str(r * NC + c),
+                    ha="center", va="center", fontsize=9, color="0.15",
+                    fontweight="bold")
     ax.axhspan(NR * P, H, color="0.5", alpha=0.5, lw=0)
     ax.axvspan(NC * P, W, color="0.5", alpha=0.5, lw=0)
     ax.set_xticks([]); ax.set_yticks([])
-    ax.set_title(f"piece {PIECE}: block assignment over the domain", fontsize=9)
+    ax.set_title(f"piece {PIECE} (day {PIECE + 1} of the 40-day DYAMOND record): "
+                 "block assignment, numbered as in the matrix below", fontsize=9)
 
     # bottom: full 40-day assignment matrix
     ax2 = fig.add_subplot(gs[1])
@@ -159,8 +163,9 @@ def fig_split():
             for c in range(NC):
                 mat[p, r * NC + c] = to_rgb(COL[role(p, r, c)])
     ax2.imshow(mat, aspect="auto", interpolation="nearest", origin="lower")
-    ax2.set_xlabel("block index (row·11 + col)", fontsize=8)
-    ax2.set_ylabel("piece (day)", fontsize=8)
+    ax2.set_xticks(range(0, NR * NC, 2))
+    ax2.set_xlabel("block index (row·11 + col, as numbered above)", fontsize=8)
+    ax2.set_ylabel("piece = day of record", fontsize=8)
     ax2.set_title("all 880 blocks: every day contributes to every split", fontsize=9)
     ax2.legend(handles=[Patch(fc=COL["train"], ec="0.3", label="train 616"),
                         Patch(fc=COL["val"], label="val 132"),
