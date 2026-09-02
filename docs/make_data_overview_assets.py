@@ -60,7 +60,7 @@ def fig_domain():
     pw = load("precipw")
     fig, ax = plt.subplots(figsize=(10.5, 2.9))
     im = ax.imshow(pw, origin="lower", cmap="RdBu_r", vmin=-3, vmax=3,
-                   interpolation="nearest", aspect="auto",
+                   interpolation="nearest", aspect="equal",
                    extent=[0, W, 0, H])
     add_coastlines(ax)
     grid_lines(ax)
@@ -81,14 +81,25 @@ def fig_domain():
 def fig_sample_channels():
     r, c = BLOCK
     sl = np.s_[r * P:(r + 1) * P, c * P:(c + 1) * P]
+    cmaps = {
+        "precipw": "BrBG", "mse_500hPa": "BrBG", "mse_850hPa": "BrBG",
+        "t2m": "RdYlBu_r", "olrtoa": "Greys",
+        "uzonal_500hPa": "RdBu_r", "uzonal_850hPa": "RdBu_r",
+        "umeridional_500hPa": "RdBu_r", "umeridional_850hPa": "RdBu_r",
+        "rain_log1p": "Blues",
+    }
     fig, axes = plt.subplots(3, 4, figsize=(11.2, 7.6))
     axes = axes.ravel()
     for i, v in enumerate(INPUT_VARS):
         f = load(v)[sl]
-        lim = max(float(np.abs(f).max()), 1e-6)
-        im = axes[i].imshow(f, origin="lower", cmap="RdBu_r", vmin=-lim, vmax=lim,
-                            interpolation="nearest")
-        axes[i].set_title(f"in {i}: {v}", fontsize=8)
+        if v == "rain_log1p":
+            kw = dict(vmin=float(f.min()), vmax=float(f.max()))
+        else:
+            lim = max(float(np.abs(f).max()), 1e-6)
+            kw = dict(vmin=-lim, vmax=lim)
+        im = axes[i].imshow(f, origin="lower", cmap=cmaps[v],
+                            interpolation="nearest", **kw)
+        axes[i].set_title(v, fontsize=8)
         axes[i].set_xticks([]); axes[i].set_yticks([])
         cb = fig.colorbar(im, ax=axes[i], fraction=0.046, pad=0.03)
         cb.ax.tick_params(labelsize=6)
@@ -127,7 +138,7 @@ def fig_split():
     ax = fig.add_subplot(gs[0])
     pw = load("precipw")
     ax.imshow(pw, origin="lower", cmap="Greys", vmin=-3, vmax=3,
-              interpolation="nearest", aspect="auto", extent=[0, W, 0, H], alpha=0.55)
+              interpolation="nearest", aspect="equal", extent=[0, W, 0, H], alpha=0.55)
     add_coastlines(ax, color="0.05", lw=0.7)
     for r in range(NR):
         for c in range(NC):
