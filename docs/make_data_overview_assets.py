@@ -120,7 +120,16 @@ def fig_sample_channels():
     axes[10].set_xticks([]); axes[10].set_yticks([])
     cb = fig.colorbar(imt, ax=axes[10], fraction=0.046, pad=0.03)
     cb.ax.tick_params(labelsize=6)
-    axes[11].axis("off")
+    from matplotlib.colors import SymLogNorm
+    diff = y - rain_now
+    dlim = max(float(np.abs(diff).max()), 0.5)
+    imd = axes[11].imshow(diff, origin="lower", cmap="RdBu",
+                          norm=SymLogNorm(linthresh=0.1, vmin=-dlim, vmax=dlim),
+                          interpolation="nearest")
+    axes[11].set_title("Δ rain: target − now (mm)", fontsize=8)
+    axes[11].set_xticks([]); axes[11].set_yticks([])
+    cb = fig.colorbar(imd, ax=axes[11], fraction=0.046, pad=0.03)
+    cb.ax.tick_params(labelsize=6)
     fig.suptitle(f"one training sample — piece {PIECE}, frame {FRAME}, block {BLOCK} — "
                  "each panel on its own scale (z-score for inputs, mm for the target)",
                  fontsize=10, y=0.995)
