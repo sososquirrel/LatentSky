@@ -350,6 +350,87 @@ loss at kernel sizes <span class="mono">[1, 3, 5, 11, 19, 33] px</span> (derived
 paper's own L = √A scale bins at 27.8 km/px), wet threshold 0.1 mm, sigmoid sharpness
 20 — penalizes misplaced rainy fractions at each analysis scale.</li>
 </ul>
+<figure style="margin:1.6rem 0">
+<svg viewBox="0 0 940 322" role="img" style="max-width:100%;height:auto;font-family:'IBM Plex Mono',monospace"
+     aria-label="The multi-scale FSS loss. Left: a predicted storm displaced from the true one shares no pixels, so a pixel loss penalizes it twice, but within a neighborhood window both fields have the same wet fraction. Right: the computation — prediction and truth become soft and hard wet masks at 0.1 millimeters, both are average-pooled at six kernel sizes matching the paper's scale bins, and the mean squared difference of the wet-fraction maps is averaged over scales into the loss term.">
+  <defs>
+    <marker id="arrf" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <!-- left: double-penalty intuition -->
+  <g stroke="currentColor" stroke-width="0.7" opacity="0.35">
+    <path d="M40,60 h180 M40,90 h180 M40,120 h180 M40,150 h180 M40,180 h180 M40,210 h180 M40,240 h180"/>
+    <path d="M40,60 v180 M70,60 v180 M100,60 v180 M130,60 v180 M160,60 v180 M190,60 v180 M220,60 v180"/>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="70"  y="120" width="30" height="30"/>
+    <rect x="70"  y="150" width="30" height="30"/>
+    <rect x="100" y="120" width="30" height="30"/>
+    <rect x="100" y="150" width="30" height="30"/>
+  </g>
+  <g style="fill:var(--det)" opacity="0.55">
+    <rect x="160" y="120" width="30" height="30"/>
+    <rect x="160" y="150" width="30" height="30"/>
+    <rect x="190" y="120" width="30" height="30"/>
+    <rect x="190" y="150" width="30" height="30"/>
+  </g>
+  <rect x="37" y="117" width="186" height="66" fill="none" stroke="currentColor"
+        stroke-width="1.2" stroke-dasharray="6 4"/>
+  <g fill="currentColor" font-size="11.5">
+    <text x="40" y="46">truth (outline) vs prediction (blue),</text>
+    <text x="40" y="30" font-size="12.5">Why fractions: a displaced storm</text>
+    <text x="40" y="262">pixel loss: 8 errors (miss + false alarm)</text>
+    <text x="40" y="280">wet fraction in dashed window: 4/12 = 4/12 ✓</text>
+  </g>
+  <!-- right: the computation -->
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="330" y="40"  width="170" height="44" style="stroke:var(--det);stroke-width:1.6"/>
+    <rect x="330" y="120" width="170" height="44"/>
+    <rect x="540" y="40"  width="185" height="44"/>
+    <rect x="540" y="120" width="185" height="44"/>
+    <rect x="760" y="62"  width="165" height="60"/>
+    <rect x="760" y="180" width="165" height="44"/>
+    <rect x="760" y="258" width="165" height="44"/>
+    <line x1="500" y1="62"  x2="538" y2="62"  marker-end="url(#arrf)"/>
+    <line x1="500" y1="142" x2="538" y2="142" marker-end="url(#arrf)"/>
+    <line x1="725" y1="62"  x2="758" y2="80"  marker-end="url(#arrf)"/>
+    <line x1="725" y1="142" x2="758" y2="110" marker-end="url(#arrf)"/>
+    <line x1="842" y1="122" x2="842" y2="178" marker-end="url(#arrf)"/>
+    <line x1="842" y1="224" x2="842" y2="256" marker-end="url(#arrf)"/>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle">
+    <text x="415" y="58">rain prediction</text>
+    <text x="415" y="74">(mm)</text>
+    <text x="415" y="138">truth (mm)</text>
+    <text x="415" y="154"> </text>
+    <text x="632" y="58">soft wet mask</text>
+    <text x="632" y="74">σ((p−0.1)·20)</text>
+    <text x="632" y="138">hard wet mask</text>
+    <text x="632" y="154">1[y &gt; 0.1]</text>
+    <text x="842" y="86">avg-pool k×k →</text>
+    <text x="842" y="102">local wet fraction</text>
+    <text x="842" y="198">MSE(p_frac, t_frac)</text>
+    <text x="842" y="214">per scale k</text>
+    <text x="842" y="276">mean over 6 scales</text>
+    <text x="842" y="292">→ fss · 0.25</text>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle">
+    <text x="842" y="140">k = 1·3·5·11·19·33 px</text>
+    <text x="842" y="156">≙ L bins ≈ 28–900 km</text>
+  </g>
+</svg>
+<figcaption style="font-size:.85rem;color:var(--muted);max-width:72ch">
+The FSS term compares neighborhood wet <em>fractions</em> instead of pixels. Left: a
+storm predicted two cells east of truth shares no pixels — a pixel loss counts it twice
+(miss and false alarm) — yet inside the dashed window both fields rain over the same
+fraction of the area, so the FSS term at that scale is satisfied. Right: the
+computation. Small kernels still demand fine placement; large kernels only demand the
+right rainy fraction per region, and the six kernel sizes are the paper's own L = √A
+scale bins, so the loss and the τ(L) evaluation share one scale vocabulary.
+</figcaption>
+</figure>
+
 <p>Validation losses below are this combined total and are <b>not comparable</b> to the
 plain masked MSE of the one-head variant.</p>
 
