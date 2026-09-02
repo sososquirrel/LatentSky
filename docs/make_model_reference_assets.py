@@ -236,13 +236,16 @@ def fig_error_maps():
     d = np.load(OUT / "example_fields.npz")
     truth, det, draw = d["truth"], d["det"], d["final"]
     e_det, e_diff = truth - det, truth - draw
-    lim = max(float(np.abs(e_det).max()), float(np.abs(e_diff).max()), 0.5)
+    e_ref = draw - det
+    lim = max(float(np.abs(e_det).max()), float(np.abs(e_diff).max()),
+              float(np.abs(e_ref).max()), 0.5)
     norm = SymLogNorm(linthresh=0.1, vmin=-lim, vmax=lim)
     plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
-    fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.1))
+    fig, axes = plt.subplots(1, 3, figsize=(11.2, 3.1))
     for ax, e, title, color in [
         (axes[0], e_det, "truth − two-head (+3 h)", "#2166ac"),
         (axes[1], e_diff, "truth − diffusion draw 1 (+3 h)", "#b2182b"),
+        (axes[2], e_ref, "diffusion draw 1 − two-head (+3 h)", "#1a1a1a"),
     ]:
         im = ax.imshow(e, origin="lower", cmap="RdBu", norm=norm,
                        interpolation="nearest")
