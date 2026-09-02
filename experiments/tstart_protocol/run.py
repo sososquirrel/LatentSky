@@ -30,7 +30,10 @@ SCALE = 2.0
 CLIP = (0.0, 2.5)
 PIECE = 8
 FRAMES = list(range(8, 96 - DELTA, 16))  # 6 frames
-T_STARTS = [50, 100, 250, 500, 999]
+# 999 was measured in the first run (job 5805615: band ratio 98, wet 94% —
+# recorded in metrics.csv@be4d013 and HYPOTHESIS.md) and is dropped from the
+# figure: it sits orders of magnitude off-scale and flattens every other curve.
+T_STARTS = [50, 100, 250, 500]
 KM_PER_PX = 27.8
 SMALL_SCALE_KM = 1000.0
 H_USE, W_USE = 256, 1408  # 2x11 tiles
@@ -157,16 +160,20 @@ def main():
     for r in rows:
         print(r, flush=True)
 
-    # spectra figure
+    # spectra figure (+ save the mean spectra so replots never need the GPU)
     plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
     fig, ax = plt.subplots(figsize=(5.4, 3.8))
+    spectra_out = {}
     for n, style in [("truth", dict(color="k", lw=2)), ("two-head", dict(color="#2166ac", ls="--"))] + \
                     [(f"ts{ts}", dict(alpha=0.85)) for ts in T_STARTS] + \
                     [("ts100_mean3", dict(color="#2166ac", ls=":", alpha=0.9))]:
         specs = [radial_spectrum(f) for f in fields[n]]
         k = specs[0][0]
         p = np.nanmean([s[1] for s in specs], axis=0)
+        spectra_out[n] = p
+        spectra_out["k"] = k
         ax.loglog(1.0 / k, p, label=n, **style)
+    np.savez(OUT / "spectra.npz", **spectra_out)
     ax.axvline(SMALL_SCALE_KM, color="0.6", lw=0.8, ls=":")
     ax.set_xlabel("wavelength (km)"); ax.set_ylabel("power")
     ax.set_title("lead 3 h, piece 8, 6 frames — single draws")
@@ -175,7 +182,7 @@ def main():
     plt.close(fig)
 
     # montage of one frame
-    show = ["truth", "two-head", "ts100", "ts250", "ts500", "ts999"]
+    show = ["truth", "two-head", "ts100", "ts250", "ts500"]
     vmax = max(fields["truth"][3].max(), 1.0)
     norm = LogNorm(vmin=0.1, vmax=vmax)
     cmap = plt.get_cmap("Blues").copy(); cmap.set_under("#f7f9fb")
