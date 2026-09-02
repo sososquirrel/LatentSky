@@ -51,7 +51,16 @@ diffusion model gains over a deterministic one.
   (`predict_piece_diffusion`, ensemble_size = 3) averaged draws before scoring, so all
   legacy diffusion CSVs — including the R3 draft numbers — are error-of-the-mean and
   must be re-derived per-draw.
-- **Diffusion sampling protocol (adopted 2026-09-02;
+- **Canonical generative representative (adopted 2026-09-02 evening,
+  `experiments/flow_matching_6h`)**: the conditional rectified flow — trained to
+  transport (two-head forecast + σ·ε) → truth in log-rain space, per-lead σ = the
+  measured wet-masked forecast error rms, sampled with 32 Heun ODE steps, single
+  draws scored per-draw. Verdict at 6 h: band ratio 1.115, wet +1.5 % vs truth —
+  clears the SDEdit ceiling (0.80–0.85, −20 % area); the DDPM's 6 h limit was its
+  sampler's train/test mismatch, not an informational limit. R3 compares two-head vs
+  flow; the SDEdit DDPM with the t*(lead) table below becomes a sampling-protocol
+  sensitivity.
+- **SDEdit/DDPM sampling protocol (measured 2026-09-02;
   `experiments/tstart_protocol` + `sensitivity_tests/tstart_protocol_piece20`)**:
   warm start from the two-head forecast; single draws, scored per-draw;
   lead-dependent noise budget from the measured band-ratio crossings —

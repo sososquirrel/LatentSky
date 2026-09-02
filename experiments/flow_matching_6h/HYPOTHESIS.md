@@ -24,7 +24,15 @@ and wet fraction against the recorded SDEdit values. Model code:
 `src/latentsky/models/flow.py` (tested).
 
 **Config:** config.yaml
-**Outcome:** <filled after the run>
-**Next:** if supported → retrain the remaining five leads and make the flow the
-canonical generative representative for R3; if falsified → keep SDEdit + t*(lead),
-and report the informational limit as an R3 finding.
+**Outcome (2026-09-02, job 5805787): SUPPORTED, decisively.** Early stop at epoch ~24
+(best val velocity-MSE 0.0047). Single draws, 32 Heun steps, piece-8 frames
+[8,24,40,56]: **band ratio 1.115** (per frame 1.09–1.16) and **wet fraction 0.0477 vs
+truth 0.0470 (+1.5 %)** — against the SDEdit ceiling of 0.80–0.85 with −20 % wet area.
+The 6 h limit was the SDEdit train/test mismatch, not an informational limit: the
+natively-trained transport restores both the small-scale variance and the missing rainy
+area. Mild small-scale over-dispersion (+11 %) noted — candidate sensitivity: σ ×½/×2
+and step count; do not tune before the R3 re-derivation baseline exists.
+**Next:** remaining five leads already training (jobs 5809905–09, per-lead σ);
+flow adopted as R3's canonical generative representative (FRAME.md updated); SDEdit +
+t*(lead) demoted to sampling-protocol sensitivity. Then: metrics rebuild and the
+per-draw R1–R3 re-derivation.
