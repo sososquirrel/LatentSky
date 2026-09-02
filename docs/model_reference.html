@@ -1,0 +1,380 @@
+<title>LatentSky Model Reference</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#fbfcfd; --ink:#1c2026; --muted:#5c6672; --line:#dbe1e8;
+  --det:#2166ac; --det-soft:#eaf1f8; --diff:#b2182b; --diff-soft:#f9edee;
+  --amber:#b05e0a; --card:#f3f6f9; --code:#eef1f5;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14181d; --ink:#e6eaef; --muted:#98a2ad; --line:#2c333b;
+    --det:#6ba3d6; --det-soft:#1a2530; --diff:#d9727c; --diff-soft:#2b1d20;
+    --amber:#dd9c4e; --card:#1b2027; --code:#1e242b;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14181d; --ink:#e6eaef; --muted:#98a2ad; --line:#2c333b;
+  --det:#6ba3d6; --det-soft:#1a2530; --diff:#d9727c; --diff-soft:#2b1d20;
+  --amber:#dd9c4e; --card:#1b2027; --code:#1e242b;
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper); color:var(--ink);
+  font:400 16px/1.65 "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  margin:0; padding:0 20px 6rem;
+}
+main{max-width:960px; margin:0 auto}
+h1,h2,h3{font-family:"Source Serif 4", Georgia, serif; text-wrap:balance; line-height:1.25}
+h1{font-size:2.4rem; font-weight:700; margin:3.5rem 0 .4rem}
+h2{font-size:1.55rem; font-weight:600; margin:3.2rem 0 .8rem}
+h3{font-size:1.15rem; font-weight:600; margin:2rem 0 .5rem}
+p,li{max-width:72ch}
+.dek{font-size:1.12rem; color:var(--muted); max-width:65ch; margin:.2rem 0 1.4rem}
+a{color:var(--det)}
+code,.mono{font-family:"IBM Plex Mono", ui-monospace, Menlo, monospace; font-size:.86em}
+code{background:var(--code); padding:.1em .35em; border-radius:3px}
+pre{background:var(--code); border:1px solid var(--line); border-radius:6px;
+    padding: .9rem 1.1rem; overflow-x:auto; max-width:100%; line-height:1.55}
+pre code{background:none; padding:0}
+.provenance{
+  display:flex; flex-wrap:wrap; gap:.4rem 1.6rem; padding:.8rem 0; margin-bottom:1rem;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  font-size:.83rem; color:var(--muted);
+}
+.provenance .mono{font-size:.83rem}
+.toc{font-size:.95rem; columns:2; column-gap:3rem; max-width:60ch; padding-left:1.2rem; margin:0 0 1rem}
+.toc li{margin:.15rem 0}
+@media (max-width:560px){.toc{columns:1}}
+section.model{border-left:3px solid var(--line); padding-left:1.6rem; margin-left:-1.6rem}
+@media (max-width:1080px){section.model{margin-left:0; padding-left:1.2rem}}
+section.det{border-left-color:var(--det)}
+section.diff{border-left-color:var(--diff)}
+.tag{display:inline-block; font:600 .72rem/1 "Source Sans 3",sans-serif; letter-spacing:.08em;
+     text-transform:uppercase; padding:.3em .6em; border-radius:3px; vertical-align:.25em}
+.tag.det{color:var(--det); background:var(--det-soft)}
+.tag.diff{color:var(--diff); background:var(--diff-soft)}
+.tablewrap{overflow-x:auto; margin:1rem 0}
+table{border-collapse:collapse; font-size:.92rem; min-width:480px}
+caption{caption-side:top; text-align:left; font-size:.83rem; color:var(--muted); padding-bottom:.4rem}
+th{font:600 .78rem/1.3 "Source Sans 3",sans-serif; letter-spacing:.06em; text-transform:uppercase;
+   color:var(--muted); text-align:left; padding:.45rem .9rem .45rem 0; border-bottom:2px solid var(--ink)}
+td{padding:.42rem .9rem .42rem 0; border-bottom:1px solid var(--line); vertical-align:top}
+td.num, th.num{text-align:right; font-variant-numeric:tabular-nums}
+td .mono{white-space:nowrap}
+.spec td:first-child{color:var(--muted); width:15rem}
+.note{background:var(--card); border:1px solid var(--line); border-radius:6px;
+      padding:.9rem 1.1rem; max-width:72ch; margin:1.2rem 0; font-size:.95rem}
+.note b:first-child{color:var(--amber)}
+.flow{display:flex; flex-wrap:wrap; align-items:stretch; gap:.5rem; margin:1.2rem 0; font-size:.85rem}
+.flow .step{background:var(--card); border:1px solid var(--line); border-radius:6px;
+            padding:.55rem .8rem; max-width:15rem}
+.flow .step b{display:block; font-family:"IBM Plex Mono",monospace; font-size:.8rem; font-weight:500}
+.flow .arr{align-self:center; color:var(--muted); font-size:1.1rem}
+footer{margin-top:4rem; padding-top:1rem; border-top:1px solid var(--line);
+       font-size:.83rem; color:var(--muted); max-width:72ch}
+:focus-visible{outline:2px solid var(--det); outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<main>
+<h1>LatentSky Model Reference</h1>
+<p class="dek">The complete recipe for the canonical model pair of the LatentSky paper:
+the deterministic one-head U-Net and the conditional diffusion model, trained on the same
+DYAMOND data, the same ten input channels, and the same leakage-safe patch split, at six
+lead times from 15 minutes to 6 hours.</p>
+
+<div class="provenance">
+  <span>Compiled <span class="mono">2026-09-02</span> from run manifests and training source</span>
+  <span>Deterministic runs at <span class="mono">63cb2db7</span></span>
+  <span>Diffusion runs at <span class="mono">9cdba900</span></span>
+  <span>Env <span class="mono">python 3.11 · torch 2.6.0+cu124 · numpy 2.4.3 · 1× A100</span></span>
+</div>
+
+<ol class="toc">
+  <li><a href="#data">Data and preprocessing</a></li>
+  <li><a href="#split">Train / val / test split</a></li>
+  <li><a href="#det">Deterministic model</a></li>
+  <li><a href="#diffusion">Diffusion model</a></li>
+  <li><a href="#sampling">Diffusion sampling at inference</a></li>
+  <li><a href="#repro">Step-by-step reproduction</a></li>
+</ol>
+
+<h2 id="data">1 · Data and preprocessing</h2>
+
+<h3>Source fields</h3>
+<p>The dataset is a continuous ~40-day global storm-resolving DYAMOND integration,
+regridded to a regular 0.25° grid over the tropical belt <b>40°S–40°N</b> and split into
+<b>40 daily "pieces"</b>. Each variable is stored as one NumPy file per day,
+<code>&lt;variable&gt;_piece{00..39}.npy</code>, of shape
+<b>(96, 320, 1440) float32</b>: 96 frames of 15 minutes (24 h), 320 latitude rows ×
+1440 longitude columns (≈ 27.8 km meridional grid spacing). Files live in
+<code>/glade/derecho/scratch/sabramian/latentsky_pieces/</code> and are memory-mapped at
+load time.</p>
+
+<h3>Input channels and target</h3>
+<p>Both models take the identical <b>10 input channels</b>, stacked in this exact order
+(channel index matters: OLR conditioning and pretraining masks address channels by
+position):</p>
+<div class="tablewrap"><table>
+<thead><tr><th class="num">#</th><th>Channel</th><th>Field</th></tr></thead>
+<tbody>
+<tr><td class="num">0</td><td class="mono">precipw</td><td>precipitable water</td></tr>
+<tr><td class="num">1</td><td class="mono">t2m</td><td>2-m temperature</td></tr>
+<tr><td class="num">2</td><td class="mono">olrtoa</td><td>outgoing longwave radiation, top of atmosphere</td></tr>
+<tr><td class="num">3</td><td class="mono">mse_500hPa</td><td>moist static energy, 500 hPa</td></tr>
+<tr><td class="num">4</td><td class="mono">mse_850hPa</td><td>moist static energy, 850 hPa</td></tr>
+<tr><td class="num">5</td><td class="mono">uzonal_500hPa</td><td>zonal wind, 500 hPa</td></tr>
+<tr><td class="num">6</td><td class="mono">uzonal_850hPa</td><td>zonal wind, 850 hPa</td></tr>
+<tr><td class="num">7</td><td class="mono">umeridional_500hPa</td><td>meridional wind, 500 hPa</td></tr>
+<tr><td class="num">8</td><td class="mono">umeridional_850hPa</td><td>meridional wind, 850 hPa</td></tr>
+<tr><td class="num">9</td><td class="mono">rain_log1p</td><td>log1p of current rain — the persistence forecast as an input</td></tr>
+</tbody></table></div>
+
+<p>The target is <code>rain_total</code> (mm) at the requested lead, a single channel.
+The <code>rain_log1p</code> input is a deliberate design choice, not leakage: every model
+receives the persistence forecast as one of its channels, so the persistence null is
+nested — any skill above persistence is information the model added. Other variables
+exist in the piece store (<span class="mono">relhum, temperature, w</span> at 500/850 hPa)
+but are not used by the canonical models.</p>
+
+<div class="note"><b>No input normalization.</b> The data pipeline applies no
+standardization, scaling, or anomaly removal to the inputs — raw float32 physical fields
+enter the network as stored in the piece files. The only transform anywhere is on the
+diffusion target (§4). GroupNorm inside the network absorbs the channel-scale
+differences.</div>
+
+<h3>Lead-time construction</h3>
+<p>A lead is specified as <code>lead_steps_15</code>, the number of 15-min frames
+(1 h lead = 4). Inputs and targets are paired by a time slip of
+<code>delta_index = lead_steps_15 + 1</code> frames: <span class="mono">X[0 : T−δ]</span>
+pairs with <span class="mono">Y[δ : T]</span>. The <b>+1 corrects a known one-frame offset
+in the raw piece files</b> (raw <span class="mono">X[i]</span> is simultaneous with raw
+<span class="mono">Y[i+1]</span>); the effective physical lead is
+<code>lead_steps_15 × 15 min</code>. Six leads are trained per family:
+<b>0.25, 0.5, 1, 2, 3, 6 h</b> (steps 1, 2, 4, 8, 12, 24).</p>
+
+<h3>Patch tiling</h3>
+<p>Training samples are <b>128 × 128 non-overlapping patches</b> tiled from each frame:
+a 2 × 11 grid of 22 blocks per frame (320 // 128 = 2, 1440 // 128 = 11). The remainder —
+the last 64 latitude rows and 32 longitude columns — is excluded from training and, by
+the same convention, left at zero in tiled inference. Batches are 64 patches; each patch
+carries all 10 channels.</p>
+
+<h2 id="split">2 · Train / val / test split</h2>
+<p>Both model families use the identical <b>patch-level split</b>. The split unit is a
+block <span class="mono">(piece, row, col)</span> — one 128-px tile location on one day,
+kept together across all 96 frames of that day. The 40 × 22 = <b>880 blocks</b> are
+shuffled with <code>random.Random(1919810)</code> and cut
+<b>70 / 15 / 15 → 616 train, 132 val, 132 test blocks</b>. Two properties make this
+leakage-safe:</p>
+<ul>
+<li>Blocks never overlap (stride = patch size), so no pixel appears in two splits.</li>
+<li>All frames of one block stay in one split, so 15-min temporal autocorrelation cannot
+leak across splits at a fixed location.</li>
+</ul>
+<p>The accepted residual risk: a storm straddling the border of two adjacent blocks
+assigned to different splits. Evaluation restricts object statistics to systems whose
+centroid falls in a held-out test block
+(<code>patch_split.restrict_to_patch_test_blocks</code>).</p>
+<div class="note"><b>Manifest pitfall.</b> The diffusion run manifests record
+<code>split_mode: "piece"</code>. That field is an unused config default:
+<code>train_diffusion.py</code> ignores it and always builds the patch split above with
+the same seed and fractions. Both families are on the identical split; trust the code
+path, not the manifest field.</div>
+<p>One epoch visits the 40 pieces in a shuffled order
+(<code>random.Random(seed + epoch)</code>); each piece is read from disk once and
+contributes its train-assigned and val-assigned patches in the same pass.</p>
+
+<section class="model det">
+<h2 id="det">3 · Deterministic model <span class="tag det">one-head U-Net</span></h2>
+
+<h3>Architecture — <span class="mono">UNet2D</span></h3>
+<div class="tablewrap"><table class="spec">
+<tbody>
+<tr><td>Input / output</td><td>10 channels, 128×128 → 1 channel rain field</td></tr>
+<tr><td>Encoder</td><td>5 stages of DoubleConv (two 3×3 conv → GroupNorm → ReLU → Dropout2d 0.05), channels 64 → 128 → 256 → 512 → 1024, MaxPool 2× between stages</td></tr>
+<tr><td>Bottleneck</td><td>DoubleConv to 2048 channels at 4×4</td></tr>
+<tr><td>Decoder</td><td>5 stages: ConvTranspose2d (kernel 2, stride 2) up, concat skip, DoubleConv back down to 64</td></tr>
+<tr><td>Normalization</td><td>GroupNorm, 8 groups (reduced to divide the channel count), conv bias off</td></tr>
+<tr><td>Output head</td><td>1×1 conv → Softplus (β = 1, threshold 20): rain is non-negative by construction</td></tr>
+<tr><td>Parameters</td><td class="mono">124.4 M</td></tr>
+</tbody></table></div>
+
+<h3>Loss</h3>
+<p><b>MSE on wet pixels only.</b> The mask is <span class="mono">y_true &gt; 0</span>;
+the loss is <code>MSELoss()(pred[mask], y[mask])</code>, in raw mm. Dry pixels
+contribute no gradient, and a batch with no wet pixel is skipped entirely. This
+asymmetry — the model is never trained on dry pixels — is a documented property of the
+model class, not an accident, and it shapes the detection behavior the paper analyzes.</p>
+
+<h3>Training schedule</h3>
+<div class="tablewrap"><table class="spec">
+<tbody>
+<tr><td>Optimizer</td><td class="mono">AdamW(lr=1e-3, weight_decay=1e-5)</td></tr>
+<tr><td>LR schedule</td><td><span class="mono">StepLR(step_size=8, gamma=0.5)</span>, stepped per epoch</td></tr>
+<tr><td>Batch / patch</td><td>64 × (10, 128, 128), shuffled, 4 loader workers, pinned memory</td></tr>
+<tr><td>Epoch budget</td><td>155 max; early stop after 10 epochs without val improvement</td></tr>
+<tr><td>Checkpointing</td><td>best-val-loss <code>state_dict</code> only (DataParallel-unwrapped)</td></tr>
+<tr><td>Seed</td><td><span class="mono">1919810</span> for python / numpy / torch / cuda</td></tr>
+<tr><td>Memory format</td><td><code>channels_last</code> for model and batches; DataParallel if &gt; 1 GPU (production runs: 1× A100)</td></tr>
+</tbody></table></div>
+
+<div class="tablewrap"><table>
+<caption>Trained runs (family <span class="mono">unet_models/one_head/10var/patchsplit_onehead_lead*</span>, git 63cb2db7, finished 2026-07-22)</caption>
+<thead><tr><th>Lead</th><th class="num">Epochs to stop</th><th class="num">Best val masked MSE</th></tr></thead>
+<tbody>
+<tr><td>0.25 h</td><td class="num">77</td><td class="num">0.01120</td></tr>
+<tr><td>0.5 h</td><td class="num">84</td><td class="num">0.01736</td></tr>
+<tr><td>1 h</td><td class="num">77</td><td class="num">0.02802</td></tr>
+<tr><td>2 h</td><td class="num">67</td><td class="num">0.04348</td></tr>
+<tr><td>3 h</td><td class="num">29</td><td class="num">0.05346</td></tr>
+<tr><td>6 h</td><td class="num">35</td><td class="num">0.06922</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="model diff">
+<h2 id="diffusion">4 · Diffusion model <span class="tag diff">conditional DDPM</span></h2>
+
+<h3>Target transform</h3>
+<p>The diffusion state is not rain but
+<code>x₀ = log1p(rain_total) / 2.0</code> — roughly unit range (a 22 mm event maps to
+x₀ ≈ 1.6). Samples are inverted with <code>rain = expm1(2.0 · x₀)</code>. Unlike the
+deterministic loss there is <b>no wet-pixel masking</b>: the ε-loss covers the whole
+field, so the diffusion model does train on dry pixels.</p>
+
+<h3>Architecture — <span class="mono">ConditionalDiffusionUNet</span></h3>
+<div class="tablewrap"><table class="spec">
+<tbody>
+<tr><td>Input</td><td>noisy target x<sub>t</sub> (1 ch) ⧺ the 10 conditioning channels = 11 channels, 128×128</td></tr>
+<tr><td>Backbone</td><td>same DoubleConv encoder–decoder as UNet2D: depth 5, base 64, bottleneck 2048, GroupNorm(8), dropout 0.05</td></tr>
+<tr><td>Time conditioning</td><td>sinusoidal embedding of t (dim 128) → MLP to 512, then per-level FiLM: a Linear per encoder stage, bottleneck, and decoder stage produces (γ, β) that modulate the feature map after each DoubleConv</td></tr>
+<tr><td>Output</td><td>1×1 conv → predicted noise ε̂, no activation</td></tr>
+<tr><td>Parameters</td><td class="mono">130.9 M</td></tr>
+</tbody></table></div>
+
+<h3>Forward process and loss</h3>
+<p>Standard DDPM with <b>T = 1000</b> timesteps on the <b>cosine schedule</b>
+(Nichol &amp; Dhariwal 2021; β clipped to [10⁻⁴, 0.999]). Per batch: draw
+<span class="mono">t ~ U{0, …, 999}</span> per sample, noise
+<span class="mono">x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε</span>, and minimize
+<code>MSE(ε̂(x_t, cond, t), ε)</code>.</p>
+
+<h3>Training schedule</h3>
+<p>Identical to the deterministic schedule except the learning rate:
+<code>AdamW(lr=2e-4, weight_decay=1e-5)</code>, StepLR(8, 0.5), batch 64,
+patch 128, ≤ 155 epochs, patience 10, seed 1919810, best-val checkpointing, single
+GPU.</p>
+
+<div class="tablewrap"><table>
+<caption>Trained runs (family <span class="mono">gen_models/10var/diffusion_lead*</span>, git 9cdba900, finished 2026-07-21; the 3 h run predates SHA recording, 2026-07-19)</caption>
+<thead><tr><th>Lead</th><th class="num">Epochs to stop</th><th class="num">Best val ε-MSE</th></tr></thead>
+<tbody>
+<tr><td>0.25 h</td><td class="num">47</td><td class="num">0.00442</td></tr>
+<tr><td>0.5 h</td><td class="num">47</td><td class="num">0.00550</td></tr>
+<tr><td>1 h</td><td class="num">29</td><td class="num">0.00697</td></tr>
+<tr><td>2 h</td><td class="num">37</td><td class="num">0.00761</td></tr>
+<tr><td>3 h</td><td class="num">41</td><td class="num">0.00826</td></tr>
+<tr><td>6 h</td><td class="num">29</td><td class="num">0.00918</td></tr>
+</tbody></table></div>
+</section>
+
+<h2 id="sampling">5 · Diffusion sampling at inference</h2>
+<p>The canonical evaluation does <b>not</b> sample from pure noise. It uses SDEdit-style
+warm-started ancestral sampling (<code>GaussianDiffusion.ddpm_refine_sample</code>),
+per 128-px tile, per frame:</p>
+
+<div class="flow">
+  <div class="step"><b>regression predict</b>one-head UNet2D forecast at the same lead → x₀_init = log1p(clamp(pred, 0)) / 2</div>
+  <div class="arr">→</div>
+  <div class="step"><b>forward-noise</b>q_sample to t_start = 100</div>
+  <div class="arr">→</div>
+  <div class="step"><b>reverse loop</b>t = 100 … 0: predict ε̂, form x₀ estimate, clamp to (0, 2.5), posterior-mean step, noise_scale = 1</div>
+  <div class="arr">→</div>
+  <div class="step"><b>ensemble mean</b>3 draws, each expm1(2·x₀), averaged, clamped ≥ 0</div>
+</div>
+
+<p>Rationale and cost: warm-starting takes the "is it raining, roughly how much"
+structure from the independently validated regression and bounds compounding drift to
+t_start + 1 = 101 network evaluations per draw (vs 1000 from pure noise). Pure-noise
+ancestral sampling and DDIM both exist in the code; DDIM's x₀-parameterization is
+numerically unstable at high noise (≈ 2×10⁴ error amplification near t = 999), which is
+why the posterior-mean form is used. A t_start sweep on bulk pixel metrics degraded R²
+from 0.39 (t_start = 50) to 0.31 (t_start = 400); production uses
+<b>t_start = 100, ensemble = 3</b> (the per-frame prediction API defaults to 150 / 5 —
+the evaluation entry point overrides them). The per-step x₀ clamp to (0, 2.5) is a hard
+physical floor (rain ≥ 0) plus a generous ceiling (≈ 147 mm) set from the training-data
+x₀ distribution.</p>
+
+<div class="note"><b>Warm-start source.</b> Per the paper frame, the canonical warm start
+is the <em>one-head</em> regression run at the same lead
+(<span class="mono">patchsplit_onehead_lead*</span>), passed as
+<code>regression_run_name</code>. The code's default value for that argument is the
+two-head run name — always pass it explicitly.</div>
+
+<h2 id="repro">6 · Step-by-step reproduction</h2>
+<ol>
+<li><b>Environment.</b> Python 3.11, PyTorch 2.6.0+cu124, NumPy 2.4.3, one NVIDIA A100.
+On Derecho: conda env at
+<span class="mono">/glade/work/sabramian/conda-envs/latentsky-env</span>, with the env's
+bundled NVIDIA libraries on <code>LD_LIBRARY_PATH</code> (see the repo Makefile or
+<span class="mono">experiments/_template/job.sh</span>).</li>
+<li><b>Data.</b> Piece files for the 10 input variables plus <code>rain_total</code>,
+named <span class="mono">&lt;var&gt;_pieceNN.npy</span>, shape (96, 320, 1440) float32,
+in one directory (<code>pieces_dir</code>).</li>
+<li><b>Config.</b> One YAML per run. The canonical deterministic config, in full:
+<pre><code>name: patchsplit_onehead_lead1h
+input_vars: [precipw, t2m, olrtoa, mse_500hPa, mse_850hPa,
+             uzonal_500hPa, uzonal_850hPa, umeridional_500hPa,
+             umeridional_850hPa, rain_log1p]
+lead_steps_15: 4          # 1 h; use 1,2,4,8,12,24 for the six leads
+target_prefix: rain_total
+base_ch: 64
+depth: 5
+dropout_p: 0.05
+out_activation: softplus
+patch_size: 128
+batch_size: 64
+num_epochs: 155
+patience: 10
+lr: 1.0e-3                # 2.0e-4 for diffusion
+weight_decay: 1.0e-5
+lr_step: 8
+lr_gamma: 0.5
+seed: 1919810
+split_mode: patch         # read by train.py; train_diffusion.py always patch-splits
+patch_split_seed: 1919810
+patch_split_train_frac: 0.7
+patch_split_val_frac: 0.15
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+n_total_pieces: 40
+# diffusion runs additionally use:
+diffusion_timesteps: 1000
+diffusion_schedule: cosine
+diffusion_time_emb_dim: 128
+diffusion_target_scale: 2.0</code></pre></li>
+<li><b>Train.</b> <code>python -m latentsky.train --config configs/&lt;name&gt;.yaml</code>
+for the deterministic model, <code>python -m latentsky.train_diffusion --config …</code>
+for the diffusion model. Each run writes <span class="mono">manifest.json</span> (full
+config + git SHA + loss history), <span class="mono">checkpoint.pt</span> (best-val
+weights), <span class="mono">train.log</span>, and <span class="mono">loss.png</span>.
+Wall clock on one A100: hours per run (12 h queue allocation was sufficient for every
+run including the 84-epoch one).</li>
+<li><b>Verify.</b> The repo's <code>tests/test_models.py</code> loads both canonical
+checkpoints with <code>load_state_dict(strict=True)</code> — an architecture that
+key-matches those checkpoints is the architecture described here.</li>
+<li><b>Predict.</b> Deterministic: one forward pass per 128-px tile, softplus output is
+rain in mm. Diffusion: the warm-started sampler of §5 with t_start = 100, ensemble 3,
+conditioned on the same 10 channels.</li>
+</ol>
+
+<footer>
+<p>Trained weights: <span class="mono">/glade/derecho/scratch/sabramian/LatentSky_runs/
+unet_models/one_head/10var/patchsplit_onehead_lead{0.25,0.5,1,2,3,6}h/checkpoint.pt</span>
+and <span class="mono">…/LatentSky_runs/gen_models/10var/diffusion_lead*/checkpoint.pt</span>.
+Source of record: <span class="mono">src/latentsky/models/</span> (recovered, tested) and
+the archived trainers <span class="mono">_archive/latentsky/{train,train_diffusion,data,
+patch_split,config}.py</span>. Frame and definitions: <span class="mono">docs/FRAME.md</span>.</p>
+</footer>
+</main>

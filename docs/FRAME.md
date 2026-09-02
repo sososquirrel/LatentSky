@@ -22,12 +22,11 @@ diffusion model gains over a deterministic one.
 - **Canonical model pair (R3)**: deterministic = patch-split one-head regression;
   diffusion = the diffusion model on the same one-head backbone, same split.
   The two-head model is not canonical; comparing against it is a sensitivity test.
-  *Known blocker (found 2026-09-02)*: all six trained diffusion runs
-  (`gen_models/10var/diffusion_lead*`) use the pre-fix leaky day split
-  (`split_mode: piece`, test pieces [2,12,22,32]) while the one-head runs use the
-  patch split — the pair is not yet trained on a common leakage-safe split.
-  R3 requires retraining diffusion with `split_mode: patch` (in scope: retraining
-  R1–R3 require is allowed).
+  *Split note (2026-09-02, corrected same day)*: the diffusion manifests say
+  `split_mode: piece`, but `train_diffusion.py` ignores that field and always builds
+  the patch split (same seed 1919810, same 70/15/15) — both canonical families are
+  trained on the *identical* leakage-safe patch split. No retraining needed;
+  the manifest field is misleading, not the training.
 - **Inputs (all models)**: 10 channels at 15-min resolution — `precipw`, `t2m`,
   `olrtoa`, `mse_500hPa`, `mse_850hPa`, `uzonal_500hPa`, `uzonal_850hPa`,
   `umeridional_500hPa`, `umeridional_850hPa`, `rain_log1p`; target `rain_total`
