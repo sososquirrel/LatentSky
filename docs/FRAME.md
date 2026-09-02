@@ -22,6 +22,12 @@ diffusion model gains over a deterministic one.
 - **Canonical model pair (R3)**: deterministic = patch-split one-head regression;
   diffusion = the diffusion model on the same one-head backbone, same split.
   The two-head model is not canonical; comparing against it is a sensitivity test.
+  *Known blocker (found 2026-09-02)*: all six trained diffusion runs
+  (`gen_models/10var/diffusion_lead*`) use the pre-fix leaky day split
+  (`split_mode: piece`, test pieces [2,12,22,32]) while the one-head runs use the
+  patch split — the pair is not yet trained on a common leakage-safe split.
+  R3 requires retraining diffusion with `split_mode: patch` (in scope: retraining
+  R1–R3 require is allowed).
 - **Null** = persistence, evaluated under *identical* object detection and matching.
 
 ## Part 1 — Predictability horizon and model class (core, direct comparison)
