@@ -222,11 +222,14 @@ contributes its train-assigned and val-assigned patches in the same pass.</p>
 </tbody></table></div>
 
 <figure style="margin:1.6rem 0">
-<svg viewBox="0 0 940 408" role="img" style="max-width:100%;height:auto;font-family:'IBM Plex Mono',monospace"
-     aria-label="U-Net trunk shared by both models: five encoder stages from 64 channels at 128 squared down to 1024 channels at 8 squared, a 2048-channel bottleneck at 4 squared, and a mirrored decoder with skip concatenations at every resolution.">
+<svg viewBox="0 0 940 442" role="img" style="max-width:100%;height:auto;font-family:'IBM Plex Mono',monospace"
+     aria-label="The two-head U-Net: five encoder stages from 64 channels at 128 squared down to 1024 at 8 squared, a 2048-channel bottleneck at 4 squared modulated by OLR FiLM conditioning, a mirrored decoder with skip concatenations, and two parallel output heads — a softplus rain head in millimeters and a wet/dry logit head.">
   <defs>
     <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
       <path d="M0,0 L8,4 L0,8 z" fill="currentColor"/>
+    </marker>
+    <marker id="arrd" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" style="fill:var(--det)"/>
     </marker>
   </defs>
   <g fill="none" stroke="currentColor" stroke-width="1.2">
@@ -265,9 +268,25 @@ contributes its train-assigned and val-assigned patches in the same pass.</p>
       <line x1="282" y1="247" x2="658" y2="247" marker-end="url(#arr)"/>
       <line x1="282" y1="305" x2="658" y2="305" marker-end="url(#arr)"/>
     </g>
-    <!-- input / output -->
+    <!-- input -->
     <line x1="215" y1="20" x2="215" y2="54" marker-end="url(#arr)"/>
-    <line x1="725" y1="56" x2="725" y2="22" marker-end="url(#arr)"/>
+  </g>
+  <!-- two-head additions (deterministic color) -->
+  <g fill="none" style="stroke:var(--det)" stroke-width="1.6">
+    <rect x="812" y="34" width="118" height="36"/>
+    <rect x="812" y="92" width="118" height="36"/>
+    <line x1="792" y1="66" x2="810" y2="52" marker-end="url(#arrd)"/>
+    <line x1="792" y1="80" x2="810" y2="110" marker-end="url(#arrd)"/>
+    <polyline points="330,420 440,420 440,390" stroke-dasharray="5 4" marker-end="url(#arrd)"/>
+  </g>
+  <g style="fill:var(--det)" font-size="11.5" text-anchor="middle">
+    <text x="871" y="49">rain head</text>
+    <text x="871" y="63">softplus → mm</text>
+    <text x="871" y="107">wet/dry head</text>
+    <text x="871" y="121">logits</text>
+  </g>
+  <g style="fill:var(--det)" font-size="11.5">
+    <text x="40" y="424">OLR (ch 2) → [mean, min] → FiLM (γ, β)</text>
   </g>
   <g fill="currentColor" font-size="12.5" text-anchor="middle">
     <text x="215" y="78">64 ch</text>
@@ -282,8 +301,7 @@ contributes its train-assigned and val-assigned patches in the same pass.</p>
     <text x="725" y="252">512 ch</text>
     <text x="725" y="310">1024 ch</text>
     <text x="470" y="65"  font-size="11.5">skip, concat</text>
-    <text x="305" y="16" text-anchor="start">input C_in @ 128×128</text>
-    <text x="640" y="16" text-anchor="end">head: 1×1 conv (§3/§4)</text>
+    <text x="305" y="16" text-anchor="start">input 10 ch @ 128×128</text>
   </g>
   <g fill="currentColor" font-size="11.5" text-anchor="end">
     <text x="140" y="78">128²</text>
@@ -308,10 +326,12 @@ contributes its train-assigned and val-assigned patches in the same pass.</p>
   </g>
 </svg>
 <figcaption style="font-size:.85rem;color:var(--muted);max-width:72ch">
-The U-Net trunk both models share. Every box is a DoubleConv (two 3×3 conv →
-GroupNorm(8) → ReLU → Dropout 0.05); rows are spatial resolutions for a 128-px patch.
-The models differ only at the edges of this trunk: the input channel count, the output
-head, and — for diffusion — a FiLM(t) modulation inserted after every box (§4).
+The two-head U-Net. Black is the trunk both models share — every box a DoubleConv
+(two 3×3 conv → GroupNorm(8) → ReLU → Dropout 0.05), rows the spatial resolutions of a
+128-px patch. Blue marks the two-head's own edges: the parallel 1×1-conv heads (rain via
+softplus, wet/dry as logits) and the OLR-FiLM modulation of the bottleneck. The diffusion
+model keeps the trunk but swaps these edges for its own: an 11-channel input (noisy state
+⧺ conditioning), FiLM(t) after every box, and a single unactivated ε̂ head (§4).
 </figcaption>
 </figure>
 
