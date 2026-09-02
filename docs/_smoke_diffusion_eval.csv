@@ -1,2 +1,0 @@
-predictor_set,eval_set,R2_all,RMSE,n_pixels,n_pieces,ensemble_size
-diffusion,patchsplit_test_blocks,-45004.975658376476,10.837217052828189,16384,1,1
