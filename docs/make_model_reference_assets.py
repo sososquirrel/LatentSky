@@ -196,14 +196,23 @@ def main():
     plt.close(fig)
 
     # figure 3: final side-by-side comparison — three individual draws, never
-    # the mean (FRAME ensemble scoring rule)
+    # the mean (FRAME ensemble scoring rule). Frames color-coded by family:
+    # gray persistence, blue deterministic, rust diffusion, black truth
+    # (same encoding as the reference page).
+    def framed(ax, field, title, color):
+        im = panel(ax, field, title)
+        ax.set_title(title, fontsize=8, color=color)
+        for s in ax.spines.values():
+            s.set_visible(True); s.set_color(color); s.set_linewidth(2.2)
+        return im
+
     dmm = [to_mm(d) for d in draws]
     fig, axes = plt.subplots(1, 6, figsize=(13.8, 2.4))
-    panel(axes[0], persist, "rain now (persistence)")
-    panel(axes[1], det_mm, "two-head (+3 h)")
+    framed(axes[0], persist, "rain now (persistence)", "#7a7a7a")
+    framed(axes[1], det_mm, "two-head (+3 h)", "#2166ac")
     for j in range(3):
-        panel(axes[2 + j], dmm[j], f"diffusion draw {j + 1} (+3 h)")
-    im = panel(axes[5], truth, "truth (+3 h)")
+        framed(axes[2 + j], dmm[j], f"diffusion draw {j + 1} (+3 h)", "#b2182b")
+    im = framed(axes[5], truth, "truth (+3 h)", "#1a1a1a")
     cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.015)
     cb.set_label("rain (mm)", fontsize=8)
     fig.savefig(OUT / "example_compare.png", dpi=140, bbox_inches="tight")
