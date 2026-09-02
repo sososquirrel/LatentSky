@@ -88,25 +88,32 @@ def fig_sample_channels():
         "umeridional_500hPa": "RdBu_r", "umeridional_850hPa": "RdBu_r",
         "rain_log1p": "Blues",
     }
+    y = load("rain_total", t=FRAME + DELTA)[sl]
+    # rain_log1p inverted to mm with the recovered standardization constants
+    # (model_reference §1), so it shares the target's exact color scale:
+    # equal color = equal rain.
+    rl = load("rain_log1p")[sl]
+    rain_now = np.clip(np.expm1(rl * 0.118232 + 0.023456), 0, None)
+    rain_norm = LogNorm(vmin=0.1, vmax=max(float(y.max()), float(rain_now.max()), 0.5))
+
     fig, axes = plt.subplots(3, 4, figsize=(11.2, 7.6))
     axes = axes.ravel()
     for i, v in enumerate(INPUT_VARS):
-        f = load(v)[sl]
         if v == "rain_log1p":
-            kw = dict(vmin=float(f.min()), vmax=float(f.max()))
+            im = axes[i].imshow(rain_now, origin="lower", cmap="Blues",
+                                norm=rain_norm, interpolation="nearest")
+            axes[i].set_title("rain_log1p → rain now (mm)", fontsize=8)
         else:
+            f = load(v)[sl]
             lim = max(float(np.abs(f).max()), 1e-6)
-            kw = dict(vmin=-lim, vmax=lim)
-        im = axes[i].imshow(f, origin="lower", cmap=cmaps[v],
-                            interpolation="nearest", **kw)
-        axes[i].set_title(v, fontsize=8)
+            im = axes[i].imshow(f, origin="lower", cmap=cmaps[v],
+                                interpolation="nearest", vmin=-lim, vmax=lim)
+            axes[i].set_title(v, fontsize=8)
         axes[i].set_xticks([]); axes[i].set_yticks([])
         cb = fig.colorbar(im, ax=axes[i], fraction=0.046, pad=0.03)
         cb.ax.tick_params(labelsize=6)
-    y = load("rain_total", t=FRAME + DELTA)[sl]
     imt = axes[10].imshow(y, origin="lower", cmap="Blues",
-                          norm=LogNorm(vmin=0.1, vmax=max(float(y.max()), 0.5)),
-                          interpolation="nearest")
+                          norm=rain_norm, interpolation="nearest")
     axes[10].set_title("target: rain_total (+3 h, mm)", fontsize=8, color="#b2182b")
     for s in axes[10].spines.values():
         s.set_color("#b2182b"); s.set_linewidth(2)
