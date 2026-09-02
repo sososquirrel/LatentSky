@@ -178,23 +178,19 @@ def main():
     fig.savefig(OUT / "example_context.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
 
-    # figure 2: denoising trajectory — row 1 the chain state x_t, row 2 the
-    # model's running x0 estimate, both anchored at the two-head forecast.
+    # figure 2: the refinement trajectory — one row, only the model's implied
+    # clean answer x0_hat(t), anchored at the forecast and ending at the draw.
+    # The noisy chain states are mechanics; they live in the SVG training
+    # schematic, not here.
     snap_x0_mm = {tt: to_mm(v) for tt, v in snaps_x0.items()}
-    ts_sorted = sorted(snap_mm, reverse=True)
-    ncol = len(ts_sorted) + 2
-    fig, axes = plt.subplots(2, ncol, figsize=(2.0 * ncol, 4.4))
-    panel(axes[0, 0], det_mm, "two-head forecast\n(warm-start input)")
-    for j, tt in enumerate(ts_sorted, start=1):
-        panel(axes[0, j], snap_mm[tt], f"state $x_t$, t={tt}")
-    im = panel(axes[0, ncol - 1], final_mm, "draw at t=0")
-    axes[1, 0].axis("off")
-    axes[1, 0].text(0.5, 0.5, "model's running\nestimate of the rain\n" r"$\hat{x}_0(t)\ \rightarrow$",
-                    ha="center", va="center", fontsize=8, transform=axes[1, 0].transAxes)
-    for j, tt in enumerate(ts_sorted, start=1):
-        panel(axes[1, j], snap_x0_mm[tt], f"$\\hat{{x}}_0$ at t={tt}")
-    im = panel(axes[1, ncol - 1], to_mm(draws[1]), "draw 2 (t=0)")
-    cb = fig.colorbar(im, ax=axes, shrink=0.8, pad=0.015)
+    ts_sorted = sorted(snap_x0_mm, reverse=True)
+    fields = [("two-head forecast\n(the starting answer)", det_mm)]
+    fields += [(f"answer after denoising\nto t={tt}", snap_x0_mm[tt]) for tt in ts_sorted]
+    fields += [("final draw (t=0)", final_mm)]
+    fig, axes = plt.subplots(1, len(fields), figsize=(2.05 * len(fields), 2.5))
+    for ax, (title, f) in zip(axes, fields):
+        im = panel(ax, f, title)
+    cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.015)
     cb.set_label("rain (mm)", fontsize=8)
     fig.savefig(OUT / "example_denoise.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
