@@ -71,8 +71,9 @@ In practice this means:
   temporal autocorrelation (fixed 2026-07-16: buffered block-day split, or the
   patch-level split). Results from the old split — including every draft number in
   FRAME.md — are provenance for `draft` status only and must be re-derived.
-- **Precipitation as an input channel is persistence leakage** — out of scope, see
-  FRAME.md.
+- **The `rain_log1p` input channel is deliberate, not leakage.** Every model is handed
+  the persistence forecast as an input, so the null is nested by design (FRAME.md
+  Definitions). Do not "fix" it; the 9var-vs-10var ablation is a separate study.
 
 ## Environment
 

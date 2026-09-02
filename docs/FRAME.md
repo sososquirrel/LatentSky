@@ -28,6 +28,14 @@ diffusion model gains over a deterministic one.
   patch split — the pair is not yet trained on a common leakage-safe split.
   R3 requires retraining diffusion with `split_mode: patch` (in scope: retraining
   R1–R3 require is allowed).
+- **Inputs (all models)**: 10 channels at 15-min resolution — `precipw`, `t2m`,
+  `olrtoa`, `mse_500hPa`, `mse_850hPa`, `uzonal_500hPa`, `uzonal_850hPa`,
+  `umeridional_500hPa`, `umeridional_850hPa`, `rain_log1p`; target `rain_total`
+  at the given lead. The current-rain channel `rain_log1p` is *deliberate*: the
+  model receives the persistence forecast as an input, so the null is nested —
+  any skill above persistence is information the model added, not information it
+  lacked. (Empirically this does not make beating persistence automatic in every
+  metric: see the IoU-matching pitfall in CLAUDE.md.)
 - **Null** = persistence, evaluated under *identical* object detection and matching.
 
 ## Part 1 — Predictability horizon and model class (core, direct comparison)
@@ -80,7 +88,9 @@ Status values (R only): `draft` → `tested` (experiment done) → `robust` (sen
 ## Out of scope for this paper
 
 - Ranking LatentSky against WB2 models (different data, resolution, leads).
-- Precipitation as an input channel to LatentSky (persistence leakage; separate study).
+- The rain-input ablation (9var vs 10var: how much skill comes from the `rain_log1p`
+  channel; separate study — the channel itself is a deliberate design choice, see
+  Definitions).
 - Architecture changes or retraining beyond what R1–R3 require.
 - Case studies of individual events.
 
