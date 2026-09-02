@@ -38,7 +38,9 @@ def z_of(rain_mm: torch.Tensor) -> torch.Tensor:
 
 
 def main():
-    cfg = yaml.safe_load(open(HERE / "config.yaml"))
+    cfg_path = Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "config.yaml"
+    cfg = yaml.safe_load(open(cfg_path))
+    print(f"config: {cfg_path.name} — {cfg['name']}", flush=True)
     device = torch.device("cuda")
     random.seed(cfg["seed"]); np.random.seed(cfg["seed"])
     torch.manual_seed(cfg["seed"]); torch.cuda.manual_seed_all(cfg["seed"])
@@ -79,7 +81,7 @@ def main():
 
     best_val, patience_ctr = float("inf"), 0
     hist = {"train": [], "val": []}
-    ckpt = HERE / "checkpoint.pt"
+    ckpt = HERE / (cfg["name"] + ".checkpoint.pt")
     for epoch in range(cfg["num_epochs"]):
         order = list(range(cfg["n_total_pieces"]))
         random.Random(cfg["seed"] + epoch).shuffle(order)
@@ -123,7 +125,7 @@ def main():
 
     json.dump({"config": cfg, "loss_history": hist, "best_val": best_val,
                "finished_at": datetime.now().isoformat(timespec="seconds")},
-              open(HERE / "manifest.json", "w"), indent=2)
+              open(HERE / (cfg["name"] + ".manifest.json"), "w"), indent=2)
 
     # ---- evaluation against the SDEdit ceiling ----
     net.load_state_dict(torch.load(ckpt, map_location=device, weights_only=True))
@@ -147,7 +149,7 @@ def main():
     ratio = float(np.mean(bands) / np.mean(truth_bands))
     wet = float(np.mean(wets))
     twet = float(np.mean([( np.asarray(np.load(f"{cfg['pieces_dir']}/rain_total_piece{cfg['eval_piece']:02d}.npy", mmap_mode='r')[t + delta], dtype=np.float32)[:256,:1408] > 0.1).mean() for t in cfg["eval_frames"]]))
-    print(f"FLOW 6h: band_ratio={ratio:.3f} wet={wet:.4f} truth_wet={twet:.4f} "
+    print(f"FLOW {cfg['lead_steps_15']*0.25:g}h: band_ratio={ratio:.3f} wet={wet:.4f} truth_wet={twet:.4f} "
           f"(SDEdit ceiling: 0.80-0.85, wet -20%)", flush=True)
 
 
