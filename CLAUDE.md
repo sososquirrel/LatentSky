@@ -37,6 +37,7 @@ In practice this means:
 - Prefer one clean figure that carries the argument over four that decorate it.
   Figures are typography-forward: one message per panel, axis labels with units,
   log axes where the physics is a power law, no chartjunk.
+  Every figure script starts with `plt.style.use("docs/latentsky.mplstyle")`.
 - Short paragraphs, one idea each. Equations when they clarify, not to impress.
 
 ## Repository rules
@@ -59,10 +60,29 @@ In practice this means:
   finishes, run `/journal`. Every experiment — including failed ones — is documented with
   motivation, setup, numerical result and conclusion. Past entries are never edited.
 
+## Known pitfalls (checked before any claim)
+
+- **Persistence cheats loose IoU matching.** Storms are long-lived, so an old storm
+  often still overlaps its past self at IoU ≥ 0.1; persistence therefore wins
+  object-level detection at short leads while losing pixel-level intensity badly
+  (2026-07 baseline study). Any T(L) claim states the null under identical matching
+  and, in a sensitivity test, a tighter IoU threshold.
+- **Only leakage-safe splits are citable.** The original day-level split leaked through
+  temporal autocorrelation (fixed 2026-07-16: buffered block-day split, or the
+  patch-level split). Results from the old split — including every draft number in
+  FRAME.md — are provenance for `draft` status only and must be re-derived.
+- **Precipitation as an input channel is persistence leakage** — out of scope, see
+  FRAME.md.
+
 ## Environment
 
 - Cluster: NCAR Derecho/Casper (user `sabramian`). GPU jobs via PBS (`qsub`), see
-  `experiments/_template/job.sh`. Run heavy work on compute nodes, never on login nodes.
+  `experiments/_template/job.sh`: project `UCLB0066`, queue `main` with
+  `gpu_type=a100`; use `-q develop` for short (< 1 h) jobs.
+  Run heavy work on compute nodes, never on login nodes.
+- Scratch layout (`/glade/derecho/scratch/sabramian/`): `LatentSky_runs/` checkpoints
+  and run outputs, `latentsky_pieces/` DYAMOND piece files, `latentsky/` = `data/`
+  symlink target for evaluation tables and figures' inputs.
 - Python env: conda `latentsky-env` at `/glade/work/sabramian/conda-envs/latentsky-env`.
   In PBS jobs call its `bin/python` directly (see `experiments/_template/job.sh`);
   do not create a `.venv` or pip-install into base.

@@ -8,3 +8,4 @@ docs/scale_systems_diffusion_oneheadbackbone.csv.gz
 docs/scale_systems_diffusion_manytoone.csv.gz
 docs/scale_systems_onehead_patchsplit.csv.gz
 data
+*.egg-info/
