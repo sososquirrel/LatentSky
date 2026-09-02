@@ -163,6 +163,11 @@ def fig_split():
             for c in range(NC):
                 mat[p, r * NC + c] = to_rgb(COL[role(p, r, c)])
     ax2.imshow(mat, aspect="auto", interpolation="nearest", origin="lower")
+    ax2.add_patch(Rectangle((-0.5, PIECE - 0.5), NR * NC, 1, fill=False,
+                            ec="#b2182b", lw=1.8, zorder=5))
+    ax2.annotate(f"day {PIECE + 1} (top panel)", xy=(NR * NC - 0.5, PIECE),
+                 xytext=(NR * NC + 0.4, PIECE), color="#b2182b", fontsize=8,
+                 va="center", annotation_clip=False)
     ax2.set_xticks(range(0, NR * NC, 2))
     ax2.set_xlabel("block index (row·11 + col, as numbered above)", fontsize=8)
     ax2.set_ylabel("piece = day of record", fontsize=8)
