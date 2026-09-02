@@ -186,6 +186,21 @@ def main():
     fig.savefig(OUT / "example_denoise.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
 
+    # figure 3: final side-by-side comparison
+    fig, axes = plt.subplots(1, 4, figsize=(9.4, 2.5))
+    panel(axes[0], persist, "rain now (persistence)")
+    panel(axes[1], det_mm, "two-head (+1 h)")
+    panel(axes[2], ens_mm, "diffusion, 3-draw mean (+1 h)")
+    im = panel(axes[3], truth, "truth (+1 h)")
+    cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.015)
+    cb.set_label("rain (mm)", fontsize=8)
+    fig.savefig(OUT / "example_compare.png", dpi=140, bbox_inches="tight")
+    plt.close(fig)
+
+    np.savez_compressed(OUT / "example_fields.npz", persist=persist, truth=truth,
+                        det=det_mm, final=final_mm, ens=ens_mm,
+                        **{f"state_{tt}": v for tt, v in snap_mm.items()})
+
     info = dict(piece=pid, frame=t, block=(r, c),
                 truth_max=float(truth.max()), det_max=float(det_mm.max()),
                 final_max=float(final_mm.max()), vmax=float(vmax))
