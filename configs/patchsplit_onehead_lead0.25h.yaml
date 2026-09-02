@@ -1,0 +1,40 @@
+# Patch-level split experiment, single-head regression -- the missing
+# architecture-only control for patchsplit_twohead_olr_fss_lead0.25h.yaml:
+# identical input_vars/architecture/patch-split settings/hyperparameters,
+# only two_head=false (plain masked-MSE loss, no OLR-FiLM conditioning, no
+# BCE/FSS terms) so any skill difference vs the two-head run isolates the
+# architecture, not a difference in split, inputs, or training schedule.
+name: patchsplit_onehead_lead0.25h
+input_vars:
+  - precipw
+  - t2m
+  - olrtoa
+  - mse_500hPa
+  - mse_850hPa
+  - uzonal_500hPa
+  - uzonal_850hPa
+  - umeridional_500hPa
+  - umeridional_850hPa
+  - rain_log1p
+target_prefix: rain_total
+residual: false
+lead_steps_15: 1          # 0.25h
+
+base_ch: 64
+depth: 5
+out_activation: softplus
+
+patch_size: 128
+patch_stride: null         # must be non-overlapping for split_mode=patch
+batch_size: 64
+num_epochs: 155
+patience: 10
+pieces_dir: /glade/derecho/scratch/sabramian/latentsky_pieces
+
+split_mode: patch
+patch_split_seed: 1919810
+patch_split_train_frac: 0.7
+patch_split_val_frac: 0.15
+# test_frac = 1 - 0.7 - 0.15 = 0.15, held out, unused by this training run
+
+two_head: false

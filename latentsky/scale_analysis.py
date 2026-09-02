@@ -265,6 +265,115 @@ def match_systems(
     return pd.DataFrame(rows, columns=cols)
 
 
+def match_systems_many_to_one(
+    truth: np.ndarray,
+    pred: np.ndarray,
+    threshold: float,
+    area_row: np.ndarray,
+    iou_min: float = 0.1,
+    connectivity: int = 2,
+) -> pd.DataFrame:
+    """Match truth<->pred systems in one frame, but allow MULTIPLE predicted
+    objects to jointly count as the prediction for one truth object, instead
+    of match_systems' strict 1-1 greedy-IoU pairing.
+
+    Motivation: a model that adds real small-scale texture (e.g. diffusion)
+    can split what should be one connected storm into several separate
+    predicted blobs; strict 1-1 matching then only credits whichever single
+    fragment wins the IoU contest, making the matched prediction look
+    systematically undersized -- the mirror image of an oversmoothing model
+    merging several truth systems into one oversized blob (which 1-1
+    matching handles fine, since it's still one predicted object to match).
+
+    Each PREDICTED object is assigned to whichever truth object it overlaps
+    most (so predicted area is never double-counted across two truth
+    systems); every predicted object assigned to a given truth object is
+    then summed into one combined A_p/P_p/rho_p before computing
+    dlnA/dlnrho/dlnP. A truth object whose merged assignment still doesn't
+    clear iou_min counts as a miss (same semantics as match_systems' break
+    on iou < iou_min), and any predicted object not assigned to a
+    sufficiently-matched truth object is a false_alarm.
+
+    Same return schema as match_systems, so it's a drop-in alternative
+    wherever match_systems is called (see system_table's `matching` arg).
+    """
+    lt, tt = label_systems(truth, threshold, area_row, connectivity)
+    lp, tp = label_systems(pred, threshold, area_row, connectivity)
+    nt, npd = len(tt), len(tp)
+    area2d = np.broadcast_to(area_row[:, None], truth.shape)
+
+    rows: list[dict] = []
+    pred_used = np.zeros(npd, dtype=bool)
+
+    if nt and npd:
+        inter = _overlap_matrix(lt, lp, nt, npd, area2d)
+        best_truth_for_pred = np.argmax(inter, axis=0)
+        has_overlap = inter.max(axis=0) > 0
+        At = tt["A"].to_numpy()
+
+        for i in range(nt):
+            rt = tt.iloc[i]
+            assigned = np.where(has_overlap & (best_truth_for_pred == i))[0]
+            if len(assigned) == 0:
+                rows.append(dict(
+                    role="miss", A_t=rt["A"], rho_t=rt["rho"], P_t=rt["P"], L_t=rt["L"],
+                    A_p=np.nan, rho_p=np.nan, P_p=np.nan, L_p=np.nan,
+                    iou=np.nan, scale=rt["L"], dlnA=np.nan, dlnrho=np.nan, dlnP=np.nan,
+                    row=rt["row"], col=rt["col"]))
+                continue
+
+            sub = tp.iloc[assigned]
+            A_p_sum = float(sub["A"].sum())
+            P_p_sum = float(sub["P"].sum())
+            inter_sum = float(inter[i, assigned].sum())
+            union = At[i] + A_p_sum - inter_sum
+            iou_val = inter_sum / union if union > 0 else 0.0
+
+            if iou_val < iou_min:
+                rows.append(dict(
+                    role="miss", A_t=rt["A"], rho_t=rt["rho"], P_t=rt["P"], L_t=rt["L"],
+                    A_p=np.nan, rho_p=np.nan, P_p=np.nan, L_p=np.nan,
+                    iou=np.nan, scale=rt["L"], dlnA=np.nan, dlnrho=np.nan, dlnP=np.nan,
+                    row=rt["row"], col=rt["col"]))
+                continue
+
+            pred_used[assigned] = True
+            rho_p_merged = P_p_sum / A_p_sum if A_p_sum > 0 else np.nan
+            row_p = float(np.average(sub["row"], weights=sub["A"]))
+            col_p = float(np.average(sub["col"], weights=sub["A"]))
+            dlnA = np.log(A_p_sum / rt["A"])
+            dlnrho = np.log(rho_p_merged / rt["rho"])
+            rows.append(dict(
+                role="match", A_t=rt["A"], rho_t=rt["rho"], P_t=rt["P"], L_t=rt["L"],
+                A_p=A_p_sum, rho_p=rho_p_merged, P_p=P_p_sum, L_p=float(np.sqrt(A_p_sum)),
+                iou=float(iou_val), scale=rt["L"],
+                dlnA=dlnA, dlnrho=dlnrho, dlnP=dlnA + dlnrho,
+                row=rt["row"], col=rt["col"], row_p=row_p, col_p=col_p))
+    else:
+        for i in range(nt):
+            rt = tt.iloc[i]
+            rows.append(dict(
+                role="miss", A_t=rt["A"], rho_t=rt["rho"], P_t=rt["P"], L_t=rt["L"],
+                A_p=np.nan, rho_p=np.nan, P_p=np.nan, L_p=np.nan,
+                iou=np.nan, scale=rt["L"], dlnA=np.nan, dlnrho=np.nan, dlnP=np.nan,
+                row=rt["row"], col=rt["col"]))
+
+    for j in range(npd):
+        if pred_used[j]:
+            continue
+        rp = tp.iloc[j]
+        rows.append(dict(
+            role="false_alarm", A_t=np.nan, rho_t=np.nan, P_t=np.nan, L_t=np.nan,
+            A_p=rp["A"], rho_p=rp["rho"], P_p=rp["P"], L_p=rp["L"],
+            iou=np.nan, scale=rp["L"], dlnA=np.nan, dlnrho=np.nan, dlnP=np.nan,
+            row=rp["row"], col=rp["col"]))
+
+    cols = ["role", "A_t", "rho_t", "P_t", "L_t", "A_p", "rho_p", "P_p",
+            "L_p", "iou", "scale", "dlnA", "dlnrho", "dlnP", "row", "col",
+            "row_p", "col_p"]
+    return pd.DataFrame(rows, columns=cols)
+
+
 def system_table(
     Y_true: np.ndarray,
     Y_pred: np.ndarray,
@@ -276,6 +385,7 @@ def system_table(
     frame_day_idx: np.ndarray | None = None,
     frames_per_day: int = 96,
     add_geo: bool = True,
+    matching: str = "greedy",
 ) -> pd.DataFrame:
     """Build the per-system table for a stack of frames.
 
@@ -290,7 +400,14 @@ def system_table(
     `frame_day_idx[t]` is the within-day frame number (0..frames_per_day-1)
     of output frame t, used for the diurnal cycle. Pass None to leave the
     time columns NaN (location columns are still filled).
+
+    `matching`: "greedy" (default, match_systems -- strict 1-1 max-IoU
+    pairing) or "many_to_one" (match_systems_many_to_one -- lets several
+    predicted objects jointly count as the prediction for one truth object,
+    see that function's docstring for why this matters for models that add
+    real small-scale texture, e.g. diffusion).
     """
+    matcher = {"greedy": match_systems, "many_to_one": match_systems_many_to_one}[matching]
     Yt = np.squeeze(np.asarray(Y_true), axis=1) if Y_true.ndim == 4 else np.asarray(Y_true)
     Yp = np.squeeze(np.asarray(Y_pred), axis=1) if Y_pred.ndim == 4 else np.asarray(Y_pred)
     ny = Yt.shape[-2]
@@ -299,7 +416,7 @@ def system_table(
 
     frames = []
     for t in range(Yt.shape[0]):
-        df = match_systems(Yt[t], Yp[t], threshold, area_row, iou_min, connectivity)
+        df = matcher(Yt[t], Yp[t], threshold, area_row, iou_min, connectivity)
         df.insert(0, "frame", t)
         if frame_day_idx is not None:
             df.insert(1, "day_frame", int(frame_day_idx[t]))

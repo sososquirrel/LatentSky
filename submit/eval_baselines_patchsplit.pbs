@@ -1,0 +1,24 @@
+#!/bin/bash
+#PBS -N ls_baselines
+#PBS -A UCLB0066
+#PBS -q main
+#PBS -l select=1:ncpus=8:mem=64GB
+#PBS -l walltime=02:00:00
+#PBS -j oe
+#PBS -o /glade/derecho/scratch/sabramian/logs/ls_baselines.log
+
+# Persistence/climatology/random baselines, scored with the same
+# object-detection scale-decomposition pipeline as the trained runs, on
+# the same patch-split test blocks as patchsplit_onehead_lead*/
+# patchsplit_twohead_olr_fss_lead*/diffusion_lead*. CPU-only -- no model,
+# no GPU needed.
+
+set -euo pipefail
+
+export TMPDIR=/glade/derecho/scratch/sabramian/tmp
+mkdir -p "$TMPDIR"
+export PYTHONPATH="/glade/u/home/sabramian/LatentSky:${PYTHONPATH:-}"
+
+cd /glade/u/home/sabramian/LatentSky
+ENV_PY=/glade/work/sabramian/conda-envs/latentsky-env/bin/python
+$ENV_PY -u scripts/analysis/eval_scale_decomposition_baselines_patchsplit.py

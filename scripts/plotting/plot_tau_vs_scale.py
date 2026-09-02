@@ -43,22 +43,45 @@ def main() -> None:
             raise SystemExit(f"no rows for predictor set {args.predictor_set!r}; available: {opts}")
 
     scales = sorted(df["scale_mid"].unique())
-    pod0 = df[df["lead_h"] == 0.0].set_index("scale_mid")["POD"]
+    has_lead0 = bool((df["lead_h"] == 0.0).any())
+    if has_lead0:
+        pod0 = df[df["lead_h"] == 0.0].set_index("scale_mid")["POD"]
+    else:
+        pod0 = None
+        print(f"note: no lead=0h data for {args.tag} -- normalizing each scale by its "
+              f"own earliest available lead instead of assuming POD(0h)=1", flush=True)
 
-    taus = []
+    TAU_UPPER_BOUND = 200.0  # matches latentsky.fits.fit_exp_decay's default tau_bounds
+    taus, non_monotonic = [], []
     for scale in scales:
         sub = df[df["scale_mid"] == scale].sort_values("lead_h")
         t = sub["lead_h"].values.astype(float)
-        p0 = pod0.get(scale, 1.0)
-        if p0 <= 0:
+        p0 = pod0.get(scale, np.nan) if has_lead0 else sub["POD"].iloc[0]
+        if not np.isfinite(p0) or p0 <= 0:
             taus.append(np.nan)
+            non_monotonic.append(False)
             continue
         norm = (sub["POD"] / p0).values
         taus.append(fit_exp_decay(t, norm)["tau"])
+        # A real single-exponential decay is monotonically non-increasing; POD
+        # rising with lead (small numerical wobble aside) means the data
+        # doesn't actually look exponential, regardless of what tau curve_fit
+        # happened to converge to (same convention as
+        # plot_pod_tau_track_compare.py -- keep both scripts consistent).
+        non_monotonic.append(bool(np.any(np.diff(norm) > 1e-3)))
 
     scale_arr = np.array(scales)
     tau_arr = np.array(taus)
-    reliable = np.isfinite(tau_arr)  # B=0 means 1 parameter, always constrained
+    non_monotonic = np.array(non_monotonic)
+    # B=0 means 1 parameter, always constrained -- but a fit that saturates at the
+    # tau_bounds upper edge (curve_fit ran out of room, not a real decay), or one
+    # fit to data that doesn't actually decay monotonically, is not a reliable
+    # data point for the power-law fit; exclude rather than plot as if solid.
+    saturated = (tau_arr >= TAU_UPPER_BOUND - 1.0) | non_monotonic
+    reliable = np.isfinite(tau_arr) & ~saturated
+    if saturated.any():
+        print(f"excluding {saturated.sum()} scale bin(s) (saturated fit or non-monotonic "
+              f"POD decay) from the power-law: {scale_arr[saturated].tolist()}", flush=True)
 
     pl = fit_powerlaw(scale_arr[reliable], tau_arr[reliable])
     L_fit = np.geomspace(scale_arr[0], scale_arr[-1], 200)
@@ -66,8 +89,14 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=(6, 5), constrained_layout=True)
 
-    ax.scatter(scale_arr, tau_arr, color="#1f77b4", s=60, zorder=4,
-               label="fitted tau  (B=0 forced)")
+    finite = np.isfinite(tau_arr)
+    plotted_reliable = finite & ~saturated
+    ax.scatter(scale_arr[plotted_reliable], tau_arr[plotted_reliable], color="#1f77b4", s=60,
+               zorder=4, label="fitted tau  (B=0 forced)")
+    if saturated.any():
+        ax.scatter(scale_arr[saturated], tau_arr[saturated], color="#1f77b4",
+                   s=60, alpha=0.3, zorder=4,
+                   label="fit saturated or non-monotonic POD -- excluded from fit")
     ax.plot(L_fit, tau_fit, color="#d62728", lw=1.8, ls="--",
             label=f"power law:  tau = {pl['tau_ref']:.2f}h * (L/{pl['L_ref']:.0f}km)^{pl['beta']:.2f}")
 

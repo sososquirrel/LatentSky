@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 
 from latentsky import load_run
 from latentsky.inference import predict_piece
+from latentsky.predict_dispatch import predict_piece_track
 from latentsky.plotting import (
     plot_pw_tsfc_error,
     plot_regional_view,
@@ -38,6 +39,12 @@ def main() -> None:
     p.add_argument("--run", default="mseuv_lead3h")
     p.add_argument("--piece", type=int, default=32)
     p.add_argument("--batch-size", type=int, default=4)
+    p.add_argument("--kind", choices=["regression", "diffusion"], default="regression")
+    p.add_argument("--max-frames", type=int, default=4,
+                    help="diffusion only: predict_piece_diffusion has no batch-size "
+                         "knob, just a frame count.")
+    p.add_argument("--t-start", type=int, default=100)
+    p.add_argument("--ensemble-size", type=int, default=3)
     p.add_argument("--outdir", default="docs/figures")
     args = p.parse_args()
 
@@ -47,7 +54,12 @@ def main() -> None:
 
     run = load_run(args.run)
     print(f"run={run.name}  lead={run.lead_hours}h  predictors={run.predictors}", flush=True)
-    X, Y, Y_pred = predict_piece(run, args.piece, batch_size=args.batch_size)
+    if args.kind == "diffusion":
+        track = {"kind": "diffusion", "run": args.run, "t_start": args.t_start,
+                  "ensemble_size": args.ensemble_size}
+        X, Y, Y_pred = predict_piece_track(track, args.piece, args.max_frames, device=None)
+    else:
+        X, Y, Y_pred = predict_piece(run, args.piece, batch_size=args.batch_size)
     print(f"X{X.shape}  Y{Y.shape}  Y_pred{Y_pred.shape}", flush=True)
 
     plot_regional_view(Y, Y_pred, lat_range=[None, None], lon_range=[None, None],

@@ -47,18 +47,34 @@ def _n_weight(n):
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--summary", default="docs/scale_summary_v3.csv")
-    p.add_argument("--predictor-set", default="9var (mse+uv)")
+    p.add_argument("--predictor-set", default="9var (mse+uv)",
+                    help="Ignored if --runs is given -- predictor_set (input-var label) "
+                         "can't distinguish different architectures that share the same "
+                         "input variables in a unified multi-track summary CSV.")
+    p.add_argument("--runs", nargs="+", default=None,
+                    help="Filter to these exact `name` values instead of --predictor-set.")
+    p.add_argument("--tag", default=None,
+                    help="Label used in title/filename when --runs is given (default: "
+                         "first token of the run names).")
     p.add_argument("--out", default=None,
-                   help="Default docs/figures/info_frac_<quantity>_<predictor>.png")
+                   help="Default docs/figures/info_frac_<quantity>_<predictor_or_tag>.png")
     args = p.parse_args()
 
     from latentsky.registry import REPO_ROOT as repo
     df = pd.read_csv(repo / args.summary)
-    g = df[df["predictor_set"] == args.predictor_set]
-    if g.empty:
-        opts = sorted(df["predictor_set"].unique())
-        raise SystemExit(f"no rows for predictor set {args.predictor_set!r}; "
-                         f"available: {opts}")
+    if args.runs is not None:
+        g = df[df["name"].isin(args.runs)]
+        if g.empty:
+            opts = sorted(df["name"].unique())
+            raise SystemExit(f"no rows for runs {args.runs!r}; available: {opts}")
+        label = args.tag if args.tag is not None else args.runs[0].split("_lead")[0]
+    else:
+        g = df[df["predictor_set"] == args.predictor_set]
+        if g.empty:
+            opts = sorted(df["predictor_set"].unique())
+            raise SystemExit(f"no rows for predictor set {args.predictor_set!r}; "
+                             f"available: {opts}")
+        label = args.predictor_set
 
     scales = sorted(g["scale_mid"].unique())
     norm = LogNorm(vmin=min(scales), vmax=max(scales))
@@ -102,7 +118,7 @@ def main() -> None:
         ax.set_ylim(*Y_SHARED)
         ax.set_xlabel("lead time (h)")
         ax.set_ylabel("agreement  (1 = perfect, 0 = none)")
-        ax.set_title(f"{title} — {args.predictor_set}")
+        ax.set_title(f"{title} — {label}")
         ax.grid(True, alpha=0.3)
 
         sm = cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -123,7 +139,7 @@ def main() -> None:
 
         fig.tight_layout()
 
-        safe_pred = args.predictor_set.split()[0]
+        safe_pred = label.split()[0].replace("/", "_")
         safe_col = col.replace("_med", "").replace("dln", "")
         default_name = f"docs/figures/info_frac_{safe_col}_{safe_pred}.png"
         out = (repo / (args.out.replace("info_frac", f"info_frac_{safe_col}")

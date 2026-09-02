@@ -38,11 +38,28 @@ def main() -> None:
     p.add_argument("--t-start", type=int, default=100)
     p.add_argument("--threshold", type=float, default=0.1)
     p.add_argument("--iou-min", type=float, default=0.1)
+    p.add_argument("--matching", choices=["greedy", "many_to_one"], default="greedy",
+                    help="greedy: strict 1-1 max-IoU (original). many_to_one: merge all "
+                         "predicted objects overlapping a truth object before scoring -- "
+                         "fixes diffusion's texture-fragmentation undersizing artifact.")
+    p.add_argument("--regression-run-template", default=None,
+                    help="template (with a {lead:g} placeholder) for which regression run's "
+                         "prediction to warm-start diffusion from -- defaults to the "
+                         "matching-lead patch-split two-head run. Pass e.g. "
+                         "'patchsplit_onehead_lead{lead:g}h' to test diffusion warm-started "
+                         "from the plain (no classification head) regression backbone "
+                         "instead, using the SAME diffusion checkpoint (training never "
+                         "referenced a specific warm-start source, so no retraining is "
+                         "needed to test a different one).")
     p.add_argument("--scale-min", type=float, default=25.0)
     p.add_argument("--scale-max", type=float, default=3000.0)
     p.add_argument("--scale-bins", type=int, default=8)
     p.add_argument("--systems-out", default="docs/scale_systems_diffusion.csv.gz")
     p.add_argument("--summary-out", default="docs/scale_summary_diffusion.csv")
+    p.add_argument("--save-fields-dir", default=None,
+                    help="if set, persist raw truth/predicted rain fields per piece here "
+                         "(see evaluate_run_systems_diffusion's save_fields_dir docstring) -- "
+                         "so future metrics/re-matching never need to re-run diffusion sampling.")
     args = p.parse_args()
 
     runs = [s.strip() for s in args.runs.split(",") if s.strip()]
@@ -56,10 +73,19 @@ def main() -> None:
     for i, name in enumerate(runs, 1):
         r = load_run(name)
         print(f"[{i}/{len(runs)}] lead={r.lead_hours}h  {r.name}", flush=True)
+        run_save_dir = None
+        if args.save_fields_dir is not None:
+            run_save_dir = str(REPO / args.save_fields_dir)
+        regression_run_name = None
+        if args.regression_run_template is not None:
+            regression_run_name = args.regression_run_template.format(lead=r.lead_hours)
+            print(f"  warm-starting from regression run: {regression_run_name}", flush=True)
         df = evaluate_run_systems_diffusion(
             r, piece_ids=args.pieces, max_frames_per_piece=args.max_frames_per_piece,
             threshold=args.threshold, iou_min=args.iou_min,
             t_start=args.t_start, ensemble_size=args.ensemble_size,
+            matching=args.matching, save_fields_dir=run_save_dir,
+            regression_run_name=regression_run_name,
         )
         if df.empty:
             print(f"  no systems for {r.name}", flush=True)

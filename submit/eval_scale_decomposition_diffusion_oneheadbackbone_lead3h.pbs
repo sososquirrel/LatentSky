@@ -1,0 +1,41 @@
+#!/bin/bash -l
+#PBS -N ls_ohbb_3h
+#PBS -A UCLB0066
+#PBS -q casper
+#PBS -l select=1:ncpus=4:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -l walltime=12:00:00
+#PBS -j oe
+#PBS -k eod
+
+# Ablation: does diffusion's small-scale area bias depend on which
+# regression model supplies its warm-start x0_init? Same diffusion
+# checkpoint as always (training never referenced a warm-start source),
+# just swapping the source from two-head to the plain one-head regression
+# backbone (patchsplit_onehead_lead*). many_to_one matching throughout,
+# consistent with the corrected pipeline. Also persists raw truth/pred
+# fields this time (--save-fields-dir) so this run's inference never has
+# to be repeated for a future metric change.
+
+export TMPDIR=${SCRATCH}/tmp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+_NV=/glade/work/${USER}/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/analysis/eval_scale_decomposition_diffusion.py \
+  --runs diffusion_lead3h \
+  --pieces $(seq 0 39) \
+  --max-frames-per-piece 16 \
+  --ensemble-size 3 \
+  --t-start 100 \
+  --matching many_to_one \
+  --regression-run-template 'patchsplit_onehead_lead{lead:g}h' \
+  --save-fields-dir /glade/derecho/scratch/${USER}/LatentSky_diffusion_fields/oneheadbackbone \
+  --systems-out docs/scale_systems_diffusion_oneheadbackbone_lead3h.csv.gz \
+  --summary-out docs/scale_summary_diffusion_oneheadbackbone_lead3h.csv

@@ -54,7 +54,15 @@ def main() -> None:
     n = len(scales)
     colors = [cmap(i / (n - 1)) for i in range(n)] if n > 1 else [cmap(0.5)]
 
-    pod0 = df[df["lead_h"] == 0.0].set_index("scale_mid")["POD"]
+    has_lead0 = bool((df["lead_h"] == 0.0).any())
+    if has_lead0:
+        pod0 = df[df["lead_h"] == 0.0].set_index("scale_mid")["POD"]
+        norm_label = "POD(0h)"
+    else:
+        pod0 = None
+        norm_label = "POD(earliest lead)"
+        print(f"note: no lead=0h data for {args.tag} -- normalizing each scale by its "
+              f"own earliest available lead instead of assuming POD(0h)=1", flush=True)
 
     fig, axes = plt.subplots(1, 2, figsize=(13, 5), constrained_layout=True)
     ax_raw, ax_norm = axes
@@ -63,8 +71,8 @@ def main() -> None:
     for scale, color in zip(scales, colors):
         sub = df[df["scale_mid"] == scale].sort_values("lead_h")
         t = sub["lead_h"].values.astype(float)
-        p0 = pod0.get(scale, 1.0)
-        if p0 <= 0:
+        p0 = pod0.get(scale, np.nan) if has_lead0 else sub["POD"].iloc[0]
+        if not np.isfinite(p0) or p0 <= 0:
             continue
         norm = (sub["POD"] / p0).values
 
@@ -87,7 +95,7 @@ def main() -> None:
 
     ax_norm.axhline(0.5, color="k", lw=0.8, ls=":", alpha=0.4)
     ax_norm.set_xlabel("lead time [h]", fontsize=11)
-    ax_norm.set_ylabel("POD / POD(0h)", fontsize=11)
+    ax_norm.set_ylabel(f"POD / {norm_label}", fontsize=11)
     ax_norm.set_title("(b) Normalised skill  --  fit: exp(-t/tau)  [B=0 forced]",
                       fontsize=11, loc="left", fontweight="bold")
     ax_norm.set_ylim(0, 1.05)
@@ -105,8 +113,9 @@ def main() -> None:
     cb.set_label("system scale L [km]", fontsize=10)
 
     fig.suptitle(
-        f"{args.tag} -- skill decay: POD/POD(0h) = exp(-t/tau)   [B=0 forced]\n"
-        "Assumes skill goes to zero at long lead.",
+        f"{args.tag} -- skill decay: POD/{norm_label} = exp(-t/tau)   [B=0 forced]\n"
+        "Assumes skill goes to zero at long lead."
+        + ("" if has_lead0 else "  (no lead=0h data -- normalized by earliest available lead instead)"),
         fontsize=9,
     )
 

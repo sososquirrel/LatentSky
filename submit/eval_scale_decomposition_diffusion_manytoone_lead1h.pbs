@@ -1,0 +1,40 @@
+#!/bin/bash -l
+#PBS -N ls_m21_1h
+#PBS -A UCLB0066
+#PBS -q casper
+#PBS -l select=1:ncpus=4:mem=64GB:ngpus=1:gpu_type=a100
+#PBS -l walltime=12:00:00
+#PBS -j oe
+#PBS -k eod
+
+# Full-coverage (40 pieces) re-eval of diffusion_lead1h with
+# match_systems_many_to_one instead of the original greedy 1-1 matching --
+# lets several predicted objects jointly count as one truth object's match,
+# fixing the small-scale area-underestimate artifact traced to diffusion's
+# texture fragmenting one storm into several disconnected predicted blobs
+# (confirmed on a synthetic test: greedy gave dlnA=-1.39, many_to_one gave
+# -0.21, matching the true fragmented-but-present rain area). Same
+# inference cost as the original greedy full-scan (matching choice only
+# affects the cheap post-processing step, not diffusion sampling itself).
+
+export TMPDIR=${SCRATCH}/tmp
+mkdir -p "$TMPDIR"
+
+eval "$(conda shell.bash hook)"
+conda activate /glade/work/${USER}/conda-envs/latentsky-env
+
+_NV=/glade/work/${USER}/conda-envs/latentsky-env/lib/python3.11/site-packages/nvidia
+export LD_LIBRARY_PATH=${_NV}/cublas/lib:${_NV}/cuda_cupti/lib:${_NV}/cuda_nvrtc/lib:${_NV}/cuda_runtime/lib:${_NV}/cudnn/lib:${_NV}/cufft/lib:${_NV}/curand/lib:${_NV}/cusolver/lib:${_NV}/cusparse/lib:${_NV}/cusparselt/lib:${_NV}/nccl/lib:${_NV}/nvjitlink/lib:${_NV}/nvtx/lib:${LD_LIBRARY_PATH:-}
+
+cd /glade/u/home/${USER}/LatentSky
+export PYTHONPATH=/glade/u/home/${USER}/LatentSky:${PYTHONPATH}
+
+python -u scripts/analysis/eval_scale_decomposition_diffusion.py \
+  --runs diffusion_lead1h \
+  --pieces $(seq 0 39) \
+  --max-frames-per-piece 16 \
+  --ensemble-size 3 \
+  --t-start 100 \
+  --matching many_to_one \
+  --systems-out docs/scale_systems_diffusion_manytoone_lead1h.csv.gz \
+  --summary-out docs/scale_summary_diffusion_manytoone_lead1h.csv

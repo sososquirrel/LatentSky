@@ -1,13 +1,16 @@
-"""τ vs scale: LatentSky vs GraphCast vs FuXi vs persistence — do AI weather
-models share the same scale-dependent predictability transition, or is it a
-LatentSky artifact? Persistence pins down the "do nothing" floor.
+"""τ vs scale: two-head vs two-head+diffusion vs GraphCast vs FuXi vs
+persistence — do AI weather models share the same scale-dependent
+predictability transition seen in LatentSky's own model family, or is it a
+LatentSky-specific artifact? Persistence pins down the "do nothing" floor.
 
-Caveat: GraphCast/FuXi/persistence have no lead=0 output in this multi-lead
-setup (earliest available lead is 6h), so their POD(t) curves are fit with
-a free-amplitude exponential A*exp(-t/tau), t in {6,12,18,24}h — unlike
-LatentSky's fit, which is normalized to POD(0h)=1 (B=0 forced). Absolute tau
-magnitudes are therefore not on strictly identical footing between LatentSky
-and the rest; the log-log slope (tau ~ L^b) is the fair cross-model
+Caveat: GraphCast/FuXi have no lead=0 output in this multi-lead setup
+(earliest available lead is 6h), so their POD(t) curves are fit with a
+free-amplitude exponential A*exp(-t/tau), t in {6,12,18,24}h — unlike
+two-head/two-head+diffusion, which are fit normalized to POD(0.25h)=1
+(B=0 forced, their own earliest available lead; neither has true lead=0h
+output -- see fit_pod0_normalized). Absolute tau magnitudes are therefore
+not on strictly identical footing between the LatentSky-family models and
+GraphCast/FuXi; the log-log slope (tau ~ L^b) is the fair cross-model
 comparison.
 
 Domain of applicability: GraphCast and FuXi are archived on the 0.25° WB2
@@ -18,10 +21,11 @@ fitting/plotting for GraphCast and FuXi.
 Persistence: NOT the ERA5-grid persistence (dropped — its 18h/24h lags are
 diurnally contaminated, see git history for that analysis). Instead using
 docs/scale_summary_baselines.csv's "persistence" predictor_set — persistence
-computed on LatentSky's own DYAMOND-domain held-out test pieces, same grid
-LatentSky itself is scored on. It has a real lead=0h anchor, so it's fit the
-same POD(0h)-normalized way as LatentSky (not a free-amplitude fit), making
-it directly, cleanly comparable to LatentSky's own curve.
+computed on the same DYAMOND-domain held-out test pieces / patch-split test
+blocks that two-head and two-head+diffusion are scored on. It has a real
+lead=0h anchor (unlike two-head/diffusion), so it's fit the same
+POD(anchor)-normalized way (not a free-amplitude fit), making it directly,
+cleanly comparable to the other two.
 """
 from __future__ import annotations
 import pathlib
@@ -80,12 +84,24 @@ def fit_ai_model(df):
     return np.array(sc_out), np.array(tau_out), np.array(pod6_out), span
 
 
-def fit_latentsky_rain():
-    """LatentSky + rain_log1p input sweep. No lead=0h in this sweep (starts
-    at 0.25h) — normalized fit anchored at 0.25h instead, same method as
-    LatentSky-no-rain and persistence (see fit_pod0_normalized)."""
-    df = pd.read_csv(REPO / "docs/scale_summary_rain.csv")
-    df = df[df["name"].str.startswith("mseuv_rain_lead")]
+def fit_twohead():
+    """Two-head (classif+regression, patch-level split) lead sweep. No
+    lead=0h in this sweep (starts at 0.25h) -- normalized fit anchored at
+    0.25h, same method as LatentSky/persistence (see fit_pod0_normalized)."""
+    df = pd.read_csv(REPO / "docs/scale_summary_modelcompare_rebinned16.csv")
+    runs = [f"patchsplit_twohead_olr_fss_lead{L}" for L in
+            ["0.25h", "0.5h", "1h", "2h", "3h", "6h"]]
+    df = df[df["name"].isin(runs)]
+    return fit_pod0_normalized(df, anchor=0.25)
+
+
+def fit_diffusion():
+    """Two-head+diffusion lead sweep (warm-started refinement of the
+    two-head prediction). Same anchor/method as fit_twohead -- both start
+    at 0.25h, no lead=0h available."""
+    df = pd.read_csv(REPO / "docs/scale_summary_diffusion_rebinned16.csv")
+    runs = [f"diffusion_lead{L}" for L in ["0.25h", "0.5h", "1h", "2h", "3h", "6h"]]
+    df = df[df["name"].isin(runs)]
     return fit_pod0_normalized(df, anchor=0.25)
 
 
@@ -124,12 +140,6 @@ def fit_pod0_normalized(df, anchor=None):
     return np.array(sc_out), np.array(tau_out), np.array(pod0_out), span
 
 
-def fit_latentsky():
-    df = pd.read_csv(REPO / "docs/scale_summary_v3.csv")
-    df = df[df["predictor_set"] == "9var (mse+uv)"]
-    return fit_pod0_normalized(df)
-
-
 def fit_persistence_dyamond():
     df = pd.read_csv(REPO / "docs/scale_summary_baselines.csv")
     df = df[df["predictor_set"] == "persistence"]
@@ -144,10 +154,10 @@ def powerlaw_fit(scales, taus):
     return np.exp(lna), b
 
 
-ls_sc, tau_ls, pod_ls, ls_span = fit_latentsky()
+th_sc, tau_th, pod_th, th_span = fit_twohead()
+df_sc, tau_df, pod_df, df_span = fit_diffusion()
 gc_sc, tau_gc, pod_gc, gc_span = fit_ai_model(load_multilead("graphcast"))
 fx_sc, tau_fx, pod_fx, fx_span = fit_ai_model(load_multilead("fuxi"))
-rn_sc, tau_rn, pod_rn, rn_span = fit_latentsky_rain()
 pr_sc, tau_pr, pod_pr, pr_span = fit_persistence_dyamond()
 
 gc_sc, tau_gc = restrict_to_resolved(gc_sc, tau_gc, ERA5_NYQUIST_KM)
@@ -160,8 +170,8 @@ fig, ax = plt.subplots(figsize=(8, 5.5), constrained_layout=True)
 # Per-model POD-vs-lead detail lives in the standalone pod_vs_lead_*.png
 # plots instead.
 series = [
-    ("LatentSky",              ls_sc, tau_ls, "o", "#1f77b4", ls_span),
-    ("LatentSky+rain",         rn_sc, tau_rn, "P", "#e377c2", rn_span),
+    ("two-head",               th_sc, tau_th, "o", "#1f77b4", th_span),
+    ("two-head+diffusion",     df_sc, tau_df, "P", "#9467bd", df_span),
     ("GraphCast",              gc_sc, tau_gc, "s", "#2ca02c", gc_span),
     ("FuXi",                   fx_sc, tau_fx, "D", "#ff7f0e", fx_span),
     ("Persistence (DYAMOND)",  pr_sc, tau_pr, "^", "#7f7f7f", pr_span),
@@ -202,8 +212,8 @@ ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlabel("system scale  L = √area  [km]", fontsize=11)
 ax.set_ylabel("POD decay timescale  τ  [h]", fontsize=11)
-ax.set_title("Scale-dependent predictability — LatentSky (±rain input) vs GraphCast vs FuXi vs persistence\n"
-             "LatentSky/persistence: 40-day DYAMOND-domain held-out; GraphCast/FuXi: August 2020 "
+ax.set_title("Scale-dependent predictability — two-head vs two-head+diffusion vs GraphCast vs FuXi vs persistence\n"
+             "two-head/diffusion/persistence: patch-split held-out test blocks; GraphCast/FuXi: August 2020 "
              "tropics ±40°, trimmed below ERA5 grid Nyquist (56 km)\n"
              "hollow markers: τ exceeds the fit's own lead-time span — extrapolated, not interpolated",
              fontsize=8.5)

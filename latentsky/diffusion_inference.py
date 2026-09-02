@@ -22,6 +22,7 @@ regression models.
 """
 from __future__ import annotations
 
+import pathlib
 from typing import Iterable
 
 import numpy as np
@@ -129,6 +130,8 @@ def evaluate_run_systems_diffusion(
     t_start: int = 100,
     ensemble_size: int = 3,
     regression_run_name: str | None = None,
+    matching: str = "greedy",
+    save_fields_dir: str | None = None,
 ) -> pd.DataFrame:
     """Diffusion-track equivalent of latentsky.inference.evaluate_run_systems:
     same output schema (system_table + a `piece` column), so it plugs into
@@ -143,6 +146,21 @@ def evaluate_run_systems_diffusion(
     regression models do would take far too long; callers must explicitly
     bound the scope, same spirit as
     scripts/analysis/sample_and_eval_diffusion_refine.py.
+
+    `matching`: passed through to latentsky.scale_analysis.system_table --
+    "greedy" (default, strict 1-1 max-IoU) or "many_to_one" (lets several
+    predicted objects jointly count as one truth object's match -- see
+    match_systems_many_to_one's docstring; use this for diffusion, whose
+    added texture can fragment one storm into several predicted blobs).
+
+    `save_fields_dir`: if set, persist the raw truth/predicted rain fields
+    (Y, Yp -- full (T,1,H,W) arrays, not just the extracted objects) for
+    every piece to `{save_fields_dir}/{run.name}_piece{pid:02d}.npz`, so any
+    future metric or re-matching (different threshold, different
+    connectivity, a whole new algorithm) can be computed straight from
+    these fields without ever re-running the expensive diffusion sampling
+    again. None (default) preserves the old behavior exactly -- no extra
+    disk writes, no change to what's returned.
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cfg = run.config
@@ -159,6 +177,9 @@ def evaluate_run_systems_diffusion(
     diffusion = GaussianDiffusion(cfg.diffusion_timesteps, cfg.diffusion_schedule, device=device)
     reg_model = _load_model(reg_run, device)
 
+    if save_fields_dir is not None:
+        pathlib.Path(save_fields_dir).mkdir(parents=True, exist_ok=True)
+
     frames = []
     for pid in piece_ids:
         X, Y, Yp = predict_piece_diffusion(
@@ -167,7 +188,14 @@ def evaluate_run_systems_diffusion(
             ensemble_size=ensemble_size, device=device,
             diff_model=diff_model, diffusion=diffusion, reg_model=reg_model,
         )
-        df = system_table(Y, Yp, threshold=threshold, iou_min=iou_min)
+        if save_fields_dir is not None:
+            out_path = pathlib.Path(save_fields_dir) / f"{run.name}_piece{pid:02d}.npz"
+            np.savez_compressed(
+                out_path, Y=Y.astype(np.float32), Yp=Yp.astype(np.float32),
+                piece_id=pid, lead_h=cfg.lead_hours, t_start=t_start,
+                ensemble_size=ensemble_size,
+            )
+        df = system_table(Y, Yp, threshold=threshold, iou_min=iou_min, matching=matching)
         if not df.empty:
             df.insert(0, "piece", pid)
             frames.append(df)

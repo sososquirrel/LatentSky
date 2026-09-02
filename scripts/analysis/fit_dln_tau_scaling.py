@@ -41,7 +41,7 @@ import pandas as pd
 from matplotlib import cm
 from matplotlib.colors import TwoSlopeNorm
 
-from latentsky.fits import fit_tau_from_neg_abs_dln, fit_powerlaw
+from latentsky.fits import fit_tau_from_neg_abs_dln, fit_joint_tau_powerlaw
 from latentsky.paths import FIGURES_DIR
 
 
@@ -53,15 +53,14 @@ def _fit_tau(t, dlnX, n):
     return dict(I0=fit["I0"], tau=fit["tau"], tau_se=fit["tau_se"], R2=fit["R2"])
 
 
-def _powerlaw_fit(scale, tau, tau_se):
-    """tau = tau_ref * (scale / L_ref)^beta via weighted log-log linear fit,
-    weight = fit precision (1/relative_se^2). Thin wrapper over
-    latentsky.fits.fit_powerlaw."""
-    tau, tau_se = np.asarray(tau), np.asarray(tau_se)
-    m = np.isfinite(tau) & np.isfinite(tau_se) & (tau > 0) & (tau_se > 0)
-    w = np.full_like(tau, np.nan)
-    w[m] = 1 / (tau_se[m] / tau[m]) ** 2
-    return fit_powerlaw(scale, tau, weights=w)
+R2_MIN = 0.3  # first-stage fits worse than this aren't a real decay, not just noisy
+
+# Below this, matched systems are only 1-3 grid pixels (~770 km^2/pixel) --
+# dlnA is then quantized to a handful of small-integer-ratio values
+# (0, ln2, ln3, ...), which is a discreteness artifact, not scale-dependent
+# noise that more data or better weighting could smooth out. Matches the
+# ERA5 Nyquist annotation already drawn on the tau_vs_scale plots.
+MIN_SCALE_KM = 56.0
 
 
 def main() -> None:
@@ -91,7 +90,13 @@ def main() -> None:
                              f"available: {opts}")
 
     quantities = {"A": "dlnA_med", "rho": "dlnrho_med"}
-    scales = np.array(sorted(g["scale_mid"].unique()))
+    all_scales = np.array(sorted(g["scale_mid"].unique()))
+    scales = all_scales[all_scales >= MIN_SCALE_KM]
+    dropped = all_scales[all_scales < MIN_SCALE_KM]
+    if dropped.size:
+        print(f"dropping {dropped.size} scale bin(s) below MIN_SCALE_KM={MIN_SCALE_KM:g} "
+              f"(quantized system size, not fittable): {dropped.tolist()}")
+    g = g[g["scale_mid"] >= MIN_SCALE_KM]
 
     fit_rows = []
     for qname, col in quantities.items():
@@ -113,19 +118,28 @@ def main() -> None:
           "of -|dlnX_med(t)| vs t")
     print(fits.to_string(index=False, float_format=lambda v: f"{v:.3f}"))
 
+    # Joint tau(L) power-law fit: fits tau_ref/beta directly against every
+    # (t, L, dlnX) observation at once (weighted by n_match), instead of
+    # power-law-fitting the noisy per-bin tau point estimates above -- see
+    # latentsky.fits.fit_joint_tau_powerlaw's docstring for why this is the
+    # better-conditioned estimator. The per-bin `fits` table above is still
+    # printed/plotted as a diagnostic (it's what R2_MIN below flags as
+    # individually-unreliable), but the reported/plotted power law comes
+    # from this joint fit, not from re-fitting those per-bin estimates.
     powerlaws = {}
-    for qname in quantities:
-        sub = fits[fits["quantity"] == qname].sort_values("scale_mid")
-        pl = _powerlaw_fit(sub["scale_mid"].to_numpy(), sub["tau"].to_numpy(),
-                           sub["tau_se"].to_numpy())
+    for qname, col in quantities.items():
+        sub = g[g[col].notna() & g["n_match"].notna()]
+        pl = fit_joint_tau_powerlaw(sub["lead_h"].to_numpy(), sub["scale_mid"].to_numpy(),
+                                     sub[col].to_numpy(), sub["n_match"].to_numpy())
         powerlaws[qname] = pl
         if np.isfinite(pl["beta"]):
             print(f"\ntau_{qname}(L) = {pl['tau_ref']:.2f} h * "
                   f"(L / {pl['L_ref']:.0f} km)^({pl['beta']:.2f} +/- {pl['beta_se']:.2f})"
-                  f"   [R2={pl['R2']:.2f}, {pl['n_used']}/{pl['n_total']} scale bins used]")
+                  f"   [joint fit: R2={pl['R2']:.2f}, {pl['n_obs']} (t,L) observations, "
+                  f"{pl['n_bins']} scale bins]")
         else:
             print(f"\ntau_{qname}(L): fewer than 2 usable scale bins "
-                  f"({pl['n_used']}/{pl['n_total']}) — no power law fit")
+                  f"({pl['n_bins']}) — no power law fit")
 
     # dlnP at lead 0 per scale — the total-precip gap already present at
     # nowcast time, used to color the tau markers (not fit to anything).
@@ -163,25 +177,47 @@ def main() -> None:
         L = sub["scale_mid"].to_numpy()
         tau = sub["tau"].to_numpy()
         tau_se = sub["tau_se"].to_numpy()
+        r2 = sub["R2"].to_numpy()
         m = np.isfinite(tau)
+        # R2_MIN here only flags which per-bin STANDALONE fit (the point
+        # estimate plotted) was individually unreliable -- shown as reduced
+        # opacity, not a marker-shape change. Unlike the old two-stage
+        # approach, these points are NOT excluded from the actual reported
+        # power law below (that now comes from fit_joint_tau_powerlaw,
+        # fit directly against the raw (t,L) data with n_match weights,
+        # not against these per-bin point estimates) -- so an "unreliable"
+        # marker no longer means "thrown away."
+        used = m & np.isfinite(tau_se) & (tau > 0) & (tau_se > 0) & np.isfinite(r2) & (r2 >= R2_MIN)
+        excluded = m & ~used
 
         ax.errorbar(L[m], tau[m], yerr=tau_se[m], fmt="none",
-                    ecolor="0.6", capsize=3, zorder=2)
+                    ecolor="0.6", capsize=3, zorder=2, alpha=0.6)
         if has_lead0:
             c = np.array([dlnP0_by_scale[l] for l in L])
-            sc = ax.scatter(L[m], tau[m], c=c[m], cmap=cmap, norm=cnorm,
-                            marker=style["marker"], s=70, edgecolors="k",
-                            linewidths=0.6, zorder=3, label=style["label"])
-        else:
-            ax.scatter(L[m], tau[m], color=style["line_color"],
+            ax.scatter(L[used], tau[used], c=c[used], cmap=cmap, norm=cnorm,
                        marker=style["marker"], s=70, edgecolors="k",
                        linewidths=0.6, zorder=3, label=style["label"])
+            if excluded.any():
+                ax.scatter(L[excluded], tau[excluded], c=c[excluded], cmap=cmap, norm=cnorm,
+                           marker=style["marker"], s=70, edgecolors="k",
+                           linewidths=0.6, alpha=0.3, zorder=3)
+        else:
+            ax.scatter(L[used], tau[used], color=style["line_color"],
+                       marker=style["marker"], s=70, edgecolors="k",
+                       linewidths=0.6, zorder=3, label=style["label"])
+            if excluded.any():
+                ax.scatter(L[excluded], tau[excluded], color=style["line_color"],
+                           marker=style["marker"], s=70, edgecolors="k",
+                           linewidths=0.6, alpha=0.3, zorder=3,
+                           label=f"{style['label']} (R2<{R2_MIN:g} standalone fit -- "
+                                 "still used in joint fit below)")
 
         pl = powerlaws[qname]
         if np.isfinite(pl["beta"]):
             tau_fit = pl["tau_ref"] * (Lgrid / pl["L_ref"]) ** pl["beta"]
             ax.plot(Lgrid, tau_fit, "--", color=style["line_color"], lw=1.5, alpha=0.8,
-                    label=f"beta_{qname} = {pl['beta']:.2f} +/- {pl['beta_se']:.2f}")
+                    label=f"joint fit: beta_{qname} = {pl['beta']:.2f} +/- {pl['beta_se']:.2f}"
+                          f"  (R2={pl['R2']:.2f})")
 
     ax.set_xscale("log")
     ax.set_yscale("log")

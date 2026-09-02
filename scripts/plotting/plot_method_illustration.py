@@ -18,6 +18,7 @@ import torch
 
 from latentsky import load_run
 from latentsky.inference import predict_piece
+from latentsky.predict_dispatch import predict_piece_track
 from latentsky.scale_analysis import (
     cell_area_km2, label_systems, _overlap_matrix,
     _DEFAULT_LAT_EXTENT, _DEFAULT_LON_EXTENT,
@@ -98,6 +99,16 @@ def main():
     p.add_argument("--threshold", type=float, default=0.1)
     p.add_argument("--iou-min", type=float, default=0.1)
     p.add_argument("--keep-frames", type=int, default=24)
+    p.add_argument("--kind", choices=["regression", "diffusion"], default="regression",
+                    help="regression: predict_piece with diurnal keep-frames sampling "
+                         "(--frame indexes the kept-frames array). diffusion: "
+                         "predict_piece_diffusion (no keep-frames support -- "
+                         "--frame indexes the first --max-frames frames directly).")
+    p.add_argument("--max-frames", type=int, default=8,
+                    help="diffusion only: how many leading frames to sample from "
+                         "(--frame must be < this).")
+    p.add_argument("--t-start", type=int, default=100)
+    p.add_argument("--ensemble-size", type=int, default=3)
     p.add_argument("--tag", default=None,
                     help="model-family label for output filename; defaults to --run's name")
     p.add_argument("--out", default=None)
@@ -107,9 +118,19 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device: {device}", flush=True)
     r = load_run(args.run)
-    X, Y, Yp, day_idx, fpd = predict_piece(
-        r, args.piece, batch_size=1, device=device, keep_frames=args.keep_frames,
-    )
+    if args.kind == "diffusion":
+        track = {"kind": "diffusion", "run": args.run, "t_start": args.t_start,
+                  "ensemble_size": args.ensemble_size}
+        X, Y, Yp = predict_piece_track(track, args.piece, args.max_frames, device=device)
+        if args.frame >= Y.shape[0]:
+            raise SystemExit(f"--frame {args.frame} >= --max-frames {args.max_frames}")
+        delta = round(r.lead_hours * 4) + 1
+        fpd = 96
+        day_idx = np.arange(Y.shape[0]) + delta
+    else:
+        X, Y, Yp, day_idx, fpd = predict_piece(
+            r, args.piece, batch_size=1, device=device, keep_frames=args.keep_frames,
+        )
     Y2 = Y[args.frame, 0]
     Yp2 = Yp[args.frame, 0]
     ny, nx = Y2.shape
