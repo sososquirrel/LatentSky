@@ -40,6 +40,12 @@ def load(var, t=FRAME, pid=PIECE):
                       dtype=np.float32)
 
 
+def add_coastlines(ax, color="0.1", lw=0.6):
+    mask = np.load(REPO / "data/eval_legacy/_landmask_320x1440_-40_40_50m.npy")
+    ax.contour(mask.astype(float), levels=[0.5], colors=color, linewidths=lw,
+               extent=[0, W, 0, H], origin="lower")
+
+
 def grid_lines(ax):
     for r in range(NR + 1):
         ax.axhline(r * P, color="0.15", lw=0.7)
@@ -56,6 +62,7 @@ def fig_domain():
     im = ax.imshow(pw, origin="lower", cmap="RdBu_r", vmin=-3, vmax=3,
                    interpolation="nearest", aspect="auto",
                    extent=[0, W, 0, H])
+    add_coastlines(ax)
     grid_lines(ax)
     r, c = BLOCK
     ax.add_patch(Rectangle((c * P, r * P), P, P, fill=False, ec="#b2182b", lw=2.2))
@@ -74,14 +81,17 @@ def fig_domain():
 def fig_sample_channels():
     r, c = BLOCK
     sl = np.s_[r * P:(r + 1) * P, c * P:(c + 1) * P]
-    fig, axes = plt.subplots(3, 4, figsize=(9.6, 7.2))
+    fig, axes = plt.subplots(3, 4, figsize=(11.2, 7.6))
     axes = axes.ravel()
     for i, v in enumerate(INPUT_VARS):
         f = load(v)[sl]
-        im = axes[i].imshow(f, origin="lower", cmap="RdBu_r", vmin=-3, vmax=3,
+        lim = max(float(np.abs(f).max()), 1e-6)
+        im = axes[i].imshow(f, origin="lower", cmap="RdBu_r", vmin=-lim, vmax=lim,
                             interpolation="nearest")
         axes[i].set_title(f"in {i}: {v}", fontsize=8)
         axes[i].set_xticks([]); axes[i].set_yticks([])
+        cb = fig.colorbar(im, ax=axes[i], fraction=0.046, pad=0.03)
+        cb.ax.tick_params(labelsize=6)
     y = load("rain_total", t=FRAME + DELTA)[sl]
     imt = axes[10].imshow(y, origin="lower", cmap="Blues",
                           norm=LogNorm(vmin=0.1, vmax=max(float(y.max()), 0.5)),
@@ -90,13 +100,11 @@ def fig_sample_channels():
     for s in axes[10].spines.values():
         s.set_color("#b2182b"); s.set_linewidth(2)
     axes[10].set_xticks([]); axes[10].set_yticks([])
+    cb = fig.colorbar(imt, ax=axes[10], fraction=0.046, pad=0.03)
+    cb.ax.tick_params(labelsize=6)
     axes[11].axis("off")
-    pos = axes[11].get_position()
-    bar1 = fig.add_axes([pos.x0 + 0.02, pos.y0 + 0.02, 0.013, pos.height * 0.85])
-    bar2 = fig.add_axes([pos.x0 + 0.13, pos.y0 + 0.02, 0.013, pos.height * 0.85])
-    fig.colorbar(im, cax=bar1).set_label("inputs: z-score", fontsize=8)
-    fig.colorbar(imt, cax=bar2).set_label("target: rain (mm)", fontsize=8)
-    fig.suptitle(f"one training sample — piece {PIECE}, frame {FRAME}, block {BLOCK}",
+    fig.suptitle(f"one training sample — piece {PIECE}, frame {FRAME}, block {BLOCK} — "
+                 "each panel on its own scale (z-score for inputs, mm for the target)",
                  fontsize=10, y=0.995)
     fig.savefig(OUT / "data_sample_channels.png", dpi=130, bbox_inches="tight")
     plt.close(fig)
@@ -120,6 +128,7 @@ def fig_split():
     pw = load("precipw")
     ax.imshow(pw, origin="lower", cmap="Greys", vmin=-3, vmax=3,
               interpolation="nearest", aspect="auto", extent=[0, W, 0, H], alpha=0.55)
+    add_coastlines(ax, color="0.05", lw=0.7)
     for r in range(NR):
         for c in range(NC):
             ax.add_patch(Rectangle((c * P, r * P), P, P,
