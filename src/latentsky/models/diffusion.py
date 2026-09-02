@@ -2,8 +2,9 @@
 (recovered from _archive/latentsky/{models.py,diffusion.py}, 2026-09-02).
 
 Role per docs/FRAME.md Definitions: the canonical diffusion model for R3 is
-ConditionalDiffusionUNet on the same backbone family as UNet2D, sampled with
-ddpm_refine_sample warm-started from the one-head regression prediction.
+ConditionalDiffusionUNet, sampled with ddpm_refine_sample warm-started from
+the two-head deterministic forecast (the one-head warm start is the
+"oneheadbackbone" sensitivity variant).
 """
 
 from __future__ import annotations

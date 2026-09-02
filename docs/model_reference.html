@@ -390,7 +390,7 @@ field, so the diffusion model does train on dry pixels.</p>
 <div class="tablewrap"><table class="spec">
 <tbody>
 <tr><td>Input</td><td>noisy target x<sub>t</sub> (1 ch) ⧺ the 10 conditioning channels = 11 channels, 128×128</td></tr>
-<tr><td>Backbone</td><td>same DoubleConv encoder–decoder as UNet2D: depth 5, base 64, bottleneck 2048, GroupNorm(8), dropout 0.05</td></tr>
+<tr><td>Backbone</td><td>the shared DoubleConv trunk of §3: depth 5, base 64, bottleneck 2048, GroupNorm(8), dropout 0.05 (no OLR-FiLM, no wet/dry head)</td></tr>
 <tr><td>Time conditioning</td><td>sinusoidal embedding of t (dim 128) → MLP to 512, then per-level FiLM: a Linear per encoder stage, bottleneck, and decoder stage produces (γ, β) that modulate the feature map after each DoubleConv</td></tr>
 <tr><td>Output</td><td>1×1 conv → predicted noise ε̂, no activation</td></tr>
 <tr><td>Parameters</td><td class="mono">130.9 M</td></tr>
@@ -602,8 +602,12 @@ channels.</li>
 
 <footer>
 <p>Trained weights: <span class="mono">/glade/derecho/scratch/sabramian/LatentSky_runs/
-unet_models/one_head/10var/patchsplit_onehead_lead{0.25,0.5,1,2,3,6}h/checkpoint.pt</span>
-and <span class="mono">…/LatentSky_runs/gen_models/10var/diffusion_lead*/checkpoint.pt</span>.
+unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead{0.25,0.5,1,2,3,6}h/checkpoint.pt</span>
+(canonical deterministic),
+<span class="mono">…/LatentSky_runs/gen_models/10var/diffusion_lead*/checkpoint.pt</span>
+(diffusion), and
+<span class="mono">…/unet_models/one_head/10var/patchsplit_onehead_lead*/checkpoint.pt</span>
+(sensitivity variant).
 Source of record: <span class="mono">src/latentsky/models/</span> (recovered, tested) and
 the archived trainers <span class="mono">_archive/latentsky/{train,train_diffusion,data,
 patch_split,config}.py</span>. Frame and definitions: <span class="mono">docs/FRAME.md</span>.</p>
