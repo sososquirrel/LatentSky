@@ -30,7 +30,7 @@ INPUT_VARS = [
     "umeridional_850hPa", "rain_log1p",
 ]
 P = 128
-LEAD_STEPS = 4          # 1 h
+LEAD_STEPS = 12  # 3 h
 DELTA = LEAD_STEPS + 1  # off-by-one correction, see model_reference §1
 SCALE = 2.0
 T_START = 100
@@ -105,13 +105,13 @@ def main():
 
     twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
     twohead.load_state_dict(torch.load(
-        RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead1h/checkpoint.pt",
+        RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead3h/checkpoint.pt",
         map_location=device, weights_only=True))
     twohead = twohead.to(device).eval()
 
     diff = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
     diff.load_state_dict(torch.load(
-        RUNS / "gen_models/10var/diffusion_lead1h/checkpoint.pt",
+        RUNS / "gen_models/10var/diffusion_lead3h/checkpoint.pt",
         map_location=device, weights_only=True))
     diff = diff.to(device).eval()
     gd = GaussianDiffusion(1000, "cosine", device=device)
@@ -171,8 +171,8 @@ def main():
     # figure 1: context
     fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.6))
     panel(axes[0], persist, "rain now (persistence)")
-    panel(axes[1], det_mm, "two-head forecast (+1 h)")
-    im = panel(axes[2], truth, "truth (+1 h)")
+    panel(axes[1], det_mm, "two-head forecast (+3 h)")
+    im = panel(axes[2], truth, "truth (+3 h)")
     cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.02)
     cb.set_label("rain (mm)", fontsize=8)
     fig.savefig(OUT / "example_context.png", dpi=140, bbox_inches="tight")
@@ -202,9 +202,9 @@ def main():
     # figure 3: final side-by-side comparison
     fig, axes = plt.subplots(1, 4, figsize=(9.4, 2.5))
     panel(axes[0], persist, "rain now (persistence)")
-    panel(axes[1], det_mm, "two-head (+1 h)")
-    panel(axes[2], ens_mm, "diffusion, 3-draw mean (+1 h)")
-    im = panel(axes[3], truth, "truth (+1 h)")
+    panel(axes[1], det_mm, "two-head (+3 h)")
+    panel(axes[2], ens_mm, "diffusion, 3-draw mean (+3 h)")
+    im = panel(axes[3], truth, "truth (+3 h)")
     cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.015)
     cb.set_label("rain (mm)", fontsize=8)
     fig.savefig(OUT / "example_compare.png", dpi=140, bbox_inches="tight")

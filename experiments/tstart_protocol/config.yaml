@@ -1,0 +1,10 @@
+# Protocol sweep parameters (run.py reads its constants; this file records them)
+lead_h: 3
+piece: 8
+frames: [8, 24, 40, 56, 72, 88]
+t_starts: [50, 100, 250, 500, 999]
+draws_per_tstart: 1
+extra: 3-draw mean at t_start=100 (current protocol)
+warm_start: patchsplit_twohead_olr_fss_lead3h
+diffusion: diffusion_lead3h
+small_scale_band_km: "<1000"
