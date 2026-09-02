@@ -24,8 +24,9 @@ diffusion model gains over a deterministic one.
   (`patchsplit_twohead_olr_fss_lead*`: wet/dry BCE head over the full field + masked-MSE
   intensity head, OLR-FiLM bottleneck conditioning, FSS multi-scale loss weight 0.25);
   diffusion = the conditional DDPM **warm-started from that same two-head forecast**.
-  R3 then reads: the same deterministic forecast, with and without diffusion refinement
-  on top — the diffusion chain is the only difference. The one-head pair (plain UNet2D +
+  R3 then reads: the same deterministic forecast, with and without generative refinement
+  on top. (Generative side superseded the same evening — see the canonical generative
+  representative bullet below: the rectified flow replaces the SDEdit DDPM.) The one-head pair (plain UNet2D +
   one-head warm start) is the architecture sensitivity test, isolating what the two-head
   additions contribute.
   *Split note (2026-09-02, corrected same day)*: the diffusion manifests say
