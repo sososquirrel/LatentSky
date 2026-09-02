@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pytest*)", "Bash(ruff*)", "Bash(uv *)",
+      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)",
+      "Bash(ls*)", "Bash(qstat*)",
+      "Read(**)",
+      "Edit(src/**)", "Edit(experiments/**)", "Edit(sensitivity_tests/**)",
+      "Edit(results/**)", "Edit(docs/**)", "Edit(tests/**)"
+    ],
+    "deny": [
+      "Edit(_archive/**)", "Edit(data/**)", "Bash(rm -rf*)"
+    ]
+  }
+}

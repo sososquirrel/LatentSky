@@ -1,10 +1,10 @@
 __pycache__/
 *.pyc
 notebooks/.ipynb_checkpoints/
-.claude/
 docs/pixel_metrics_*.npz
 docs/scale_systems_*_lead*.csv.gz
 docs/scale_systems_baselines_patchsplit.csv.gz
 docs/scale_systems_diffusion_oneheadbackbone.csv.gz
 docs/scale_systems_diffusion_manytoone.csv.gz
 docs/scale_systems_onehead_patchsplit.csv.gz
+data
