@@ -97,7 +97,7 @@ lead times from 15 minutes to 6 hours.</p>
   <li><a href="#split">Train / val / test split</a></li>
   <li><a href="#det">Deterministic model</a></li>
   <li><a href="#diffusion">Diffusion model</a></li>
-  <li><a href="#sampling">Diffusion sampling at inference</a></li>
+  <li><a href="#compare">What the diffusion model adds</a></li>
   <li><a href="#repro">Step-by-step reproduction</a></li>
 </ol>
 
@@ -129,7 +129,7 @@ position):</p>
 <tr><td class="num">6</td><td class="mono">uzonal_850hPa</td><td>zonal wind, 850 hPa</td></tr>
 <tr><td class="num">7</td><td class="mono">umeridional_500hPa</td><td>meridional wind, 500 hPa</td></tr>
 <tr><td class="num">8</td><td class="mono">umeridional_850hPa</td><td>meridional wind, 850 hPa</td></tr>
-<tr><td class="num">9</td><td class="mono">rain_log1p</td><td>log1p of current rain — the persistence forecast as an input</td></tr>
+<tr><td class="num">9</td><td class="mono">rain_log1p</td><td>z-scored log1p of current rain — the persistence forecast as an input (see Standardization)</td></tr>
 </tbody></table></div>
 
 <p>The target is <code>rain_total</code> (mm) at the requested lead, a single channel.
@@ -139,11 +139,29 @@ nested — any skill above persistence is information the model added. Other var
 exist in the piece store (<span class="mono">relhum, temperature, w</span> at 500/850 hPa)
 but are not used by the canonical models.</p>
 
-<div class="note"><b>No input normalization.</b> The data pipeline applies no
-standardization, scaling, or anomaly removal to the inputs — raw float32 physical fields
-enter the network as stored in the piece files. The only transform anywhere is on the
-diffusion target (§4). GroupNorm inside the network absorbs the channel-scale
-differences.</div>
+<h3>Standardization</h3>
+<p>The training code applies no normalization — but the piece files are <b>already
+standardized upstream</b>, in the piece-creation pipeline (verified 2026-09-02 from the
+files themselves, not the code):</p>
+<ul>
+<li>The nine met input channels are <b>globally z-scored</b> (dataset-wide constants, not
+per-day: per-piece means are ≈0 but not exactly 0, e.g. t2m mean −0.011/+0.008/−0.013 on
+pieces 00/20/35). Sample stats on piece 00: t2m ranges −7.4…3.0 with std 1.05; olrtoa is
+the one channel with std ≠ 1 (0.40).</li>
+<li>The rain input is a <b>z-scored log-transform</b>:
+<code>rain_log1p = (log1p(rain_total) − 0.023456) / 0.118232</code>, exact to 2×10⁻⁶
+(equivalently 8.458013·log1p(rain) − 0.198390). Dry pixels sit at −0.19839, not 0.</li>
+<li>The <b>target is raw</b>: <code>rain_total</code> in mm, min 0, piece-00 max 23.7 mm.
+Only the diffusion trainer transforms it (§4).</li>
+</ul>
+<div class="note"><b>Reproducibility gap.</b> The upstream standardization constants for
+the nine met channels are baked into the piece files and not recorded in this repository;
+the rain constants above were recovered empirically (least-squares fit of
+<span class="mono">rain_log1p</span> against <span class="mono">log1p(rain_total)</span>,
+residual &lt; 2×10⁻⁶). Rebuilding piece files from raw DYAMOND output requires recovering
+the met-channel constants the same way — or retraining is insensitive to them as long as
+inputs are z-scored consistently. Anyone using the trained checkpoints must feed
+identically standardized inputs.</div>
 
 <h3>Lead-time construction</h3>
 <p>A lead is specified as <code>lead_steps_15</code>, the number of 15-min frames
@@ -201,6 +219,100 @@ contributes its train-assigned and val-assigned patches in the same pass.</p>
 <tr><td>Output head</td><td>1×1 conv → Softplus (β = 1, threshold 20): rain is non-negative by construction</td></tr>
 <tr><td>Parameters</td><td class="mono">124.4 M</td></tr>
 </tbody></table></div>
+
+<figure style="margin:1.6rem 0">
+<svg viewBox="0 0 940 408" role="img" style="max-width:100%;height:auto;font-family:'IBM Plex Mono',monospace"
+     aria-label="U-Net trunk shared by both models: five encoder stages from 64 channels at 128 squared down to 1024 channels at 8 squared, a 2048-channel bottleneck at 4 squared, and a mirrored decoder with skip concatenations at every resolution.">
+  <defs>
+    <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <!-- encoder boxes -->
+    <rect x="150" y="56"  width="130" height="34"/>
+    <rect x="150" y="114" width="130" height="34"/>
+    <rect x="150" y="172" width="130" height="34"/>
+    <rect x="150" y="230" width="130" height="34"/>
+    <rect x="150" y="288" width="130" height="34"/>
+    <!-- bottleneck -->
+    <rect x="405" y="352" width="130" height="34"/>
+    <!-- decoder boxes -->
+    <rect x="660" y="288" width="130" height="34"/>
+    <rect x="660" y="230" width="130" height="34"/>
+    <rect x="660" y="172" width="130" height="34"/>
+    <rect x="660" y="114" width="130" height="34"/>
+    <rect x="660" y="56"  width="130" height="34"/>
+    <!-- encoder down arrows -->
+    <line x1="215" y1="90"  x2="215" y2="112" marker-end="url(#arr)"/>
+    <line x1="215" y1="148" x2="215" y2="170" marker-end="url(#arr)"/>
+    <line x1="215" y1="206" x2="215" y2="228" marker-end="url(#arr)"/>
+    <line x1="215" y1="264" x2="215" y2="286" marker-end="url(#arr)"/>
+    <!-- into / out of bottleneck -->
+    <line x1="215" y1="322" x2="403" y2="366" marker-end="url(#arr)"/>
+    <line x1="535" y1="366" x2="723" y2="324" marker-end="url(#arr)"/>
+    <!-- decoder up arrows -->
+    <line x1="725" y1="286" x2="725" y2="266" marker-end="url(#arr)"/>
+    <line x1="725" y1="228" x2="725" y2="208" marker-end="url(#arr)"/>
+    <line x1="725" y1="170" x2="725" y2="150" marker-end="url(#arr)"/>
+    <line x1="725" y1="112" x2="725" y2="92"  marker-end="url(#arr)"/>
+    <!-- skip connections -->
+    <g stroke-dasharray="5 4">
+      <line x1="282" y1="73"  x2="658" y2="73"  marker-end="url(#arr)"/>
+      <line x1="282" y1="131" x2="658" y2="131" marker-end="url(#arr)"/>
+      <line x1="282" y1="189" x2="658" y2="189" marker-end="url(#arr)"/>
+      <line x1="282" y1="247" x2="658" y2="247" marker-end="url(#arr)"/>
+      <line x1="282" y1="305" x2="658" y2="305" marker-end="url(#arr)"/>
+    </g>
+    <!-- input / output -->
+    <line x1="215" y1="20" x2="215" y2="54" marker-end="url(#arr)"/>
+    <line x1="725" y1="56" x2="725" y2="22" marker-end="url(#arr)"/>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle">
+    <text x="215" y="78">64 ch</text>
+    <text x="215" y="136">128 ch</text>
+    <text x="215" y="194">256 ch</text>
+    <text x="215" y="252">512 ch</text>
+    <text x="215" y="310">1024 ch</text>
+    <text x="470" y="374">2048 ch</text>
+    <text x="725" y="78">64 ch</text>
+    <text x="725" y="136">128 ch</text>
+    <text x="725" y="194">256 ch</text>
+    <text x="725" y="252">512 ch</text>
+    <text x="725" y="310">1024 ch</text>
+    <text x="470" y="65"  font-size="11.5">skip, concat</text>
+    <text x="305" y="16" text-anchor="start">input C_in @ 128×128</text>
+    <text x="640" y="16" text-anchor="end">head: 1×1 conv (§3/§4)</text>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="end">
+    <text x="140" y="78">128²</text>
+    <text x="140" y="136">64²</text>
+    <text x="140" y="194">32²</text>
+    <text x="140" y="252">16²</text>
+    <text x="140" y="310">8²</text>
+    <text x="395" y="374">4²</text>
+  </g>
+  <g fill="currentColor" font-size="11.5">
+    <text x="225" y="105">pool ½</text>
+    <text x="735" y="279">up ×2</text>
+    <text x="735" y="221">up ×2</text>
+    <text x="735" y="163">up ×2</text>
+    <text x="735" y="105">up ×2</text>
+    <text x="225" y="163">pool ½</text>
+    <text x="225" y="221">pool ½</text>
+    <text x="225" y="279">pool ½</text>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle">
+    <text x="470" y="352" dy="-6">bottleneck</text>
+  </g>
+</svg>
+<figcaption style="font-size:.85rem;color:var(--muted);max-width:72ch">
+The U-Net trunk both models share. Every box is a DoubleConv (two 3×3 conv →
+GroupNorm(8) → ReLU → Dropout 0.05); rows are spatial resolutions for a 128-px patch.
+The models differ only at the edges of this trunk: the input channel count, the output
+head, and — for diffusion — a FiLM(t) modulation inserted after every box (§4).
+</figcaption>
+</figure>
 
 <h3>Loss</h3>
 <p><b>MSE on wet pixels only.</b> The mask is <span class="mono">y_true &gt; 0</span>;
@@ -280,20 +392,95 @@ GPU.</p>
 </tbody></table></div>
 </section>
 
-<h2 id="sampling">5 · Diffusion sampling at inference</h2>
+<h2 id="compare">5 · What the diffusion model adds</h2>
+
+<p>Both models share the trunk of §3 and see the same ten standardized channels; the
+difference is what they are asked to produce. The regression model minimizes MSE, so it
+returns the <b>conditional mean</b> of an increasingly wide predictive distribution — as
+lead grows, that mean is a blurred, spread-out field that under-represents small scales
+and peak intensity (the mechanism behind the compensating area/intensity errors of R2,
+and behind the unbounded growth of matched-system position error). The diffusion model
+learns the <b>full conditional distribution</b> and returns sharp <em>samples</em> from
+it, at the price of stochasticity and ~300× the inference cost.</p>
+
+<div class="tablewrap"><table>
+<thead><tr><th>Aspect</th><th><span class="tag det">deterministic</span></th><th><span class="tag diff">diffusion</span></th></tr></thead>
+<tbody>
+<tr><td>Network input</td><td>10 cond channels</td><td>11 = noisy state x<sub>t</sub> ⧺ same 10</td></tr>
+<tr><td>Added machinery</td><td>—</td><td>sinusoidal t-embedding (128→512) + FiLM after every DoubleConv</td></tr>
+<tr><td>Predicts</td><td>rain directly (softplus, mm)</td><td>noise ε̂ in z = log1p(rain)/2 space</td></tr>
+<tr><td>Parameters</td><td class="mono">124.4 M</td><td class="mono">130.9 M</td></tr>
+<tr><td>Training signal</td><td>MSE on wet pixels only — never trained on dry pixels</td><td>ε-MSE on the full field, dry pixels included, t ~ U{0…999}</td></tr>
+<tr><td>Learning rate</td><td class="mono">1e-3</td><td class="mono">2e-4</td></tr>
+<tr><td>Output semantics</td><td>conditional-mean point estimate; blurs with lead</td><td>sample of the conditional distribution; sharp, ensemble spread for free</td></tr>
+<tr><td>Inference / 128-px tile</td><td>1 network pass, deterministic</td><td>303 passes (101 steps × 3 draws), stochastic</td></tr>
+<tr><td>Depends on</td><td>—</td><td>the one-head forecast (warm start, below)</td></tr>
+<tr><td>Documented failure modes</td><td>oversized blurred systems keep loose IoU matches; centroid error grows unbounded with lead</td><td>compounding drift over long chains; wet bias at noise_scale = 1 (clip floor is one-sided)</td></tr>
+</tbody></table></div>
+
+<h3>Inference: refinement, not replacement</h3>
 <p>The canonical evaluation does <b>not</b> sample from pure noise. It uses SDEdit-style
 warm-started ancestral sampling (<code>GaussianDiffusion.ddpm_refine_sample</code>),
-per 128-px tile, per frame:</p>
+per 128-px tile, per frame — the deterministic forecast supplies the large-scale answer
+and the diffusion chain restores the small-scale structure the conditional mean lost:</p>
 
-<div class="flow">
-  <div class="step"><b>regression predict</b>one-head UNet2D forecast at the same lead → x₀_init = log1p(clamp(pred, 0)) / 2</div>
-  <div class="arr">→</div>
-  <div class="step"><b>forward-noise</b>q_sample to t_start = 100</div>
-  <div class="arr">→</div>
-  <div class="step"><b>reverse loop</b>t = 100 … 0: predict ε̂, form x₀ estimate, clamp to (0, 2.5), posterior-mean step, noise_scale = 1</div>
-  <div class="arr">→</div>
-  <div class="step"><b>ensemble mean</b>3 draws, each expm1(2·x₀), averaged, clamped ≥ 0</div>
-</div>
+<figure style="margin:1.6rem 0">
+<svg viewBox="0 0 960 302" role="img" style="max-width:100%;height:auto;font-family:'IBM Plex Mono',monospace"
+     aria-label="The diffusion model refines the deterministic forecast: the ten input channels feed the UNet2D, whose rain forecast is noised to timestep 100 and then denoised over 101 reverse steps by the conditional diffusion U-Net, conditioned on the same ten channels; three draws are averaged into the refined rain field.">
+  <defs>
+    <marker id="arrb" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="20"  y="36" width="200" height="40"/>
+    <rect x="300" y="36" width="200" height="40" style="stroke:var(--det);stroke-width:1.8"/>
+    <rect x="580" y="36" width="190" height="40" style="stroke:var(--det);stroke-width:1.8"/>
+    <rect x="60"  y="188" width="210" height="46"/>
+    <rect x="330" y="188" width="230" height="46" style="stroke:var(--diff);stroke-width:1.8"/>
+    <rect x="620" y="188" width="180" height="46"/>
+    <rect x="838" y="188" width="112" height="46" style="stroke:var(--diff);stroke-width:1.8"/>
+    <line x1="220" y1="56" x2="298" y2="56" marker-end="url(#arrb)"/>
+    <line x1="500" y1="56" x2="578" y2="56" marker-end="url(#arrb)"/>
+    <line x1="270" y1="211" x2="328" y2="211" marker-end="url(#arrb)"/>
+    <line x1="560" y1="211" x2="618" y2="211" marker-end="url(#arrb)"/>
+    <line x1="800" y1="211" x2="836" y2="211" marker-end="url(#arrb)"/>
+    <!-- warm start: det forecast down into diffusion chain -->
+    <polyline points="675,76 675,128 165,128 165,186" marker-end="url(#arrb)"/>
+    <!-- conditioning: same 10 channels into the reverse loop -->
+    <polyline points="120,76 120,156 445,156 445,186" marker-end="url(#arrb)" stroke-dasharray="5 4"/>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle">
+    <text x="120" y="53">10 standardized</text>
+    <text x="120" y="68">channels</text>
+    <text x="400" y="53">UNet2D</text>
+    <text x="400" y="68">softplus head</text>
+    <text x="675" y="53">deterministic</text>
+    <text x="675" y="68">rain forecast (mm)</text>
+    <text x="165" y="207">z = log1p(rain)/2</text>
+    <text x="165" y="222">+ noise to t = 100</text>
+    <text x="445" y="207">101 reverse steps</text>
+    <text x="445" y="222">ε̂-UNet + FiLM(t)</text>
+    <text x="710" y="207">3 draws → mean</text>
+    <text x="710" y="222">→ expm1(2z)</text>
+    <text x="894" y="207">refined</text>
+    <text x="894" y="222">rain (mm)</text>
+  </g>
+  <g fill="currentColor" font-size="11.5">
+    <text x="228" y="48">1 pass</text>
+    <text x="685" y="122">warm start</text>
+    <text x="130" y="150">conditioning (dashed)</text>
+    <text x="330" y="262">x₀ clamped to (0, 2.5) each step · noise_scale = 1</text>
+    <text x="330" y="280">303 network passes per tile</text>
+  </g>
+</svg>
+<figcaption style="font-size:.85rem;color:var(--muted);max-width:72ch">
+The diffusion model refines the deterministic forecast rather than replacing it. The
+one-head prediction is forward-noised to t_start = 100 and denoised back, conditioned on
+the same ten channels; where the two models disagree at scale L is exactly what R3
+measures.
+</figcaption>
+</figure>
 
 <p>Rationale and cost: warm-starting takes the "is it raining, roughly how much"
 structure from the independently validated regression and bounds compounding drift to
@@ -322,7 +509,10 @@ bundled NVIDIA libraries on <code>LD_LIBRARY_PATH</code> (see the repo Makefile 
 <span class="mono">experiments/_template/job.sh</span>).</li>
 <li><b>Data.</b> Piece files for the 10 input variables plus <code>rain_total</code>,
 named <span class="mono">&lt;var&gt;_pieceNN.npy</span>, shape (96, 320, 1440) float32,
-in one directory (<code>pieces_dir</code>).</li>
+in one directory (<code>pieces_dir</code>). Inputs must be standardized as described in
+§1 — the met channels globally z-scored, the rain input as
+<span class="mono">(log1p(rain) − 0.023456)/0.118232</span>, the target raw mm — because
+the trained checkpoints expect exactly those scales.</li>
 <li><b>Config.</b> One YAML per run. The canonical deterministic config, in full:
 <pre><code>name: patchsplit_onehead_lead1h
 input_vars: [precipw, t2m, olrtoa, mse_500hPa, mse_850hPa,
