@@ -497,12 +497,115 @@ field, so the diffusion model does train on dry pixels.</p>
 <tr><td>Parameters</td><td class="mono">130.9 M</td></tr>
 </tbody></table></div>
 
-<h3>Forward process and loss</h3>
+<h3>Forward process and loss — one training step</h3>
 <p>Standard DDPM with <b>T = 1000</b> timesteps on the <b>cosine schedule</b>
-(Nichol &amp; Dhariwal 2021; β clipped to [10⁻⁴, 0.999]). Per batch: draw
-<span class="mono">t ~ U{0, …, 999}</span> per sample, noise
-<span class="mono">x_t = √ᾱ_t·x₀ + √(1−ᾱ_t)·ε</span>, and minimize
-<code>MSE(ε̂(x_t, cond, t), ε)</code>.</p>
+(Nichol &amp; Dhariwal 2021; β clipped to [10⁻⁴, 0.999]). The intuition: the network is
+never asked to "make rain". Each training step corrupts a true rain field with a known
+amount of Gaussian noise and asks the network to <em>point out the noise</em>, given the
+weather context and how corrupted the field is. Drawing the corruption level t at random
+each step trains one network for every level at once — at high t almost nothing of the
+rain survives, so spotting the noise forces it to infer the whole rain field from the
+ten conditioning channels; at low t only fine detail is missing. Sampling (§5) is just
+this skill applied in reverse, step by step.</p>
+
+<figure style="margin:1.6rem 0">
+<svg viewBox="0 0 940 352" role="img" style="max-width:100%;height:auto;font-family:'IBM Plex Mono',monospace"
+     aria-label="One diffusion training step: the true rain field is transformed to z-space, mixed with drawn Gaussian noise in proportions set by the random timestep t through the cosine schedule, and the conditional U-Net — given the noisy field, the ten conditioning channels, and t — must predict the injected noise; the loss is the mean squared error between predicted and true noise. A bar below shows how much rain signal survives at each t.">
+  <defs>
+    <marker id="arrt" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="currentColor"/>
+    </marker>
+    <marker id="arrtd" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" style="fill:var(--diff)"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="20"  y="36" width="150" height="44"/>
+    <rect x="212" y="36" width="150" height="44"/>
+    <rect x="20"  y="140" width="150" height="44"/>
+    <rect x="212" y="140" width="150" height="44"/>
+    <rect x="470" y="36" width="90"  height="44"/>
+    <rect x="470" y="140" width="90"  height="58"/>
+    <rect x="620" y="36" width="190" height="58" style="stroke:var(--diff);stroke-width:1.8"/>
+    <rect x="620" y="140" width="90"  height="44" style="stroke:var(--diff);stroke-width:1.8"/>
+    <rect x="748" y="140" width="120" height="44"/>
+    <circle cx="412" cy="58" r="15"/>
+    <line x1="170" y1="58"  x2="210" y2="58"  marker-end="url(#arrt)"/>
+    <line x1="362" y1="58"  x2="395" y2="58"  marker-end="url(#arrt)"/>
+    <line x1="170" y1="150" x2="399" y2="68"  marker-end="url(#arrt)"/>
+    <line x1="429" y1="58"  x2="468" y2="58"  marker-end="url(#arrt)"/>
+    <line x1="560" y1="58"  x2="618" y2="58"  marker-end="url(#arrt)"/>
+    <line x1="515" y1="140" x2="640" y2="96"  marker-end="url(#arrt)"/>
+    <line x1="345" y1="140" x2="406" y2="74"  stroke-dasharray="5 4" marker-end="url(#arrt)"/>
+    <line x1="362" y1="150" x2="616" y2="90"  stroke-dasharray="5 4" marker-end="url(#arrt)"/>
+    <line x1="665" y1="94"  x2="665" y2="138" style="stroke:var(--diff)" marker-end="url(#arrtd)"/>
+    <line x1="710" y1="162" x2="746" y2="162" marker-end="url(#arrt)"/>
+    <polyline points="95,184 95,220 808,220 808,186" stroke-dasharray="5 4" marker-end="url(#arrt)"/>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle">
+    <text x="95"  y="54">truth rain y</text>
+    <text x="95"  y="70">(mm)</text>
+    <text x="287" y="54">x₀ =</text>
+    <text x="287" y="70">log1p(y) / 2</text>
+    <text x="95"  y="158">ε ~ N(0, 1)</text>
+    <text x="95"  y="174">drawn fresh</text>
+    <text x="287" y="158">t ~ U{0…999}</text>
+    <text x="287" y="174">cosine ᾱ_t</text>
+    <text x="412" y="63">+</text>
+    <text x="515" y="54">x_t</text>
+    <text x="515" y="70">noisy rain</text>
+    <text x="515" y="160">10 cond</text>
+    <text x="515" y="176">channels</text>
+    <text x="515" y="192">(§1)</text>
+    <text x="715" y="58">ConditionalDiffusionUNet</text>
+    <text x="715" y="74">FiLM(t) at every level</text>
+    <text x="665" y="158">ε̂</text>
+    <text x="665" y="174">predicted</text>
+    <text x="808" y="158">loss =</text>
+    <text x="808" y="174">MSE(ε̂, ε)</text>
+  </g>
+  <g fill="currentColor" font-size="11.5">
+    <text x="360" y="46" text-anchor="end">√ᾱ_t</text>
+    <text x="330" y="106">√(1−ᾱ_t)</text>
+    <text x="452" y="230" text-anchor="middle">the target is the injected noise itself</text>
+    <text x="530" y="120">conditioning</text>
+  </g>
+  <!-- signal-survival bar -->
+  <g stroke="currentColor" stroke-width="1.2" fill="none">
+    <line x1="90" y1="292" x2="870" y2="292"/>
+    <line x1="90"  y1="286" x2="90"  y2="298"/>
+    <line x1="168" y1="286" x2="168" y2="298"/>
+    <line x1="480" y1="286" x2="480" y2="298"/>
+    <line x1="792" y1="286" x2="792" y2="298"/>
+    <line x1="870" y1="286" x2="870" y2="298"/>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle">
+    <text x="90"  y="316">t=0</text>
+    <text x="168" y="316">t=100</text>
+    <text x="480" y="316">t=500</text>
+    <text x="792" y="316">t=900</text>
+    <text x="870" y="316">t=999</text>
+    <text x="90"  y="334">ᾱ=1.00</text>
+    <text x="168" y="334">0.97</text>
+    <text x="480" y="334">0.49</text>
+    <text x="792" y="334">0.02</text>
+    <text x="870" y="334">0.00</text>
+    <text x="480" y="266" font-size="12">rain-signal variance surviving in x_t (cosine schedule)</text>
+  </g>
+  <g style="fill:var(--diff)" font-size="11.5" text-anchor="middle">
+    <text x="168" y="276">↑ inference warm-starts here (§5)</text>
+  </g>
+</svg>
+<figcaption style="font-size:.85rem;color:var(--muted);max-width:72ch">
+One training step. The true rain field (in z-space) is mixed with fresh Gaussian noise
+in proportions √ᾱ_t : √(1−ᾱ_t) set by a randomly drawn timestep; the network sees the
+noisy field, the ten conditioning channels, and t, and must return the injected noise —
+the loss compares its answer to the noise that was actually drawn. The bar shows what
+one network learns to handle: at t = 900 almost no rain survives (denoising ≈ generating
+rain from the weather context alone); at t = 100, where inference warm-starts, 97 % of
+the signal variance is intact and the chain only reworks detail.
+</figcaption>
+</figure>
 
 <h3>Training schedule</h3>
 <p>Identical to the deterministic schedule except the learning rate:
