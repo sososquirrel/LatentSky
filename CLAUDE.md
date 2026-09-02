@@ -63,7 +63,9 @@ In practice this means:
 
 - Cluster: NCAR Derecho/Casper (user `sabramian`). GPU jobs via PBS (`qsub`), see
   `experiments/_template/job.sh`. Run heavy work on compute nodes, never on login nodes.
-- Python env: `uv sync` (or `micromamba env create -f environment.yml` for eccodes/cdo).
+- Python env: conda `latentsky-env` at `/glade/work/sabramian/conda-envs/latentsky-env`.
+  In PBS jobs call its `bin/python` directly (see `experiments/_template/job.sh`);
+  do not create a `.venv` or pip-install into base.
 - Tests: `pytest tests/`. Lint/format: `ruff`. Both run in pre-commit.
 - Language: code and docs in English.
 

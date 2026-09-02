@@ -1,0 +1,39 @@
+# LatentSky figure style — one message per panel, typography-forward.
+# Use: plt.style.use("docs/latentsky.mplstyle")
+
+figure.figsize        : 4.2, 3.2
+figure.dpi            : 150
+savefig.dpi           : 300
+savefig.bbox          : tight
+savefig.format        : pdf
+
+font.family           : sans-serif
+font.sans-serif       : Helvetica, Arial, DejaVu Sans
+font.size             : 9
+axes.titlesize        : 9
+axes.labelsize        : 9
+xtick.labelsize       : 8
+ytick.labelsize       : 8
+legend.fontsize       : 8
+mathtext.fontset      : dejavusans
+
+axes.spines.top       : False
+axes.spines.right     : False
+axes.linewidth        : 0.8
+axes.grid             : False
+axes.prop_cycle       : cycler("color", ["1a1a1a", "b2182b", "2166ac", "e08214", "542788", "66a61e"])
+
+lines.linewidth       : 1.5
+lines.markersize      : 4
+
+xtick.direction       : out
+ytick.direction       : out
+xtick.major.size      : 3
+ytick.major.size      : 3
+xtick.major.width     : 0.8
+ytick.major.width     : 0.8
+
+legend.frameon        : False
+legend.handlelength   : 1.5
+
+errorbar.capsize      : 2

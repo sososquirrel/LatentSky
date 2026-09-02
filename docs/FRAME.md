@@ -25,9 +25,19 @@ Questions
 
 | R  | Claim (with a number)                                                                                 | Figure | Status |
 |----|--------------------------------------------------------------------------------------------------------|--------|--------|
-| R1 | Definition: T(L) from POD decay; T(L) ∝ L^α with α = [..] for persistence, the null every model must beat | fig_R1 | draft |
-| R2 | Decomposition: aggregate error hides compensating area (+[..]%) and intensity (−[..]%) errors           | fig_R2 | draft |
-| R3 | Deterministic vs diffusion: diffusion extends T(L) by [..] h for L > [..] km; below [..] km neither beats persistence | fig_R3 | draft |
+| R1 | Definition: T(L) from POD decay; detection e-folding time rises from ≈0.7 h (L < 65 km) to ≈8.8 h (L > 200 km); T(L) ∝ L^α with α = [to confirm — power-law fit not yet run] for persistence, the null every model must beat | fig_R1 | draft |
+| R2 | Decomposition: aggregate error hides compensating area (+4 %) and intensity (−9 %) errors (net −5 %; L ≈ 200 km, 0.25 h lead, diffusion) | fig_R2 | draft |
+| R3 | Deterministic vs diffusion: diffusion extends the intensity e-folding time τ_ρ by ≈2 h for 100 ≤ L ≤ 700 km and ≈5 h at L ≈ 60 km (9.3 h vs 4.3 h); below ≈45 km neither beats persistence [threshold to confirm] | fig_R3 | draft |
+
+Draft-number provenance (legacy pipeline, to re-derive in `experiments/` before any
+status moves past `draft`): R1 e-folding times from `_archive/../docs/predictability_horizon.csv`
+(band fits; which model/null produced them must be re-established); R2 from
+`docs/scale_summary_diffusion.csv` (dlnA_w = +0.043, dlnrho_w = −0.094, dlnP_w = −0.051 at
+scale_mid = 203 km, lead 0.25 h); R3 from `docs/dln_tau_fits_diffusion_dln.csv` vs
+`docs/dln_tau_fits_two_head_dln.csv` (τ_ρ per scale bin, diffusion vs deterministic two-head).
+The persistence-wins-object-detection caveat at short leads (loose IoU matching favors
+long-lived storms) is documented in the 2026-07 baseline comparison and must be addressed
+in R1's definition of T(L).
 
 ## Part 2 — Outlook: the framework applied to WeatherBench2 models
 
@@ -38,7 +48,7 @@ Purpose: show the framework is general and point to what a follow-up would ask.
 
 | R  | Claim (with a number)                                                                        | Figure | Status |
 |----|-----------------------------------------------------------------------------------------------|--------|--------|
-| I1 | Illustration: on WB2 models the same decomposition shows small systems (L < [..] km) under-detected and intensity underestimated | fig_I1 | draft |
+| I1 | Illustration: on WB2 models the same decomposition shows small systems (L < [to confirm — read off `_archive/../docs/scale_summary_<model>_*_24h.csv`] km) under-detected and intensity underestimated | fig_I1 | draft |
 
 `I` = illustration: registered in REGISTRY.md with its script and data, exempt from the
 sensitivity requirement, phrased as an observation, not a finding.
