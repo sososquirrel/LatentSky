@@ -193,18 +193,21 @@ def main():
                     ha="center", va="center", fontsize=8, transform=axes[1, 0].transAxes)
     for j, tt in enumerate(ts_sorted, start=1):
         panel(axes[1, j], snap_x0_mm[tt], f"$\\hat{{x}}_0$ at t={tt}")
-    im = panel(axes[1, ncol - 1], ens_mm, "ensemble mean (3)")
+    im = panel(axes[1, ncol - 1], to_mm(draws[1]), "draw 2 (t=0)")
     cb = fig.colorbar(im, ax=axes, shrink=0.8, pad=0.015)
     cb.set_label("rain (mm)", fontsize=8)
     fig.savefig(OUT / "example_denoise.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
 
-    # figure 3: final side-by-side comparison
-    fig, axes = plt.subplots(1, 4, figsize=(9.4, 2.5))
+    # figure 3: final side-by-side comparison — three individual draws, never
+    # the mean (FRAME ensemble scoring rule)
+    dmm = [to_mm(d) for d in draws]
+    fig, axes = plt.subplots(1, 6, figsize=(13.8, 2.4))
     panel(axes[0], persist, "rain now (persistence)")
     panel(axes[1], det_mm, "two-head (+3 h)")
-    panel(axes[2], ens_mm, "diffusion, 3-draw mean (+3 h)")
-    im = panel(axes[3], truth, "truth (+3 h)")
+    for j in range(3):
+        panel(axes[2 + j], dmm[j], f"diffusion draw {j + 1} (+3 h)")
+    im = panel(axes[5], truth, "truth (+3 h)")
     cb = fig.colorbar(im, ax=axes, shrink=0.85, pad=0.015)
     cb.set_label("rain (mm)", fontsize=8)
     fig.savefig(OUT / "example_compare.png", dpi=140, bbox_inches="tight")

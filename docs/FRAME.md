@@ -51,6 +51,15 @@ diffusion model gains over a deterministic one.
   (`predict_piece_diffusion`, ensemble_size = 3) averaged draws before scoring, so all
   legacy diffusion CSVs — including the R3 draft numbers — are error-of-the-mean and
   must be re-derived per-draw.
+- **Diffusion sampling protocol (adopted 2026-09-02;
+  `experiments/tstart_protocol` + `sensitivity_tests/tstart_protocol_piece20`)**:
+  warm start from the two-head forecast; single draws, scored per-draw;
+  lead-dependent noise budget from the measured band-ratio crossings —
+  t_start = 200 (0.25 h), 250 (1 h), 550 (3 h), 500 (6 h, the saturation plateau);
+  0.5 h and 2 h log-interpolated (≈225, ≈400), to be verified in the R3
+  re-derivation. Known limit, reported as a property of the model class:
+  at 6 h the model under-disperses — small-scale power ratio ceiling ≈0.8–0.85
+  and wet area −20 % regardless of budget (full-mosaic sampling does not lift it).
 
 ## Part 1 — Predictability horizon and model class (core, direct comparison)
 
