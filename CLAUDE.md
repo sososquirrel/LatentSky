@@ -76,7 +76,13 @@ In practice this means:
   it make the generative model look like the regression (FRAME.md, ensemble scoring
   rule). Same trap as tuning sampling on pixel R²: double-penalty metrics reward
   smoothness.
-- **The `rain_log1p` input channel is deliberate, not leakage.** Every model is handed
+- **SDEdit warm-starting the DDPM is a retrofit with a train/test mismatch.** The
+  diffusion model was trained only to denoise noised *truth*; warm-starting feeds it
+  noised *forecast* — off-manifold, worst at small t_start where the forecast's
+  smoothness dominates the input. That mismatch is why t_start needs calibration per
+  lead (`experiments/tstart_protocol`) and why `experiments/flow_matching_6h` trains
+  the forecast→truth transport natively. State this when presenting any SDEdit-based
+  result. Every model is handed
   the persistence forecast as an input, so the null is nested by design (FRAME.md
   Definitions). Do not "fix" it; the 9var-vs-10var ablation is a separate study.
 
