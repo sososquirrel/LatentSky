@@ -16,6 +16,7 @@ from latentsky.models import (
 
 RUNS = Path("/glade/derecho/scratch/sabramian/LatentSky_runs")
 ONEHEAD_CKPT = RUNS / "unet_models/one_head/10var/patchsplit_onehead_lead1h/checkpoint.pt"
+TWOHEAD_CKPT = RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead1h/checkpoint.pt"
 DIFFUSION_CKPT = RUNS / "gen_models/10var/diffusion_lead1h/checkpoint.pt"
 
 
@@ -71,6 +72,13 @@ def test_ddpm_refine_sample_shape_and_clip():
 def test_unet2d_loads_canonical_onehead_checkpoint_strict():
     m = UNet2D(in_ch=10, out_ch=1, base_ch=64, depth=5, out_activation="softplus")
     state = torch.load(ONEHEAD_CKPT, map_location="cpu", weights_only=True)
+    m.load_state_dict(state, strict=True)
+
+
+@pytest.mark.skipif(not TWOHEAD_CKPT.exists(), reason="canonical two-head checkpoint not on scratch")
+def test_twohead_loads_canonical_checkpoint_strict():
+    m = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, out_activation="softplus", olr_channel_idx=2)
+    state = torch.load(TWOHEAD_CKPT, map_location="cpu", weights_only=True)
     m.load_state_dict(state, strict=True)
 
 

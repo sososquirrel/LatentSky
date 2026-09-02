@@ -19,9 +19,15 @@ diffusion model gains over a deterministic one.
   POD(t; L) = POD₀(L) · exp(−t/τ(L)) per scale bin, with fit standard errors reported.
 - **Lead times**: all six trained leads (0.25, 0.5, 1, 2, 3, 6 h) enter every fit.
   Claims may be stated at any lead; two leads cannot constrain an exponential.
-- **Canonical model pair (R3)**: deterministic = patch-split one-head regression;
-  diffusion = the diffusion model on the same one-head backbone, same split.
-  The two-head model is not canonical; comparing against it is a sensitivity test.
+- **Canonical model pair (R3)** (revised 2026-09-02, superseding the one-head choice
+  earlier the same day): deterministic = patch-split **two-head** model
+  (`patchsplit_twohead_olr_fss_lead*`: wet/dry BCE head over the full field + masked-MSE
+  intensity head, OLR-FiLM bottleneck conditioning, FSS multi-scale loss weight 0.25);
+  diffusion = the conditional DDPM **warm-started from that same two-head forecast**.
+  R3 then reads: the same deterministic forecast, with and without diffusion refinement
+  on top — the diffusion chain is the only difference. The one-head pair (plain UNet2D +
+  one-head warm start) is the architecture sensitivity test, isolating what the two-head
+  additions contribute.
   *Split note (2026-09-02, corrected same day)*: the diffusion manifests say
   `split_mode: piece`, but `train_diffusion.py` ignores that field and always builds
   the patch split (same seed 1919810, same 70/15/15) — both canonical families are
@@ -61,9 +67,8 @@ status moves past `draft`): R1 e-folding times from `_archive/../docs/predictabi
 (band fits; which model/null produced them must be re-established); R2 from
 `docs/scale_summary_diffusion.csv` (dlnA_w = +0.043, dlnrho_w = −0.094, dlnP_w = −0.051 at
 scale_mid = 203 km, lead 0.25 h); R3 from `docs/dln_tau_fits_diffusion_dln.csv` vs
-`docs/dln_tau_fits_two_head_dln.csv` (τ_ρ per scale bin) — note this legacy pair uses the
-*two-head* deterministic model; the canonical pair (one-head + one-head-backbone diffusion,
-see Definitions) must replace it.
+`docs/dln_tau_fits_two_head_dln.csv` (τ_ρ per scale bin) — this legacy pairing (two-head
+deterministic, diffusion warm-started from it) matches the canonical pair in Definitions.
 The persistence-wins-object-detection caveat at short leads (loose IoU matching favors
 long-lived storms) is documented in the 2026-07 baseline comparison and must be addressed
 in R1's definition of T(L).

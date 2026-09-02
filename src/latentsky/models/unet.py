@@ -1,9 +1,11 @@
 """U-Net architectures (recovered from _archive/latentsky/models.py, 2026-09-02).
 
-Roles per docs/FRAME.md Definitions:
-- UNet2D: the canonical deterministic (one-head regression) model for R1-R3.
-- UNet2DTwoHead: NOT canonical; the deterministic comparator for R3's
-  architecture sensitivity test only.
+Roles per docs/FRAME.md Definitions (revised 2026-09-02):
+- UNet2DTwoHead: the canonical deterministic model for R1-R3 (wet/dry BCE
+  head + masked-MSE intensity head, OLR-FiLM bottleneck conditioning); also
+  the warm-start source for the canonical diffusion evaluation.
+- UNet2D: the plain one-head regression; deterministic side of R3's
+  architecture sensitivity test.
 
 Activation is ReLU (matches all trained checkpoints). Checkpoints are plain
 state_dicts saved DataParallel-unwrapped; tests/test_models.py verifies
