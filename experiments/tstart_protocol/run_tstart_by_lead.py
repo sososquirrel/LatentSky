@@ -65,7 +65,8 @@ def main():
                 det_mm = mosaic(np.clip(det.cpu().numpy()[:, 0], 0, None))
                 z_det = np.log1p(det_mm) / SCALE
                 z_truth = np.log1p(np.clip(y, 0, None)) / SCALE
-                mses.append(float(np.mean((z_det - z_truth) ** 2)))
+                wet = (y > 0.1) | (det_mm > 0.1)
+                mses.append(float(np.mean((z_det - z_truth)[wet] ** 2)))
                 det_bands.append(band_power(det_mm))
                 truth_bands.append(band_power(y))
                 truths.append(y); conds.append(cond); dets.append(det)
@@ -81,25 +82,29 @@ def main():
                 RUNS / f"gen_models/10var/diffusion_lead{lead:g}h/checkpoint.pt",
                 map_location=device, weights_only=True))
             diff = diff.to(device).eval()
-            bands, wets = [], []
-            with torch.no_grad():
-                for fi, (cond, det, y) in enumerate(zip(conds, dets, truths)):
-                    x0_init = torch.log1p(torch.clamp(det, min=0.0)) / SCALE
-                    z = refine(gd, diff, cond, x0_init, tstar, seed=555 + fi)
-                    mm = mosaic(np.clip(
-                        np.expm1(SCALE * np.clip(z.cpu().numpy()[:, 0], 0.0, 2.5)), 0, None))
-                    bands.append(band_power(mm))
-                    wets.append(float((mm > 0.1).mean()))
-            row["draw_band_ratio_at_tstar"] = float(np.mean(bands) / np.mean(truth_bands))
-            row["draw_wet_frac"] = float(np.mean(wets))
-            row["truth_wet_frac"] = float(np.mean([(y > 0.1).mean() for y in truths]))
+            truth_band_mean = float(np.mean(truth_bands))
+            truth_wet = float(np.mean([(y > 0.1).mean() for y in truths]))
+            row["truth_wet_frac"] = truth_wet
+            for ts in sorted({tstar, 100, 250, 500, 750}):
+                bands, wets = [], []
+                with torch.no_grad():
+                    for fi, (cond, det, y) in enumerate(zip(conds, dets, truths)):
+                        x0_init = torch.log1p(torch.clamp(det, min=0.0)) / SCALE
+                        z = refine(gd, diff, cond, x0_init, ts, seed=555 + fi)
+                        mm = mosaic(np.clip(
+                            np.expm1(SCALE * np.clip(z.cpu().numpy()[:, 0], 0.0, 2.5)), 0, None))
+                        bands.append(band_power(mm))
+                        wets.append(float((mm > 0.1).mean()))
+                row[f"band_ratio_ts{ts}"] = float(np.mean(bands) / truth_band_mean)
+                row[f"wet_frac_ts{ts}"] = float(np.mean(wets))
+                print(f"  lead {lead} ts={ts}: band_ratio={row[f'band_ratio_ts{ts}']:.3f} "
+                      f"wet={row[f'wet_frac_ts{ts}']:.4f} (truth {truth_wet:.4f})", flush=True)
         rows.append(row)
         print(row, flush=True)
         del twohead, conds, dets, truths
         torch.cuda.empty_cache()
 
-    keys = ["lead_h", "mse_z", "t_star", "abar_star", "det_band_ratio",
-            "draw_band_ratio_at_tstar", "draw_wet_frac", "truth_wet_frac"]
+    keys = sorted({k for r in rows for k in r}, key=lambda k: (k != "lead_h", k))
     with open(OUT / "tstart_by_lead.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=keys)
         w.writeheader()

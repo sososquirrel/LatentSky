@@ -795,7 +795,11 @@ mean at 100 falls back to 0.64: averaging cancels half the gain. The original ch
 100 optimized bulk pixel R², a double-penalty metric that structurally prefers smooth
 fields. Under evaluation: a lead-dependent rule, t*(lead) = smallest t with
 (1−ᾱ_t) ≥ ᾱ_t · MSE_z(lead), matching the noise budget to the forecast's own error.
-The numbers on this page describe the protocol as run in July.</div>
+Also locked in FRAME.md: every diffusion metric is computed <b>per draw and then
+averaged over draws</b> — the mean of the error, never the error of the mean. The
+July evaluations averaged the 3 draws into one field before scoring, which turns the
+generative model back into a conditional-mean estimate; those numbers are being
+re-derived. The numbers on this page describe the protocol as run in July.</div>
 
 <h2 id="repro">6 · Step-by-step reproduction</h2>
 <ol>

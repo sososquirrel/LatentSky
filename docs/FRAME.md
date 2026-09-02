@@ -42,6 +42,15 @@ diffusion model gains over a deterministic one.
   lacked. (Empirically this does not make beating persistence automatic in every
   metric: see the IoU-matching pitfall in CLAUDE.md.)
 - **Null** = persistence, evaluated under *identical* object detection and matching.
+- **Ensemble scoring rule (locked 2026-09-02)**: every diffusion metric is computed
+  per draw and then averaged over draws — the mean of the error, never the error of
+  the mean. The n-draw *mean field* is a conditional-mean estimate: scoring it turns
+  the generative model back into a regression and erases exactly the difference R3
+  measures. The mean field may appear only as an explicitly labeled illustration.
+  *Caveat on existing numbers*: the July evaluation
+  (`predict_piece_diffusion`, ensemble_size = 3) averaged draws before scoring, so all
+  legacy diffusion CSVs — including the R3 draft numbers — are error-of-the-mean and
+  must be re-derived per-draw.
 
 ## Part 1 — Predictability horizon and model class (core, direct comparison)
 
