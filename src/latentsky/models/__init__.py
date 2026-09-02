@@ -1,4 +1,5 @@
 from .unet import DoubleConv, UNet2D, UNet2DTwoHead
+from .flow import RectifiedFlow
 from .diffusion import (
     ConditionalDiffusionUNet,
     GaussianDiffusion,
@@ -14,4 +15,5 @@ __all__ = [
     "GaussianDiffusion",
     "SinusoidalTimeEmbedding",
     "cosine_beta_schedule",
+    "RectifiedFlow",
 ]
