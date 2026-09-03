@@ -40,11 +40,7 @@ def main():
     vmax = max(truth.max(), det.max(), 0.5)
     norm = LogNorm(vmin=THR, vmax=vmax)
     cmap = plt.get_cmap("Blues").copy(); cmap.set_under("#f7f9fb")
-    fig = plt.figure(figsize=(8.6, 6.2))
-    gs = fig.add_gridspec(2, 3, height_ratios=[2.6, 1.15], hspace=0.28, wspace=0.12)
-    axT = fig.add_subplot(gs[0, 0:2].subgridspec(1, 2, wspace=0.06)[0, 0]) if False else None
-    top = gs[0, :].subgridspec(1, 2, wspace=0.08)
-    axes = [fig.add_subplot(top[0, 0]), fig.add_subplot(top[0, 1])]
+    fig, axes = plt.subplots(1, 2, figsize=(8.6, 4.0))
 
     def outline(ax, labels, label_id, color, ls="-", lw=1.4):
         ax.contour(labels == label_id, levels=[0.5], colors=[color],
@@ -118,28 +114,8 @@ def main():
                label=f"false alarm ({len(fa)}) — predicted, not real"),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
-               frameon=False, bbox_to_anchor=(0.5, -0.015))
+               frameon=False, bbox_to_anchor=(0.5, -0.03))
 
-    # bottom row: the pipeline on a zoomed window of the truth field
-    zr, zc = slice(25, 95), slice(20, 100)
-    zoom = truth[zr, zc]
-    from matplotlib.patches import Rectangle
-    axes[0].add_patch(Rectangle((zc.start, zr.start), zc.stop - zc.start,
-                                zr.stop - zr.start, fill=False, ec="0.15", lw=1.0))
-    axes[0].text(zc.start + 2, zr.stop - 8, "zoom", fontsize=7, color="0.15")
-
-    axz = [fig.add_subplot(gs[1, j]) for j in range(3)]
-    axz[0].imshow(zoom, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
-    axz[0].set_title("1 · rain field", fontsize=8)
-    axz[1].imshow(zoom > THR, origin="lower", cmap="Greys", vmin=0, vmax=1.6,
-                  interpolation="nearest")
-    axz[1].set_title(f"2 · wet mask (> {THR} mm)", fontsize=8)
-    zl = lt[zr, zc].astype(float)
-    zl_show = np.where(zl > 0, (zl * 7.3) % 19 + 1, np.nan)
-    axz[2].imshow(zl_show, origin="lower", cmap="tab20", interpolation="nearest")
-    axz[2].set_title("3 · labeled systems (8-conn.)", fontsize=8)
-    for ax in axz:
-        ax.set_xticks([]); ax.set_yticks([])
     fig.suptitle(f"cluster detection (> {THR} mm, 8-connected) and greedy "
                  f"IoU ≥ {IOU_MIN} matching", fontsize=9, y=0.985)
     fig.savefig(OUT / "eval_method_clusters.png", dpi=140, bbox_inches="tight")
