@@ -108,25 +108,86 @@ def main():
     fig.savefig(OUT / "eval_method_clusters.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
 
+    # --- all-frames matched pairs for the same block (cached; CPU two-head)
+    pairs_csv = OUT / "eval_method_pairs_lead3h.csv"
+    if pairs_csv.exists():
+        import pandas as pd
+        allm = pd.read_csv(pairs_csv)
+    else:
+        import pandas as pd
+        import torch
+        torch.set_num_threads(4)
+        from latentsky.models import UNet2DTwoHead
+        RUNS = Path("/glade/derecho/scratch/sabramian/LatentSky_runs")
+        twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
+        twohead.load_state_dict(torch.load(
+            RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead3h/checkpoint.pt",
+            map_location="cpu", weights_only=True))
+        twohead.eval()
+        PIECES = Path("/glade/derecho/scratch/sabramian/latentsky_pieces")
+        INPUT_VARS = ["precipw", "t2m", "olrtoa", "mse_500hPa", "mse_850hPa",
+                      "uzonal_500hPa", "uzonal_850hPa", "umeridional_500hPa",
+                      "umeridional_850hPa", "rain_log1p"]
+        DELTA = 13
+        sl = np.s_[BLOCK_ROW * P:(BLOCK_ROW + 1) * P, 4 * P:5 * P]  # block (1,4)
+        ytab = np.load(PIECES / "rain_total_piece08.npy", mmap_mode="r")
+        rows = []
+        with torch.no_grad():
+            for t in range(96 - DELTA):
+                x = np.stack([np.asarray(np.load(PIECES / f"{v}_piece08.npy",
+                                                 mmap_mode="r")[t], dtype=np.float32)[sl]
+                              for v in INPUT_VARS], 0)
+                pred, _ = twohead(torch.from_numpy(x[None]))
+                pred = np.clip(pred.numpy()[0, 0], 0, None)
+                yt = np.asarray(ytab[t + DELTA], dtype=np.float32)[sl]
+                dfr = match_systems(yt, pred, THR, area_row, iou_min=IOU_MIN)
+                dfr.insert(0, "frame", t)
+                rows.append(dfr[dfr.role == "match"])
+        allm = pd.concat(rows, ignore_index=True)
+        allm.to_csv(pairs_csv, index=False)
+    print(f"all-frames matched pairs: {len(allm)} over 83 frames")
+
     # --- figure 2: the decomposition for the matched pairs
-    fig, ax = plt.subplots(figsize=(4.6, 4.2))
-    s = 12 + 260 * (m["P_t"] / m["P_t"].max())
-    sc = ax.scatter(m["dlnA"], m["dlnrho"], s=s, c=m["scale"],
-                    cmap="viridis", norm=LogNorm(), alpha=0.85,
-                    edgecolors="0.2", linewidths=0.5)
+    fig, axs = plt.subplots(1, 2, figsize=(9.4, 4.3), sharex=True, sharey=True)
+    lim = 1.05 * max(np.abs(allm["dlnA"]).max(), np.abs(allm["dlnrho"]).max(),
+                     np.abs(m["dlnA"]).max(), np.abs(m["dlnrho"]).max())
+    from matplotlib.colors import LogNorm as _LN
+    cnorm = _LN(vmin=min(m["scale"].min(), allm["scale"].min()),
+                vmax=max(m["scale"].max(), allm["scale"].max()))
+
+    def decorate(ax):
+        ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
+        xs = np.linspace(-lim, lim, 2)
+        ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.2)
+        ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
+        ax.set_xlabel("dlnA  (area error)")
+
+    ax = axs[0]
+    ssize = 12 + 260 * (m["P_t"] / m["P_t"].max())
+    sc = ax.scatter(m["dlnA"], m["dlnrho"], s=ssize, c=m["scale"], cmap="viridis",
+                    norm=cnorm, alpha=0.85, edgecolors="0.2", linewidths=0.5)
     for k, r in m.iterrows():
         ax.annotate(str(k + 1), (r["dlnA"], r["dlnrho"]), fontsize=6.5,
                     xytext=(3, 3), textcoords="offset points")
-    lim = 1.05 * max(np.abs(m["dlnA"]).max(), np.abs(m["dlnrho"]).max())
-    ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
-    xs = np.linspace(-lim, lim, 2)
-    ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.2)
-    ax.text(0.62 * lim, -0.52 * lim, "dlnP = 0\n(compensation)", fontsize=7,
-            color="#b2182b", ha="center")
-    ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
-    ax.set_xlabel("dlnA  (area error)"); ax.set_ylabel(r"dln$\rho$  (intensity error)")
-    ax.set_title("matched pairs: the exact split dlnP = dlnA + dln" + r"$\rho$", fontsize=9)
-    cb = fig.colorbar(sc, ax=ax, shrink=0.85)
+    decorate(ax)
+    ax.set_ylabel(r"dln$\rho$  (intensity error)")
+    ax.set_title("one frame (pairs numbered as above)", fontsize=9)
+    ax.text(0.6 * lim, -0.5 * lim, "dlnP = 0", fontsize=7, color="#b2182b",
+            ha="center")
+
+    ax = axs[1]
+    w = allm["P_t"].to_numpy()
+    sc = ax.scatter(allm["dlnA"], allm["dlnrho"], s=9, c=allm["scale"],
+                    cmap="viridis", norm=cnorm, alpha=0.45, linewidths=0)
+    dA = float((w * allm["dlnA"]).sum() / w.sum())
+    dR = float((w * allm["dlnrho"]).sum() / w.sum())
+    ax.plot(dA, dR, marker="X", ms=11, mec="0.1", mfc="#b2182b", mew=0.8, zorder=5)
+    ax.annotate(f"precip-weighted mean\n({dA:+.2f}, {dR:+.2f})", (dA, dR),
+                xytext=(dA + 0.14 * lim, dR - 0.30 * lim), fontsize=7,
+                arrowprops=dict(arrowstyle="-", color="0.2", lw=0.7))
+    decorate(ax)
+    ax.set_title(f"all frames of the day — {len(allm)} matched pairs", fontsize=9)
+    cb = fig.colorbar(sc, ax=axs, shrink=0.85, pad=0.015)
     cb.set_label("system scale L = √A (km)", fontsize=8)
     fig.savefig(OUT / "eval_method_decomp.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
