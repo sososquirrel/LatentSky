@@ -50,8 +50,17 @@ def main():
         ax.contour(labels == label_id, levels=[0.5], colors=[color],
                    linewidths=lw, linestyles=ls)
 
+    # centroid-safe label lookup: map (row, col) back to the object table
+    # (a concave system's centroid can fall OUTSIDE the blob, so indexing the
+    # label image at the centroid can return background or a neighbor)
+    lut_t = {(round(r, 6), round(c, 6)): int(l)
+             for r, c, l in zip(tt["row"], tt["col"], tt["label"])}
+    lut_p = {(round(r, 6), round(c, 6)): int(l)
+             for r, c, l in zip(tp["row"], tp["col"], tp["label"])}
+
     def find_label(labels, row, col):
-        return labels[int(round(row)), int(round(col))]
+        lut = lut_t if labels is lt else lut_p
+        return lut[(round(float(row), 6), round(float(col), 6))]
 
     for ax, f, ttl in [(axes[0], truth, "truth (+3 h)"),
                        (axes[1], det, "two-head (+3 h)")]:
@@ -59,20 +68,21 @@ def main():
         ax.set_title(ttl, fontsize=9)
         ax.set_xticks([]); ax.set_yticks([])
 
+    for _, r in miss.iterrows():
+        outline(axes[0], lt, find_label(lt, r["row"], r["col"]), "#e08214",
+                lw=1.1)
+    for _, r in fa.iterrows():
+        outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#542788",
+                ls="--", lw=1.8)
     for k, r in m.iterrows():
         lid_t = find_label(lt, r["row"], r["col"])
         lid_p = find_label(lp, r["row_p"], r["col_p"])
-        outline(axes[0], lt, lid_t, "#2166ac")
-        outline(axes[1], lp, lid_p, "#2166ac")
+        outline(axes[0], lt, lid_t, "#2166ac", lw=2.0)
+        outline(axes[1], lp, lid_p, "#2166ac", lw=2.0)
         for ax, rr, cc in [(axes[0], r["row"], r["col"]),
                            (axes[1], r["row_p"], r["col_p"])]:
             ax.text(cc, rr, str(k + 1), fontsize=7, fontweight="bold",
                     color="#12335c", ha="center", va="center")
-    for _, r in miss.iterrows():
-        outline(axes[0], lt, find_label(lt, r["row"], r["col"]), "#e08214", lw=1.6)
-    for _, r in fa.iterrows():
-        outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#542788",
-                ls="--", lw=1.8)
 
     # annotations: L for the biggest pair and one small miss; IoU for the biggest pair
     big = m.loc[m["P_t"].idxmax()]
