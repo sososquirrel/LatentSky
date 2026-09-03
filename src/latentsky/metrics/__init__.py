@@ -1,3 +1,4 @@
+from .spectral import band_power, radial_spectrum
 from .fits import fit_exp_decay, fit_powerlaw, fit_weighted_linreg
 from .scale import (
     ScaleSummary,

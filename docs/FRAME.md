@@ -81,8 +81,16 @@ Questions
    system scale L, and does it follow a power law?
 2. Which errors does the metric separate — detection, area, intensity — and are area and
    intensity errors compensating in aggregate scores?
-3. Does a diffusion model extend T(L) relative to the deterministic (regression) model,
-   and at which scales?
+3. Does a generative model extend T(L) relative to the deterministic model, and at
+   which scales? R3 distinguishes **placement** from **representation**: the horizon
+   T(L) measures placement and is expected invariant across model classes (below the
+   ≈100 km crossover placement is a predictability limit that binds persistence too);
+   the ρ·A decomposition, size/intensity distributions and the spectral decomposition
+   measure representation, where the generative model is expected to restore what the
+   conditional mean destroys. "Capturing small systems" is claimed only in the
+   representation sense; the placement sense is claimed only probabilistically
+   (any-draw detection, supplementary). Pre-registered expectations:
+   journal/2026-09-03.
 
 | R  | Claim (with a number)                                                                                 | Figure | Status |
 |----|--------------------------------------------------------------------------------------------------------|--------|--------|

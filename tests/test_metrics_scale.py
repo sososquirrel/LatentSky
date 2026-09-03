@@ -94,3 +94,20 @@ def test_fit_powerlaw_recovers_exponent():
     y = 0.05 * x ** 1.3
     out = fit_powerlaw(x, y)
     assert abs(out["beta"] - 1.3) < 1e-6
+
+
+def test_radial_spectrum_peaks_at_wave_scale():
+    from latentsky.metrics import radial_spectrum
+    h, w = 128, 256
+    lam_km = 278.0  # 10-pixel wave
+    x = np.arange(w) * 27.8
+    field = np.sin(2 * np.pi * x / lam_km)[None, :].repeat(h, 0)
+    k, p = radial_spectrum(field)
+    assert abs(1.0 / k[np.nanargmax(p)] - lam_km) / lam_km < 0.15
+
+
+def test_band_power_additive_scaling():
+    from latentsky.metrics import band_power
+    rng = np.random.default_rng(1)
+    f = rng.random((64, 64))
+    assert band_power(2 * f) == pytest.approx(4 * band_power(f), rel=1e-6)
