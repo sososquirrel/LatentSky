@@ -36,11 +36,15 @@ def main():
     print(f"truth systems: {len(tt)}, pred systems: {len(tp)}, "
           f"matched: {len(m)}, miss: {len(miss)}, false alarm: {len(fa)}")
 
-    # --- figure 1: the two fields with detected systems, roles and pair ids
+    # --- figure 1: fields + roles (top) and the detection pipeline on a zoom (bottom)
     vmax = max(truth.max(), det.max(), 0.5)
     norm = LogNorm(vmin=THR, vmax=vmax)
     cmap = plt.get_cmap("Blues").copy(); cmap.set_under("#f7f9fb")
-    fig, axes = plt.subplots(1, 2, figsize=(8.0, 3.6))
+    fig = plt.figure(figsize=(8.6, 6.2))
+    gs = fig.add_gridspec(2, 3, height_ratios=[2.6, 1.15], hspace=0.28, wspace=0.12)
+    axT = fig.add_subplot(gs[0, 0:2].subgridspec(1, 2, wspace=0.06)[0, 0]) if False else None
+    top = gs[0, :].subgridspec(1, 2, wspace=0.08)
+    axes = [fig.add_subplot(top[0, 0]), fig.add_subplot(top[0, 1])]
 
     def outline(ax, labels, label_id, color, ls="-", lw=1.4):
         ax.contour(labels == label_id, levels=[0.5], colors=[color],
@@ -51,7 +55,7 @@ def main():
 
     for ax, f, ttl in [(axes[0], truth, "truth (+3 h)"),
                        (axes[1], det, "two-head (+3 h)")]:
-        ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
+        im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
         ax.set_title(ttl, fontsize=9)
         ax.set_xticks([]); ax.set_yticks([])
 
@@ -69,6 +73,28 @@ def main():
     for _, r in fa.iterrows():
         outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#542788",
                 ls="--", lw=1.8)
+
+    # annotations: L for the biggest pair and one small miss; IoU for the biggest pair
+    big = m.loc[m["P_t"].idxmax()]
+    tx = float(np.clip(big["col"] - 58, 2, 70))
+    ty = float(np.clip(big["row"] + 20, 10, 118))
+    axes[0].annotate(f"L = {big['L_t']:.0f} km, IoU = {big['iou']:.2f}",
+                     xy=(big["col"], big["row"]), xytext=(tx, ty),
+                     fontsize=7, color="#12335c",
+                     arrowprops=dict(arrowstyle="-", color="#12335c", lw=0.7))
+    small = miss.loc[miss["L_t"].idxmin()]
+    axes[0].annotate(f"miss, L = {small['L_t']:.0f} km",
+                     xy=(small["col"], small["row"]), xytext=(small["col"] + 8, small["row"] + 10),
+                     fontsize=7, color="#9a5a10",
+                     arrowprops=dict(arrowstyle="-", color="#9a5a10", lw=0.7))
+    # 500 km scalebar (meridional: 27.8 km/px)
+    px500 = 500.0 / 27.8
+    axes[0].plot([4, 4 + px500], [4, 4], color="0.1", lw=2.5)
+    axes[0].text(4 + px500 / 2, 8, "500 km", fontsize=7, ha="center", color="0.1")
+
+    cb = fig.colorbar(im, ax=axes, shrink=0.9, pad=0.012)
+    cb.set_label("rain (mm)", fontsize=8)
+
     from matplotlib.lines import Line2D
     handles = [
         Line2D([], [], color="#2166ac", lw=1.6,
@@ -78,10 +104,31 @@ def main():
         Line2D([], [], color="#542788", lw=1.8, ls="--",
                label=f"false alarm ({len(fa)}) — predicted, not real"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=8,
-               frameon=False, bbox_to_anchor=(0.5, -0.04))
-    fig.suptitle(f"cluster detection (>{THR} mm, 8-connected) and greedy "
-                 f"IoU ≥ {IOU_MIN} matching", fontsize=9)
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
+               frameon=False, bbox_to_anchor=(0.5, -0.015))
+
+    # bottom row: the pipeline on a zoomed window of the truth field
+    zr, zc = slice(25, 95), slice(20, 100)
+    zoom = truth[zr, zc]
+    from matplotlib.patches import Rectangle
+    axes[0].add_patch(Rectangle((zc.start, zr.start), zc.stop - zc.start,
+                                zr.stop - zr.start, fill=False, ec="0.15", lw=1.0))
+    axes[0].text(zc.start + 2, zr.stop - 8, "zoom", fontsize=7, color="0.15")
+
+    axz = [fig.add_subplot(gs[1, j]) for j in range(3)]
+    axz[0].imshow(zoom, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
+    axz[0].set_title("1 · rain field", fontsize=8)
+    axz[1].imshow(zoom > THR, origin="lower", cmap="Greys", vmin=0, vmax=1.6,
+                  interpolation="nearest")
+    axz[1].set_title(f"2 · wet mask (> {THR} mm)", fontsize=8)
+    zl = lt[zr, zc].astype(float)
+    zl_show = np.where(zl > 0, (zl * 7.3) % 19 + 1, np.nan)
+    axz[2].imshow(zl_show, origin="lower", cmap="tab20", interpolation="nearest")
+    axz[2].set_title("3 · labeled systems (8-conn.)", fontsize=8)
+    for ax in axz:
+        ax.set_xticks([]); ax.set_yticks([])
+    fig.suptitle(f"cluster detection (> {THR} mm, 8-connected) and greedy "
+                 f"IoU ≥ {IOU_MIN} matching", fontsize=9, y=0.985)
     fig.savefig(OUT / "eval_method_clusters.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
 
