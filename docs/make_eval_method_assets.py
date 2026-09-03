@@ -83,19 +83,6 @@ def main():
             ax.text(cc, rr, str(k + 1), fontsize=7, fontweight="bold",
                     color="0.1", ha="center", va="center")
 
-    # annotations: L for the biggest pair and one small miss; IoU for the biggest pair
-    big = m.loc[m["P_t"].idxmax()]
-    tx = float(np.clip(big["col"] - 58, 2, 70))
-    ty = float(np.clip(big["row"] + 20, 10, 118))
-    axes[0].annotate(f"L = {big['L_t']:.0f} km, IoU = {big['iou']:.2f}",
-                     xy=(big["col"], big["row"]), xytext=(tx, ty),
-                     fontsize=7, color="#12335c",
-                     arrowprops=dict(arrowstyle="-", color="#12335c", lw=0.7))
-    small = miss.loc[miss["L_t"].idxmin()]
-    axes[0].annotate(f"miss, L = {small['L_t']:.0f} km",
-                     xy=(small["col"], small["row"]), xytext=(small["col"] + 8, small["row"] + 10),
-                     fontsize=7, color="0.05",
-                     arrowprops=dict(arrowstyle="-", color="0.05", lw=0.7))
     # 500 km scalebar (meridional: 27.8 km/px)
     px500 = 500.0 / 27.8
     axes[0].plot([4, 4 + px500], [4, 4], color="0.1", lw=2.5)
