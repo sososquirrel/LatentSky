@@ -189,12 +189,11 @@ def main():
         bA = float((wg * g["dlnA"]).sum() / wg.sum())
         bR = float((wg * g["dlnrho"]).sum() / wg.sum())
         ax.plot(bA, bR, marker="X", ms=12, mec="0.05", mew=1.1,
-                mfc=vir(cnorm(lrep)), zorder=6)
-        ax.annotate(f"{name} (n={len(g)})\n({bA:+.2f}, {bR:+.2f})", (bA, bR),
-                    xytext=(bA + 0.10 * lim, bR + (0.16 + 0.13 * j) * lim),
-                    fontsize=6.8, ha="left",
-                    arrowprops=dict(arrowstyle="-", color="0.2", lw=0.6))
+                mfc=vir(cnorm(lrep)), zorder=6, ls="none",
+                label=f"{name} (n={len(g)})")
         txt.append(f"{name}: ({bA:+.2f}, {bR:+.2f}), n={len(g)}")
+    ax.legend(loc="lower left", fontsize=7, frameon=False,
+              title="precip-weighted barycenter", title_fontsize=7)
     print("barycenters:", "; ".join(txt))
     decorate(ax)
     ax.set_title(f"all frames of the day — {len(allm)} matched pairs", fontsize=9)
