@@ -66,10 +66,10 @@ def main():
 
     for _, r in miss.iterrows():
         outline(axes[0], lt, find_label(lt, r["row"], r["col"]), "0.05",
-                lw=1.0)
+                ls="--", lw=1.0)
     for _, r in fa.iterrows():
         outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#d62728",
-                ls="-", lw=1.0)
+                ls="--", lw=1.0)
     _t20 = plt.get_cmap("tab20")
     pair_colors = [_t20(i) for i in range(20) if i not in (6, 7)]  # reds reserved for false alarms
     for k, r in m.iterrows():
@@ -108,9 +108,9 @@ def main():
     handles = [
         Line2D([], [], color=pair_colors[0], lw=2.2,
                label=f"matched pair ({len(m)}) — one color per pair, both panels"),
-        Line2D([], [], color="0.05", lw=1.2,
+        Line2D([], [], color="0.05", lw=1.2, ls="--",
                label=f"miss ({len(miss)}) — real system, no prediction"),
-        Line2D([], [], color="#d62728", lw=1.0,
+        Line2D([], [], color="#d62728", lw=1.2, ls="--",
                label=f"false alarm ({len(fa)}) — predicted, not real"),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
