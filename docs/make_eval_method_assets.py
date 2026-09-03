@@ -179,12 +179,23 @@ def main():
     w = allm["P_t"].to_numpy()
     sc = ax.scatter(allm["dlnA"], allm["dlnrho"], s=9, c=allm["scale"],
                     cmap="viridis", norm=cnorm, alpha=0.45, linewidths=0)
-    dA = float((w * allm["dlnA"]).sum() / w.sum())
-    dR = float((w * allm["dlnrho"]).sum() / w.sum())
-    ax.plot(dA, dR, marker="X", ms=11, mec="0.1", mfc="#b2182b", mew=0.8, zorder=5)
-    ax.annotate(f"precip-weighted mean\n({dA:+.2f}, {dR:+.2f})", (dA, dR),
-                xytext=(dA + 0.14 * lim, dR - 0.30 * lim), fontsize=7,
-                arrowprops=dict(arrowstyle="-", color="0.2", lw=0.7))
+    vir = plt.get_cmap("viridis")
+    bands = [("small < 65 km", 0, 65, 40), ("65–200 km", 65, 200, 115),
+             ("large > 200 km", 200, np.inf, 350)]
+    txt = []
+    for j, (name, lo, hi, lrep) in enumerate(bands):
+        g = allm[(allm["scale"] >= lo) & (allm["scale"] < hi)]
+        wg = g["P_t"].to_numpy()
+        bA = float((wg * g["dlnA"]).sum() / wg.sum())
+        bR = float((wg * g["dlnrho"]).sum() / wg.sum())
+        ax.plot(bA, bR, marker="X", ms=12, mec="0.05", mew=1.1,
+                mfc=vir(cnorm(lrep)), zorder=6)
+        ax.annotate(f"{name} (n={len(g)})\n({bA:+.2f}, {bR:+.2f})", (bA, bR),
+                    xytext=(bA + 0.10 * lim, bR + (0.16 + 0.13 * j) * lim),
+                    fontsize=6.8, ha="left",
+                    arrowprops=dict(arrowstyle="-", color="0.2", lw=0.6))
+        txt.append(f"{name}: ({bA:+.2f}, {bR:+.2f}), n={len(g)}")
+    print("barycenters:", "; ".join(txt))
     decorate(ax)
     ax.set_title(f"all frames of the day — {len(allm)} matched pairs", fontsize=9)
     cb = fig.colorbar(sc, ax=axs, shrink=0.85, pad=0.015)
