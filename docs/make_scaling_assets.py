@@ -26,7 +26,8 @@ INPUT_VARS = ["precipw", "t2m", "olrtoa", "mse_500hPa", "mse_850hPa",
 P, PIECE, BLOCK = 128, 8, (1, 4)
 THR, IOU_MIN = 0.1, 0.1
 LEADS = [0.25, 0.5, 1, 2, 3, 6]
-BAND_EDGES = np.geomspace(25, 800, 6)  # 5 bands
+BAND_EDGES = np.geomspace(25, 800, 6)   # 5 coarse bands (decay curves)
+FINE_EDGES = np.geomspace(25, 800, 11)  # 10 fine bands (tau scatter)
 
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 
@@ -69,10 +70,10 @@ def systems_for_lead(lead_h: float) -> pd.DataFrame:
     return df
 
 
-def pod_by_band(df: pd.DataFrame) -> np.ndarray:
-    pods = np.full(len(BAND_EDGES) - 1, np.nan)
-    b = np.clip(np.digitize(df["scale"], BAND_EDGES) - 1, 0, len(BAND_EDGES) - 2)
-    for k in range(len(BAND_EDGES) - 1):
+def pod_by_band(df: pd.DataFrame, edges: np.ndarray) -> np.ndarray:
+    pods = np.full(len(edges) - 1, np.nan)
+    b = np.clip(np.digitize(df["scale"], edges) - 1, 0, len(edges) - 2)
+    for k in range(len(edges) - 1):
         g = df[(b == k) & df["role"].isin(["match", "miss"])]
         if len(g):
             pods[k] = (g["role"] == "match").mean()
@@ -82,13 +83,17 @@ def pod_by_band(df: pd.DataFrame) -> np.ndarray:
 def main():
     leads = np.array(LEADS)
     pod = {m: np.zeros((len(BAND_EDGES) - 1, len(LEADS))) for m in ("two-head", "persistence")}
+    podf = {m: np.zeros((len(FINE_EDGES) - 1, len(LEADS))) for m in ("two-head", "persistence")}
     for j, L in enumerate(LEADS):
         df = systems_for_lead(L)
         for m in ("two-head", "persistence"):
-            pod[m][:, j] = pod_by_band(df[df["model"] == m])
+            sub = df[df["model"] == m]
+            pod[m][:, j] = pod_by_band(sub, BAND_EDGES)
+            podf[m][:, j] = pod_by_band(sub, FINE_EDGES)
         print(f"lead {L}h done", flush=True)
 
     mids = np.sqrt(BAND_EDGES[:-1] * BAND_EDGES[1:])
+    midsf = np.sqrt(FINE_EDGES[:-1] * FINE_EDGES[1:])
 
     def efold(y):
         """Project fit convention (metrics.fits.fit_exp_decay): nonlinear
@@ -101,6 +106,8 @@ def main():
 
     tau = {m: np.array([efold(pod[m][k]) for k in range(len(mids))])
            for m in ("two-head", "persistence")}
+    tauf = {m: np.array([efold(podf[m][k]) for k in range(len(midsf))])
+            for m in ("two-head", "persistence")}
 
     def powerlaw(L, t):
         ok = np.isfinite(t) & (t > 0) & (t < 100)
@@ -136,11 +143,16 @@ def main():
 
     ax = axs[1]
     for m, mk, colr in [("two-head", "o", "#2166ac"), ("persistence", "s", "0.4")]:
-        t = tau[m]
-        a, c0, ok = powerlaw(mids, t)
-        ax.plot(mids[ok], t[ok], mk, color=colr, ms=5, label=f"{m}: α = {a:.2f}")
-        Lg = np.geomspace(mids[ok].min(), mids[ok].max(), 40)
+        t = tauf[m]
+        a, c0, ok = powerlaw(midsf, t)
+        pod0 = podf[m][:, 0]
+        sc2 = ax.scatter(midsf[ok], t[ok], c=pod0[ok], cmap="plasma", vmin=0, vmax=1,
+                         marker=mk, s=42, edgecolors=colr, linewidths=1.3,
+                         label=f"{m}: α = {a:.2f}", zorder=4)
+        Lg = np.geomspace(midsf[ok].min(), midsf[ok].max(), 40)
         ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=1.1, alpha=0.8)
+    cb2 = fig.colorbar(sc2, ax=ax, shrink=0.85, pad=0.02)
+    cb2.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("system scale L (km)")
     ax.set_ylabel("τ(L) — POD e-folding time (h)")
@@ -152,8 +164,8 @@ def main():
     plt.close(fig)
 
     for m in ("two-head", "persistence"):
-        a, c0, ok = powerlaw(mids, tau[m])
-        print(m, "tau:", np.round(tau[m], 2), "alpha:", round(a, 3))
+        a, c0, ok = powerlaw(midsf, tauf[m])
+        print(m, "tau(fine):", np.round(tauf[m], 2), "alpha:", round(a, 3))
 
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ Questions
 
 | R  | Claim (with a number)                                                                                 | Figure | Status |
 |----|--------------------------------------------------------------------------------------------------------|--------|--------|
-| R1 | Definition: T(L) = POD e-folding time; it rises from ≈0.7 h (L < 65 km) to ≈8.8 h (L > 200 km); T(L) ∝ L^α with draft α = 1.37 for persistence (two-head: 1.72; committed fit form `metrics.fits.fit_exp_decay`, one block × one day, `docs/make_scaling_assets.py` — crossover ≈ 100 km; small-L decay has a slow non-exponential tail to address), the null every model must beat | fig_R1 | draft |
+| R1 | Definition: T(L) = POD e-folding time; it rises from ≈0.7 h (L < 65 km) to ≈8.8 h (L > 200 km); T(L) ∝ L^α with draft α = 1.30 for persistence (two-head: 1.70; committed fit form `metrics.fits.fit_exp_decay`, one block × one day, `docs/make_scaling_assets.py` — crossover ≈ 100 km; small-L decay has a slow non-exponential tail to address), the null every model must beat | fig_R1 | draft |
 | R2 | Decomposition: aggregate error hides compensating area (+4 %) and intensity (−9 %) errors (net −5 %; L ≈ 200 km, 0.25 h lead, diffusion) | fig_R2 | draft |
 | R3 | Deterministic vs diffusion: diffusion extends the intensity e-folding time τ_ρ by ≈2 h for 100 ≤ L ≤ 700 km and ≈5 h at L ≈ 60 km (9.3 h vs 4.3 h); below ≈45 km neither beats persistence [threshold to confirm] | fig_R3 | draft |
 
