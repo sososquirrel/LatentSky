@@ -67,11 +67,21 @@ def main():
     for _, r in miss.iterrows():
         outline(axes[0], lt, find_label(lt, r["row"], r["col"]), "#e08214", lw=1.6)
     for _, r in fa.iterrows():
-        outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#e08214",
-                ls="--", lw=1.6)
-    fig.suptitle(f"cluster detection (>{THR} mm, 8-connected) and greedy IoU ≥ {IOU_MIN} "
-                 f"matching — {len(m)} matched pairs (blue, numbered), "
-                 f"{len(miss)} misses / {len(fa)} false alarms (amber)", fontsize=9)
+        outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#542788",
+                ls="--", lw=1.8)
+    from matplotlib.lines import Line2D
+    handles = [
+        Line2D([], [], color="#2166ac", lw=1.6,
+               label=f"matched pair ({len(m)}) — same number both panels"),
+        Line2D([], [], color="#e08214", lw=1.6,
+               label=f"miss ({len(miss)}) — real system, no prediction"),
+        Line2D([], [], color="#542788", lw=1.8, ls="--",
+               label=f"false alarm ({len(fa)}) — predicted, not real"),
+    ]
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=8,
+               frameon=False, bbox_to_anchor=(0.5, -0.04))
+    fig.suptitle(f"cluster detection (>{THR} mm, 8-connected) and greedy "
+                 f"IoU ≥ {IOU_MIN} matching", fontsize=9)
     fig.savefig(OUT / "eval_method_clusters.png", dpi=140, bbox_inches="tight")
     plt.close(fig)
 
