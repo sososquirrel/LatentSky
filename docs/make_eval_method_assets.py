@@ -69,20 +69,23 @@ def main():
         ax.set_xticks([]); ax.set_yticks([])
 
     for _, r in miss.iterrows():
-        outline(axes[0], lt, find_label(lt, r["row"], r["col"]), "#e08214",
-                lw=1.1)
+        outline(axes[0], lt, find_label(lt, r["row"], r["col"]), "0.05",
+                lw=1.0)
     for _, r in fa.iterrows():
-        outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#542788",
-                ls="--", lw=1.8)
+        outline(axes[1], lp, find_label(lp, r["row"], r["col"]), "#d62728",
+                ls="--", lw=1.9)
+    _t20 = plt.get_cmap("tab20")
+    pair_colors = [_t20(i) for i in range(20) if i not in (6, 7)]  # reds reserved for false alarms
     for k, r in m.iterrows():
+        col_k = pair_colors[k % len(pair_colors)]
         lid_t = find_label(lt, r["row"], r["col"])
         lid_p = find_label(lp, r["row_p"], r["col_p"])
-        outline(axes[0], lt, lid_t, "#2166ac", lw=2.0)
-        outline(axes[1], lp, lid_p, "#2166ac", lw=2.0)
+        outline(axes[0], lt, lid_t, col_k, lw=2.2)
+        outline(axes[1], lp, lid_p, col_k, lw=2.2)
         for ax, rr, cc in [(axes[0], r["row"], r["col"]),
                            (axes[1], r["row_p"], r["col_p"])]:
             ax.text(cc, rr, str(k + 1), fontsize=7, fontweight="bold",
-                    color="#12335c", ha="center", va="center")
+                    color="0.1", ha="center", va="center")
 
     # annotations: L for the biggest pair and one small miss; IoU for the biggest pair
     big = m.loc[m["P_t"].idxmax()]
@@ -95,8 +98,8 @@ def main():
     small = miss.loc[miss["L_t"].idxmin()]
     axes[0].annotate(f"miss, L = {small['L_t']:.0f} km",
                      xy=(small["col"], small["row"]), xytext=(small["col"] + 8, small["row"] + 10),
-                     fontsize=7, color="#9a5a10",
-                     arrowprops=dict(arrowstyle="-", color="#9a5a10", lw=0.7))
+                     fontsize=7, color="0.05",
+                     arrowprops=dict(arrowstyle="-", color="0.05", lw=0.7))
     # 500 km scalebar (meridional: 27.8 km/px)
     px500 = 500.0 / 27.8
     axes[0].plot([4, 4 + px500], [4, 4], color="0.1", lw=2.5)
@@ -107,11 +110,11 @@ def main():
 
     from matplotlib.lines import Line2D
     handles = [
-        Line2D([], [], color="#2166ac", lw=1.6,
-               label=f"matched pair ({len(m)}) — same number both panels"),
-        Line2D([], [], color="#e08214", lw=1.6,
+        Line2D([], [], color=pair_colors[0], lw=2.2,
+               label=f"matched pair ({len(m)}) — one color per pair, both panels"),
+        Line2D([], [], color="0.05", lw=1.2,
                label=f"miss ({len(miss)}) — real system, no prediction"),
-        Line2D([], [], color="#542788", lw=1.8, ls="--",
+        Line2D([], [], color="#d62728", lw=1.9, ls="--",
                label=f"false alarm ({len(fa)}) — predicted, not real"),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
