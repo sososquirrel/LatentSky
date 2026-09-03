@@ -670,6 +670,40 @@ GPU.</p>
 </tbody></table></div>
 </section>
 
+<h3>The adopted successor: conditional rectified flow</h3>
+<p>The DDPM above is trained to denoise noised <em>truth</em>; using it to refine a
+forecast (§5) is a retrofit with a train/test mismatch — it is never trained on noised
+<em>forecasts</em>, which is what the warm start feeds it. The
+<b>conditional rectified flow</b> (<span class="mono">experiments/flow_matching_6h</span>,
+model code <span class="mono">src/latentsky/models/flow.py</span>, tested) removes the
+mismatch by learning the forecast→truth transport directly:</p>
+<div class="tablewrap"><table class="spec"><tbody>
+<tr><td>Network</td><td>the same ConditionalDiffusionUNet (131 M) reused as a velocity
+field v(x, cond, t); t ∈ [0, 1] via the existing time embedding</td></tr>
+<tr><td>Training pair</td><td>source x₀ = z-forecast + σ·ε (two-head, frozen, computed
+per batch), target x₁ = z-truth; straight-line interpolation
+x_t = (1−t)·x₀ + t·x₁</td></tr>
+<tr><td>Loss</td><td>MSE between v(x_t, cond, t) and the line velocity x₁ − x₀ — i.e.
+the network learns the forecast's error field, conditioned on the meteorology</td></tr>
+<tr><td>σ (per lead)</td><td>the measured wet-masked forecast error rms in z:
+0.102 / 0.119 / 0.146 / 0.171 / 0.188 / <b>0.204</b> for 0.25→6 h. The noise keeps the
+map generative (σ = 0 would collapse to a regression) and is the entire source of
+ensemble spread</td></tr>
+<tr><td>Sampling</td><td>32-step Heun ODE from a fresh source draw — deterministic given
+the draw; ~17× cheaper than the 551-step SDEdit chain at 6 h. No t_start, no schedule,
+no per-step clip</td></tr>
+<tr><td>Optimization</td><td>identical envelope to the DDPM runs (AdamW 2e-4, StepLR,
+batch 64, patch split, early stop)</td></tr>
+</tbody></table></div>
+<p><b>Verdict at the hardest lead (6 h, job 5805787)</b>: single-draw small-scale power
+ratio <b>1.115</b> and wet fraction <b>+1.5 %</b> vs truth — clearing the SDEdit
+ceiling (0.80–0.85, −20 % area) decisively. The DDPM's 6 h limit was its sampler's
+mismatch, not missing information. Per FRAME.md the flow is now R3's canonical
+generative representative, with the SDEdit DDPM + t*(lead) demoted to a
+sampling-protocol sensitivity. Status: the 6 h model is trained
+(<span class="mono">LatentSky_runs/flow_models/</span>); the other five leads are
+queued pending cluster availability.</p>
+
 <h2 id="compare">5 · What the diffusion model adds</h2>
 
 <p>Both models share the trunk of §3 and see the same ten standardized channels; the
