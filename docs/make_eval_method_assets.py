@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
 
-from latentsky.metrics import cell_area_km2, label_systems, match_systems
+from latentsky.metrics import (cell_area_km2, default_scale_edges, label_systems,
+                               match_systems, summarize_by_scale)
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 OUT = REPO / "docs" / "assets_model_reference"
@@ -109,10 +110,10 @@ def main():
     plt.close(fig)
 
     # --- all-frames matched pairs for the same block (cached; CPU two-head)
-    pairs_csv = OUT / "eval_method_pairs_lead3h.csv"
-    if pairs_csv.exists():
+    systems_csv = OUT / "eval_method_systems_lead3h.csv"
+    if systems_csv.exists():
         import pandas as pd
-        allm = pd.read_csv(pairs_csv)
+        alldf = pd.read_csv(systems_csv)
     else:
         import pandas as pd
         import torch
@@ -142,10 +143,11 @@ def main():
                 yt = np.asarray(ytab[t + DELTA], dtype=np.float32)[sl]
                 dfr = match_systems(yt, pred, THR, area_row, iou_min=IOU_MIN)
                 dfr.insert(0, "frame", t)
-                rows.append(dfr[dfr.role == "match"])
-        allm = pd.concat(rows, ignore_index=True)
-        allm.to_csv(pairs_csv, index=False)
-    print(f"all-frames matched pairs: {len(allm)} over 83 frames")
+                rows.append(dfr)
+        alldf = pd.concat(rows, ignore_index=True)
+        alldf.to_csv(systems_csv, index=False)
+    allm = alldf[alldf.role == "match"].reset_index(drop=True)
+    print(f"all-frames systems: {len(alldf)} (matched {len(allm)}) over 83 frames")
 
     # --- figure 2: the decomposition for the matched pairs
     fig, axs = plt.subplots(1, 2, figsize=(9.4, 4.3), sharex=True, sharey=True)
@@ -192,7 +194,7 @@ def main():
                 mfc=vir(cnorm(lrep)), zorder=6, ls="none",
                 label=f"{name} (n={len(g)})")
         txt.append(f"{name}: ({bA:+.2f}, {bR:+.2f}), n={len(g)}")
-    ax.legend(loc="lower left", fontsize=7, frameon=False,
+    ax.legend(loc="upper left", fontsize=7, frameon=False,
               title="precip-weighted barycenter", title_fontsize=7)
     print("barycenters:", "; ".join(txt))
     decorate(ax)
@@ -201,6 +203,26 @@ def main():
     cb.set_label("system scale L = √A (km)", fontsize=8)
     fig.savefig(OUT / "eval_method_decomp.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
+
+    # --- figure 3: object-based POD / FAR by scale over the day
+    summ = summarize_by_scale(alldf, default_scale_edges(25, 600, 10)).by_scale
+    fig, ax = plt.subplots(figsize=(5.2, 3.6))
+    ax.plot(summ["scale_mid"], summ["POD"], "o-", color="#2166ac", label="POD")
+    ax.plot(summ["scale_mid"], summ["FAR"], "s--", color="#d62728", label="FAR")
+    ax.set_xscale("log")
+    ax.set_ylim(0, 1.02)
+    ax.set_xlabel("system scale L = √A (km)")
+    ax.set_ylabel("object-based rate")
+    ax.set_title("detection skill by scale — one day, two-head (+3 h)", fontsize=9)
+    for _, r in summ.iterrows():
+        ax.annotate(f"{int(r['n_truth'])}", (r["scale_mid"], 1.0), fontsize=6,
+                    color="0.45", ha="center", va="bottom", annotation_clip=False)
+    ax.text(0.02, 0.93, "counts: truth systems per bin", transform=ax.transAxes,
+            fontsize=6.5, color="0.45")
+    ax.legend(frameon=False, fontsize=8, loc="center right")
+    fig.savefig(OUT / "eval_method_podfar.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(summ[["scale_mid", "n_truth", "POD", "FAR"]].round(3).to_string(index=False))
 
     w = m["P_t"].to_numpy()
     print(dict(dlnA_w=float((w * m["dlnA"]).sum() / w.sum()),
