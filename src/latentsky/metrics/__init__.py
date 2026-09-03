@@ -1,3 +1,4 @@
+from .fits import fit_exp_decay, fit_powerlaw, fit_weighted_linreg
 from .scale import (
     ScaleSummary,
     cell_area_km2,

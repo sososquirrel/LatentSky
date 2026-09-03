@@ -77,3 +77,20 @@ def test_summarize_by_scale_pod_far():
     assert row["n_truth"] == 2 and row["n_match"] == 1 and row["n_miss"] == 1
     assert row["POD"] == pytest.approx(0.5)
     assert row["FAR"] == pytest.approx(0.0)
+
+
+def test_fit_exp_decay_recovers_tau():
+    from latentsky.metrics import fit_exp_decay
+    t = np.array([0.25, 0.5, 1, 2, 3, 6])
+    tau_true = 2.5
+    y = np.exp(-(t - t[0]) / tau_true)
+    out = fit_exp_decay(t - t[0], y)
+    assert abs(out["tau"] - tau_true) < 1e-6
+
+
+def test_fit_powerlaw_recovers_exponent():
+    from latentsky.metrics import fit_powerlaw
+    x = np.geomspace(30, 600, 6)
+    y = 0.05 * x ** 1.3
+    out = fit_powerlaw(x, y)
+    assert abs(out["beta"] - 1.3) < 1e-6

@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from latentsky.metrics import cell_area_km2, match_systems
+from latentsky.metrics import cell_area_km2, fit_exp_decay, fit_powerlaw, match_systems
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 RUNS = Path("/glade/derecho/scratch/sabramian/LatentSky_runs")
@@ -91,20 +91,23 @@ def main():
     mids = np.sqrt(BAND_EDGES[:-1] * BAND_EDGES[1:])
 
     def efold(y):
-        """tau from ln POD = ln POD0 - t/tau (uses points with POD>0)."""
+        """Project fit convention (metrics.fits.fit_exp_decay): nonlinear
+        least squares on POD(t)/POD(t0) = exp(-(t-t0)/tau), B=0 forced."""
         ok = y > 0
-        if ok.sum() < 3:
+        if ok.sum() < 3 or y[0] <= 0:
             return np.nan
-        s, _ = np.polyfit(leads[ok], np.log(y[ok]), 1)
-        return -1.0 / s if s < 0 else np.inf
+        out = fit_exp_decay(leads[ok] - leads[0], y[ok] / y[0])
+        return out["tau"]
 
     tau = {m: np.array([efold(pod[m][k]) for k in range(len(mids))])
            for m in ("two-head", "persistence")}
 
     def powerlaw(L, t):
         ok = np.isfinite(t) & (t > 0) & (t < 100)
-        a, b = np.polyfit(np.log(L[ok]), np.log(t[ok]), 1)
-        return a, np.exp(b), ok
+        out = fit_powerlaw(L[ok], t[ok])
+        a = out["beta"]
+        c0 = out["tau_ref"] / (out["L_ref"] ** a)
+        return a, c0, ok
 
     fig, axs = plt.subplots(1, 2, figsize=(9.6, 3.9))
     vir = plt.get_cmap("viridis")
@@ -119,10 +122,9 @@ def main():
                 label=f"{BAND_EDGES[k]:.0f}–{BAND_EDGES[k+1]:.0f} km")
         t = tau["two-head"][k]
         if np.isfinite(t) and t > 0 and t < 100:
-            ok = y > 0
-            p0 = np.exp(np.polyfit(leads[ok], np.log(y[ok]), 1)[1])
-            tt = np.linspace(0, 6, 50)
-            ax.plot(tt, p0 * np.exp(-tt / t), ls="--", color=col, lw=0.9, alpha=0.7)
+            tt = np.linspace(leads[0], 6, 50)
+            ax.plot(tt, y[0] * np.exp(-(tt - leads[0]) / t), ls="--", color=col,
+                    lw=0.9, alpha=0.7)
         ax.plot(leads, pod["persistence"][k], ls=":", color=col, lw=1.0, alpha=0.65)
     ax.set_yscale("log")
     ax.set_xlabel("lead time (h)")
