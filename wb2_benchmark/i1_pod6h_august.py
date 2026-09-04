@@ -44,7 +44,7 @@ MODELS = {
         url="gs://weatherbench2/datasets/fgn/2022-1440x721_mean.zarr",
         day="2022-08-15", color="#e08214"),
 }
-THR, IOU_MIN = 0.1, 0.1
+THR, IOU_MIN = 2.4, 0.1  # 2.4 mm/6h = LatentSky 0.1 mm/15min rate equivalent
 BANDS = np.geomspace(30, 3000, 11)
 
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
@@ -152,7 +152,7 @@ def main():
     ax.set_xlabel("system scale L = √A (km)")
     ax.set_ylabel("POD at +6 h (object-based)")
     ax.set_title("WB2 AI forecasts through the same lens\n"
-                 "tropics 40°S–40°N, one August day, ERA5 truth, 0.1 mm/6 h",
+                 "tropics 40°S–40°N, one August day, ERA5 truth, 2.4 mm/6 h",
                  fontsize=9.5)
     ax.legend(fontsize=7.5, frameon=False, loc="upper left")
     fig.savefig(OUT / "fig_I1_pod6h.png", dpi=150, bbox_inches="tight")
