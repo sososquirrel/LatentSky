@@ -36,3 +36,13 @@ and step count; do not tune before the R3 re-derivation baseline exists.
 flow adopted as R3's canonical generative representative (FRAME.md updated); SDEdit +
 t*(lead) demoted to sampling-protocol sensitivity. Then: metrics rebuild and the
 per-draw R1–R3 re-derivation.
+
+
+**Family verdicts (chain 5816114–18, finished 2026-09-03/04).** Single draws, 32 Heun
+steps, piece-8 mosaic frames; band ratio to truth / wet-fraction deviation:
+0.25 h: 0.968 / −0.4 %; 1 h: 0.982 / +0.7 %; 2 h: 0.995 / −0.2 %;
+3 h: 0.913 / −5.7 %; 6 h: 1.115 / +1.5 %. Every lead clears the SDEdit ceiling
+(0.80–0.85, −20 % area). Residual structure: slight under-dispersion at 3 h, slight
+over-dispersion at 6 h — a candidate σ(lead) refinement, deferred until after the R3
+re-derivation. 0.5 h still queued (job 5816118). Checkpoints in
+`LatentSky_runs/flow_models/`.
