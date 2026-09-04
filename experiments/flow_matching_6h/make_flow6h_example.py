@@ -31,7 +31,7 @@ SCALE, SIGMA, NSTEPS = 2.0, 0.204, 32
 
 
 def main():
-    device = torch.device("cuda")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     r, c = BLOCK
     sl = np.s_[r * P:(r + 1) * P, c * P:(c + 1) * P]
 
@@ -96,7 +96,7 @@ def main():
         (axes[1], e_flow, "truth − flow draw 1 (+6 h)", "#b2182b"),
         (axes[2], e_ref, "flow draw 1 − two-head (+6 h)", "#1a1a1a"),
     ]:
-        im = ax.imshow(e, origin="lower", cmap="RdBu", norm=snorm, interpolation="nearest")
+        im = ax.imshow(e, origin="lower", cmap="RdBu_r", norm=snorm, interpolation="nearest")
         ax.set_title(title, fontsize=8, color=color)
         for sp in ax.spines.values():
             sp.set_visible(True); sp.set_color(color); sp.set_linewidth(2)

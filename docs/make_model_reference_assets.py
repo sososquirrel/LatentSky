@@ -247,7 +247,7 @@ def fig_error_maps():
         (axes[1], e_diff, "truth − diffusion draw 1 (+3 h)", "#b2182b"),
         (axes[2], e_ref, "diffusion draw 1 − two-head (+3 h)", "#1a1a1a"),
     ]:
-        im = ax.imshow(e, origin="lower", cmap="RdBu", norm=norm,
+        im = ax.imshow(e, origin="lower", cmap="RdBu_r", norm=norm,
                        interpolation="nearest")
         ax.set_title(title, fontsize=8, color=color)
         for sp in ax.spines.values():

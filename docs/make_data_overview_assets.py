@@ -123,7 +123,7 @@ def fig_sample_channels():
     from matplotlib.colors import SymLogNorm
     diff = y - rain_now
     dlim = max(float(np.abs(diff).max()), 0.5)
-    imd = axes[11].imshow(diff, origin="lower", cmap="RdBu",
+    imd = axes[11].imshow(diff, origin="lower", cmap="RdBu_r",
                           norm=SymLogNorm(linthresh=0.1, vmin=-dlim, vmax=dlim),
                           interpolation="nearest")
     axes[11].set_title("Δ rain: target − now (mm)", fontsize=8)
