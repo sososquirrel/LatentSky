@@ -133,7 +133,7 @@ def main():
             ax.plot(tt, y[0] * np.exp(-(tt - leads[0]) / t), ls="--", color=col,
                     lw=0.9, alpha=0.7)
         ax.plot(leads, pod["persistence"][k], ls=":", color=col, lw=1.0, alpha=0.65)
-    ax.set_yscale("log")
+    ax.set_ylim(0, 1.02)
     ax.set_xlabel("lead time (h)")
     ax.set_ylabel("POD (object-based)")
     ax.set_title("detection decays ~exponentially with lead\n(solid: two-head; dotted: persistence; dashed: fits)",
