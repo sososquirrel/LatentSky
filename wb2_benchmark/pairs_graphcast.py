@@ -98,13 +98,22 @@ def main():
     ov_t = overlay(lt, color_of_t, miss_ids, (0.05, 0.05, 0.05))
     ov_p = overlay(lp, color_of_p, fa_ids, (0.84, 0.15, 0.16))
 
-    # most active 60-degree window (240 px) by truth precip volume
-    vol = (truth * area_row[:, None]).sum(0)
-    W = 240
-    csum = np.concatenate([[0], np.cumsum(vol)])
-    j0 = int(np.argmax(csum[W:] - csum[:-W]))
-    zoom = np.s_[:, j0:j0 + W]
-    lon0, lon1 = float(ds.lon[j0]), float(ds.lon[j0 + W - 1])
+    # richest 128x128 block (the LatentSky patch size): most distinct truth
+    # systems, precip volume as tie-break
+    P = 128
+    vol2 = truth * area_row[:, None]
+    best, i0, j0 = (-1, -1.0), 0, 0
+    for ii in range(0, truth.shape[0] - P + 1, 16):
+        for jj in range(0, truth.shape[1] - P + 1, 16):
+            w = lt[ii:ii + P, jj:jj + P]
+            nsys = len(np.unique(w)) - (1 if (w == 0).any() else 0)
+            score = (nsys, float(vol2[ii:ii + P, jj:jj + P].sum()))
+            if score > best:
+                best, i0, j0 = score, ii, jj
+    print(f"zoom block ({i0},{j0}): {best[0]} truth systems")
+    zoom = np.s_[i0:i0 + P, j0:j0 + P]
+    lon0, lon1 = float(ds.lon[j0]), float(ds.lon[j0 + P - 1])
+    lat0, lat1 = float(ds.lat[i0]), float(ds.lat[i0 + P - 1])
 
     norm = LogNorm(vmin=THR, vmax=max(truth.max(), fc.max()))
     cmap = plt.get_cmap("Greys").copy()
@@ -112,13 +121,14 @@ def main():
 
     lsm = get_landmask(ds.lat.values, ds.lon.values)
 
-    fig = plt.figure(figsize=(13.6, 8.6))
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 2.15], hspace=0.3,
+    fig = plt.figure(figsize=(13.6, 9.4))
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 2.7], hspace=0.3,
                           wspace=0.06)
     panels = [(gs[0, :], "truth (ERA5, valid 2020-08-15 06 UTC)", truth, ov_t, None),
               (gs[1, :], "GraphCast +6 h", fc, ov_p, None),
-              (gs[2, 0], f"truth — zoom {lon0:.0f}–{lon1:.0f}°E", truth, ov_t, zoom),
-              (gs[2, 1], "GraphCast +6 h — zoom", fc, ov_p, zoom)]
+              (gs[2, 0], f"truth — 128-px block ({lon0:.0f}–{lon1:.0f}°E, "
+                         f"{lat0:.0f}–{lat1:.0f}°)", truth, ov_t, zoom),
+              (gs[2, 1], "GraphCast +6 h — same block", fc, ov_p, zoom)]
     for spec, ttl, f, ov, z in panels:
         ax = fig.add_subplot(spec)
         ff, oo, mm_z = (f, ov, lsm) if z is None else (f[z], ov[z], lsm[z])
@@ -133,8 +143,19 @@ def main():
                 if (labz == lid).any():
                     ax.contour(labz == lid, levels=[0.5], colors=[col],
                                linewidths=1.4)
+            if "truth" in ttl:
+                ybar = 10                          # panel row of the bar
+                latbar = -40 + 0.25 * (i0 + ybar)  # its latitude
+                px_km = 27.83 * np.cos(np.deg2rad(latbar))
+                nbar = 500.0 / px_km
+                ax.plot([6, 6 + nbar], [ybar, ybar], "-", color="0.1", lw=2.5,
+                        solid_capstyle="butt")
+                ax.text(6 + nbar / 2, ybar + 4, "500 km", fontsize=8,
+                        ha="center", color="0.1")
         else:
-            ax.axvspan(j0, j0 + W, color="none", ec="0.2", lw=1.2, ls="--")
+            from matplotlib.patches import Rectangle
+            ax.add_patch(Rectangle((j0, i0), P, P, fill=False, ec="0.2",
+                                   lw=1.2, ls="--"))
         ax.set_title(ttl, fontsize=9)
         ax.set_xticks([]); ax.set_yticks([])
     fig.legend(handles=[
