@@ -161,12 +161,10 @@ def main():
 
     # --- figure 2: the decomposition for the matched pairs
     fig, axs = plt.subplots(1, 2, figsize=(9.4, 4.3), sharex=True, sharey=True)
-    lim = 1.05 * max(np.abs(allm["dlnA"]).max(), np.abs(allm["dlnrho"]).max(),
-                     np.abs(m["dlnA"]).max(), np.abs(m["dlnrho"]).max())
-    lim = min(lim, 3.2)
+    # shared conventions with flow_decomp_full: same range, color norm, cloud style
+    lim = 3.2
     from matplotlib.colors import LogNorm as _LN
-    cnorm = _LN(vmin=min(m["scale"].min(), allm["scale"].min()),
-                vmax=max(m["scale"].max(), allm["scale"].max()))
+    cnorm = _LN(vmin=28.0, vmax=1500.0)
 
     def decorate(ax):
         ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
@@ -192,9 +190,9 @@ def main():
     stat = fullm if fullm is not None else allm
     w = stat["P_t"].to_numpy()
     npts = len(stat)
-    sc = ax.scatter(stat["dlnA"], stat["dlnrho"], s=max(1.2, 9 * 1521 / npts),
+    sc = ax.scatter(stat["dlnA"], stat["dlnrho"], s=1.5,
                     c=stat["scale"], cmap="viridis", norm=cnorm,
-                    alpha=min(0.45, 60000 / npts * 0.45), linewidths=0, rasterized=True)
+                    alpha=0.25, linewidths=0, rasterized=True)
     vir = plt.get_cmap("viridis")
     bands = [("small < 65 km", 0, 65, 40), ("65–200 km", 65, 200, 115),
              ("large > 200 km", 200, np.inf, 350)]

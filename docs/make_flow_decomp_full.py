@@ -76,8 +76,10 @@ def main():
     print(f"frame matches {len(m)}; full record matches {len(fullm)}")
 
     fig, axs = plt.subplots(1, 2, figsize=(9.4, 4.3), sharex=True, sharey=True)
+    # shared conventions with eval_method_decomp (two-head): same range, same
+    # color normalization, same cloud size/alpha - the panels compare directly
     lim = 3.2
-    cnorm = LogNorm(vmin=min(m["scale"].min(), 28.0), vmax=fullm["scale"].max())
+    cnorm = LogNorm(vmin=28.0, vmax=1500.0)
 
     def decorate(ax):
         ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
@@ -102,10 +104,9 @@ def main():
 
     ax = axs[1]
     npts = len(fullm)
-    sc = ax.scatter(fullm["dlnA"], fullm["dlnrho"], s=max(1.2, 9 * 1521 / npts),
+    sc = ax.scatter(fullm["dlnA"], fullm["dlnrho"], s=1.5,
                     c=fullm["scale"], cmap="viridis", norm=cnorm,
-                    alpha=min(0.45, 60000 / npts * 0.45), linewidths=0,
-                    rasterized=True)
+                    alpha=0.25, linewidths=0, rasterized=True)
     vir = plt.get_cmap("viridis")
     bands = [("small < 65 km", 0, 65, 40), ("65–200 km", 65, 200, 115),
              ("large > 200 km", 200, np.inf, 350)]
