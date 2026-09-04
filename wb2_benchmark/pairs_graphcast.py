@@ -34,6 +34,24 @@ def lut(table):
             for a, b, l in zip(table["row"], table["col"], table["label"])}
 
 
+def get_landmask(lat, lon):
+    fn = CACHE / "landmask_tropics_1440.npy"
+    if fn.exists():
+        return np.load(fn)
+    era = xr.open_zarr("gs://weatherbench2/datasets/era5/1959-2022-6h-1440x721.zarr",
+                       storage_options={"token": "anon"}, decode_timedelta=True)
+    lsm = era["land_sea_mask"]
+    ren = {k: v for k, v in {"latitude": "lat", "longitude": "lon"}.items()
+           if k in lsm.coords}
+    if ren:
+        lsm = lsm.rename(ren)
+    if lsm.lat.values[0] > lsm.lat.values[-1]:
+        lsm = lsm.sortby("lat")
+    m = lsm.sel(lat=slice(-40, 40)).values.astype(np.float32)
+    np.save(fn, m)
+    return m
+
+
 def main():
     ds = xr.open_dataset(CACHE / "wb2_6h_graphcast_2020-08-15.nc")
     truth = ds.truth.values[0] * 1000.0        # m -> mm
@@ -92,18 +110,22 @@ def main():
     cmap = plt.get_cmap("Greys").copy()
     cmap.set_under("#ffffff")
 
-    fig = plt.figure(figsize=(13.6, 9.2))
-    gs = fig.add_gridspec(4, 1, height_ratios=[1, 1, 1.55, 1.55], hspace=0.28)
-    panels = [("truth (ERA5, valid 2020-08-15 06 UTC)", truth, ov_t, None),
-              ("GraphCast +6 h", fc, ov_p, None),
-              (f"truth — zoom {lon0:.0f}–{lon1:.0f}°E", truth, ov_t, zoom),
-              ("GraphCast +6 h — zoom", fc, ov_p, zoom)]
-    for ax_i, (ttl, f, ov, z) in enumerate(panels):
-        ax = fig.add_subplot(gs[ax_i])
-        ff, oo = (f, ov) if z is None else (f[z], ov[z])
+    lsm = get_landmask(ds.lat.values, ds.lon.values)
+
+    fig = plt.figure(figsize=(13.6, 8.6))
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 2.15], hspace=0.3,
+                          wspace=0.06)
+    panels = [(gs[0, :], "truth (ERA5, valid 2020-08-15 06 UTC)", truth, ov_t, None),
+              (gs[1, :], "GraphCast +6 h", fc, ov_p, None),
+              (gs[2, 0], f"truth — zoom {lon0:.0f}–{lon1:.0f}°E", truth, ov_t, zoom),
+              (gs[2, 1], "GraphCast +6 h — zoom", fc, ov_p, zoom)]
+    for spec, ttl, f, ov, z in panels:
+        ax = fig.add_subplot(spec)
+        ff, oo, mm_z = (f, ov, lsm) if z is None else (f[z], ov[z], lsm[z])
         ax.imshow(ff, origin="lower", norm=norm, cmap=cmap, alpha=0.45,
                   interpolation="nearest", aspect="auto")
         ax.imshow(oo, origin="lower", interpolation="nearest", aspect="auto")
+        ax.contour(mm_z, levels=[0.5], colors=["0.35"], linewidths=0.5)
         if z is not None:
             labz = (lt if "truth" in ttl else lp)[z]
             ids = (color_of_t if "truth" in ttl else color_of_p)
@@ -123,7 +145,7 @@ def main():
         Line2D([], [], color="#d62728", lw=4, alpha=0.55,
                label=f"false alarm ({len(fas)})")],
         loc="lower center", ncol=3, fontsize=8.5, frameon=False,
-        bbox_to_anchor=(0.5, 0.055))
+        bbox_to_anchor=(0.5, 0.045))
     fig.suptitle(f"GraphCast pair recognition, +6 h, tropics — POD {npod:.2f}, "
                  f"FAR {nfar:.2f} (threshold {THR} mm/6 h, IoU ≥ {IOU_MIN})",
                  fontsize=10.5, y=0.945)
