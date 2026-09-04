@@ -154,35 +154,24 @@ def main():
     # --- companion: dlnA/dlnrho for the same frame, same colors/numbers
     fig, ax = plt.subplots(figsize=(5.0, 4.6))
     pts = {}
-    for n, mk in [("two-head", "o"), ("flow draw", "D")]:
-        for _, rr in matches[n][matches[n].role == "match"].iterrows():
-            tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
-            pts.setdefault(tid, {})[n] = (rr["dlnA"], rr["dlnrho"])
-    lim = 1.05 * max(abs(v2) for d in pts.values() for v in d.values() for v2 in v)
+    mmf = matches["flow draw"][matches["flow draw"].role == "match"]
+    for _, rr in mmf.iterrows():
+        tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
+        pts[tid] = (rr["dlnA"], rr["dlnrho"], rr["P_t"])
+    lim = 1.05 * max(max(abs(v[0]), abs(v[1])) for v in pts.values())
     ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
     xs = np.linspace(-lim, lim, 2)
     ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.1)
-    for tid, d in pts.items():
-        col = color_of[tid]
-        if len(d) == 2:
-            (x0, y0), (x1, y1) = d["two-head"], d["flow draw"]
-            ax.plot([x0, x1], [y0, y1], "-", color=col, lw=1.0, alpha=0.7)
-        for n, mk in [("two-head", "o"), ("flow draw", "D")]:
-            if n in d:
-                ax.plot(*d[n], mk, color=col, ms=7, mec="0.15", mew=0.7)
-        xa, ya = list(d.values())[0]
+    pmax = max(v[2] for v in pts.values())
+    for tid, (xa, ya, pt) in pts.items():
+        ax.plot(xa, ya, "D", color=color_of[tid], ms=6 + 8 * (pt / pmax) ** 0.5,
+                mec="0.15", mew=0.7)
         ax.annotate(str(num_of[tid]), (xa, ya), fontsize=6, xytext=(4, 4),
                     textcoords="offset points")
-    from matplotlib.lines import Line2D as L2
-    ax.legend(handles=[
-        L2([], [], marker="o", ls="none", color="0.35", label="two-head match"),
-        L2([], [], marker="D", ls="none", color="0.35", label="flow match"),
-        L2([], [], color="0.35", lw=1.0, label="same system, both models")],
-        fontsize=7, frameon=False, loc="lower left")
     ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
     ax.set_xlabel("dlnA  (area error)")
     ax.set_ylabel(r"dln$\rho$  (intensity error)")
-    ax.set_title("the same frame's matched pairs, decomposed\n"
+    ax.set_title("flow-matched systems of this frame, decomposed\n"
                  "(colors and numbers as in the panels above)", fontsize=9)
     for n in preds:
         mm = matches[n][matches[n].role == "match"]
