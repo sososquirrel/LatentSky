@@ -189,6 +189,31 @@ def main():
     fig.savefig(OUT / "flow_decomp_shift.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
+    # --- figure C: POD and FAR by scale at +3 h, three models
+    from latentsky.metrics import default_scale_edges, summarize_by_scale
+    edges = default_scale_edges(25, 600, 10)
+    base3 = systems_for_lead(3.0)
+    fl3 = flow_systems_for_lead(3.0)
+    series = [("two-head", base3[base3.model == "two-head"], "#2166ac"),
+              ("flow", fl3, "#b05e0a"),
+              ("persistence", base3[base3.model == "persistence"], "0.45")]
+    fig, axs2 = plt.subplots(1, 2, figsize=(9.4, 3.5), sharex=True)
+    for name, sub, colr in series:
+        summ = summarize_by_scale(sub, edges).by_scale
+        axs2[0].plot(summ["scale_mid"], summ["POD"], "o-", color=colr, ms=4,
+                     label=name)
+        axs2[1].plot(summ["scale_mid"], summ["FAR"], "s--", color=colr, ms=4,
+                     label=name)
+    for ax2, ttl in [(axs2[0], "POD — probability of detection"),
+                     (axs2[1], "FAR — false-alarm ratio")]:
+        ax2.set_xscale("log"); ax2.set_ylim(0, 1.02)
+        ax2.set_xlabel("system scale L = √A (km)")
+        ax2.set_title(ttl + " (+3 h)", fontsize=9)
+    axs2[0].set_ylabel("object-based rate")
+    axs2[0].legend(frameon=False, fontsize=8, loc="upper left")
+    fig.savefig(OUT / "flow_podfar.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
     print("ALPHAS:", {k: round(v, 3) for k, v in alphas.items()})
     for r in report:
         print("BARY:", r)
