@@ -133,15 +133,17 @@ def main():
 
     lsm = get_landmask(ds.lat.values, ds.lon.values)
 
-    fig = plt.figure(figsize=(13.6, 13.2))
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 2.2], hspace=0.18,
-                          wspace=0.04)
-    panels = [(gs[0, :], "truth (ERA5, valid 2020-08-15 06 UTC)", truth, ov_t, None),
-              (gs[1, :], "GraphCast +6 h", fc, ov_p, None),
-              (gs[2, 0], f"truth — 128-px block ({lon0:.0f}–{lon1:.0f}°E, "
-                         f"{lat0:.0f}–{lat1:.0f}°)", truth, ov_t, zoom),
-              (gs[2, 1], "GraphCast +6 h — same block", fc, ov_p, zoom)]
-    for spec, ttl, f, ov, z in panels:
+    fig_belt = plt.figure(figsize=(13.6, 6.6))
+    gs_belt = fig_belt.add_gridspec(2, 1, hspace=0.18)
+    fig_zoom = plt.figure(figsize=(10.4, 5.6))
+    gs_zoom = fig_zoom.add_gridspec(1, 2, wspace=0.04)
+    panels = [(fig_belt, gs_belt[0], "truth (ERA5, valid 2020-08-15 06 UTC)",
+               truth, ov_t, None),
+              (fig_belt, gs_belt[1], "GraphCast +6 h", fc, ov_p, None),
+              (fig_zoom, gs_zoom[0], f"truth — 128-px block ({lon0:.0f}–{lon1:.0f}°E, "
+                                     f"{lat0:.0f}–{lat1:.0f}°)", truth, ov_t, zoom),
+              (fig_zoom, gs_zoom[1], "GraphCast +6 h — same block", fc, ov_p, zoom)]
+    for fig, spec, ttl, f, ov, z in panels:
         ax = fig.add_subplot(spec)
         ff, oo, mm_z = (f, ov, lsm) if z is None else (f[z], ov[z], lsm[z])
         ax.imshow(ff, origin="lower", norm=norm, cmap=cmap,
@@ -164,21 +166,25 @@ def main():
                                    lw=1.2, ls="--"))
         ax.set_title(ttl, fontsize=9)
         ax.set_xticks([]); ax.set_yticks([])
-    fig.legend(handles=[
+    handles = [
         Line2D([], [], color=pair_colors[0], lw=4,
                label=f"matched pair — same color both panels ({len(matches)})"),
         Line2D([], [], color="0.05", lw=4, alpha=0.55,
                label=f"miss ({len(misses)})"),
         Line2D([], [], color="#d62728", lw=4, alpha=0.55,
-               label=f"false alarm ({len(fas)})")],
-        loc="lower center", ncol=3, fontsize=8.5, frameon=False,
-        bbox_to_anchor=(0.5, 0.075))
-    fig.suptitle(f"GraphCast pair recognition, +6 h, tropics — POD {npod:.2f}, "
-                 f"FAR {nfar:.2f} (threshold {THR} mm/6 h, IoU ≥ {IOU_MIN})",
-                 fontsize=10.5, y=0.92)
-    fig.savefig(OUT / "fig_pairs_graphcast.png", dpi=130, bbox_inches="tight")
-    plt.close(fig)
-    print("saved fig_pairs_graphcast.png")
+               label=f"false alarm ({len(fas)})")]
+    fig_belt.suptitle(f"GraphCast pair recognition, +6 h, tropics — POD {npod:.2f}, "
+                      f"FAR {nfar:.2f} (threshold {THR} mm/6 h, IoU ≥ {IOU_MIN})",
+                      fontsize=10.5, y=0.97)
+    fig_belt.savefig(OUT / "fig_pairs_graphcast_belt.png", dpi=130,
+                     bbox_inches="tight")
+    plt.close(fig_belt)
+    fig_zoom.legend(handles=handles, loc="lower center", ncol=3, fontsize=8.5,
+                    frameon=False, bbox_to_anchor=(0.5, -0.02))
+    fig_zoom.savefig(OUT / "fig_pairs_graphcast_zoom.png", dpi=130,
+                     bbox_inches="tight")
+    plt.close(fig_zoom)
+    print("saved fig_pairs_graphcast_belt.png + fig_pairs_graphcast_zoom.png")
 
     # ---- threshold sensitivity: POD/FAR by band at 0.1 / 1.0 / 2.4 mm per 6 h
     print("\nthreshold sensitivity (GraphCast, both inits of 2020-08-15):")
