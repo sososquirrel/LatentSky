@@ -211,6 +211,92 @@ def real_figures():
               round(float(truth.max()), 1))
 
 
+
+
+
+def pixel_trajectories():
+    """Replacement for the 2-D toy: real pixels' z-values along the actual
+    32-step integration — each pixel rides a near-straight ramp whose slope is
+    the network's predicted correction; ends land near truth."""
+    import torch
+    torch.set_num_threads(8)
+    r, c = BLOCK
+    sl = np.s_[r * P:(r + 1) * P, c * P:(c + 1) * P]
+    x = np.stack([np.asarray(np.load(PIECES / f"{v}_piece{PIECE:02d}.npy",
+                                     mmap_mode="r")[FRAME], dtype=np.float32)[sl]
+                  for v in INPUT_VARS], 0)
+    truth = np.asarray(np.load(PIECES / f"rain_total_piece{PIECE:02d}.npy",
+                               mmap_mode="r")[FRAME + 13], dtype=np.float32)[sl]
+    cond = torch.from_numpy(x[None])
+    twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
+    twohead.load_state_dict(torch.load(
+        RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead3h/checkpoint.pt",
+        map_location="cpu", weights_only=True))
+    twohead.eval()
+    net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+    net.load_state_dict(torch.load(
+        RUNS / "flow_models/flow_matching_lead3h.checkpoint.pt",
+        map_location="cpu", weights_only=True))
+    net.eval()
+    rf = RectifiedFlow(sigma=SIGMA)
+    z1 = np.log1p(truth) / SCALE
+
+    with torch.no_grad():
+        det_t, _ = twohead(cond)
+        zf = torch.log1p(torch.clamp(det_t, min=0.0)) / SCALE
+        g = torch.Generator().manual_seed(7)
+        xcur = rf.source(zf, generator=g)
+        states = [xcur.numpy()[0, 0].copy()]
+        dt = 1.0 / NSTEPS
+        for i in range(NSTEPS):
+            t0v = torch.full((1,), i * dt)
+            v0 = net(xcur, cond, t0v * (T_EMB_RANGE - 1))
+            x_pred = xcur + dt * v0
+            if i + 1 < NSTEPS:
+                t1v = torch.full((1,), (i + 1) * dt)
+                v1 = net(x_pred, cond, t1v * (T_EMB_RANGE - 1))
+                xcur = xcur + dt * 0.5 * (v0 + v1)
+            else:
+                xcur = x_pred
+            states.append(xcur.numpy()[0, 0].copy())
+    traj = np.stack(states)                      # (33, 128, 128)
+    zf0 = zf.numpy()[0, 0]
+    err = z1 - zf0
+
+    # pick pixels: strong under-forecast, strong over-forecast, well-forecast wet, dry
+    wet = (truth > 0.5) & (np.expm1(SCALE * zf0) > 0.05)
+    picks = []
+    m = np.where(wet & (err > 0), err, -np.inf); picks.append(
+        ("forecast too weak", np.unravel_index(np.argmax(m), m.shape), "#b2182b"))
+    m = np.where(wet & (err < 0), -err, -np.inf); picks.append(
+        ("forecast too strong", np.unravel_index(np.argmax(m), m.shape), "#2166ac"))
+    m = np.where(wet, -np.abs(err), -np.inf); picks.append(
+        ("forecast about right", np.unravel_index(np.argmax(m), m.shape), "#4daf4a"))
+    dry = (truth < 0.01) & (np.expm1(SCALE * zf0) < 0.01)
+    ij = np.argwhere(dry)[137]
+    picks.append(("dry (only noise to remove)", tuple(ij), "0.45"))
+
+    ts = np.linspace(0, 1, NSTEPS + 1)
+    fig, ax = plt.subplots(figsize=(6.4, 4.3))
+    for name, (pi, pj), colr in picks:
+        ax.plot(ts, traj[:, pi, pj], "-", color=colr, lw=2.0, label=name)
+        ax.plot(0, traj[0, pi, pj], "o", color=colr, ms=5)
+        ax.plot([1, 1], [traj[-1, pi, pj], z1[pi, pj]], ":", color=colr, lw=1.1)
+        ax.plot(1, z1[pi, pj], "*", color=colr, ms=13, mec="0.15", mew=0.6)
+        ax.plot(0, zf0[pi, pj], "s", color=colr, ms=5, mfc="none", mew=1.4)
+    ax.set_xlabel("integration time t")
+    ax.set_ylabel("pixel value in z = log1p(rain)/2")
+    ax.set_title("four real pixels riding the flow (+3 h, 32 Heun steps)\n"
+                 "□ forecast · ● source (forecast + σ·ε) · ★ truth", fontsize=9.5)
+    ax.legend(fontsize=7.5, frameon=False, loc="center left")
+    fig.savefig(OUT / "flow_pixel_trajectories.png", dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    for name, (pi, pj), _ in picks:
+        print(f"{name}: forecast z {zf0[pi,pj]:.3f} source {traj[0,pi,pj]:.3f} "
+              f"final {traj[-1,pi,pj]:.3f} truth {z1[pi,pj]:.3f}")
+    print("saved flow_pixel_trajectories.png")
+
+
 if __name__ == "__main__":
-    toy_schematic()
     real_figures()
+    pixel_trajectories()
