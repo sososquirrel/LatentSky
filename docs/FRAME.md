@@ -118,7 +118,7 @@ Purpose: show the framework is general and point to what a follow-up would ask.
 
 | R  | Claim (with a number)                                                                        | Figure | Status |
 |----|-----------------------------------------------------------------------------------------------|--------|--------|
-| I1 | Illustration: on WB2 models the same decomposition shows small systems (L < [to confirm — read off `_archive/../docs/scale_summary_<model>_*_24h.csv`] km) under-detected and intensity underestimated | fig_I1 | draft |
+| I1 | Illustration: on WB2 AI forecasts at +6 h (GraphCast/FuXi 2020-08-15, FGN 2022-08-15; ERA5 truth, tropics, identical pipeline) the same scale story holds — POD rises monotonically with L for every model, small systems (L < 50 km) sit at the persistence floor (POD 0.02–0.06) for all three, models separate from the null only above ≈50 km (GraphCast 0.85, FuXi 0.70 near 450 km); FGN (ensemble-mean field — the conditional-mean caveat applies) tracks its null. GenCast has no +6 h forecast. `wb2_benchmark/i1_pod6h_august.py` | fig_I1 | draft |
 
 `I` = illustration: registered in REGISTRY.md with its script and data, exempt from the
 sensitivity requirement, phrased as an observation, not a finding.
