@@ -88,11 +88,23 @@ def main():
               for _, r in fas.iterrows()}
 
     def overlay(lab, color_of, other_ids, other_col):
+        """Light tint inside each system + a solid 1-px colored boundary,
+        so the rain field stays visible underneath."""
+        edge = np.zeros(lab.shape, bool)
+        edge[1:, :] |= lab[1:, :] != lab[:-1, :]
+        edge[:, 1:] |= lab[:, 1:] != lab[:, :-1]
+        edge[:-1, :] |= lab[:-1, :] != lab[1:, :]
+        edge[:, :-1] |= lab[:, :-1] != lab[:, 1:]
+        edge &= lab > 0
         rgba = np.zeros((*lab.shape, 4), np.float32)
         for lid, col in color_of.items():
-            rgba[lab == lid] = (*col[:3], 0.9)
+            m = lab == lid
+            rgba[m] = (*col[:3], 0.28)
+            rgba[m & edge] = (*col[:3], 1.0)
         for lid in other_ids:
-            rgba[lab == lid] = (*other_col, 0.55)
+            m = lab == lid
+            rgba[m] = (*other_col, 0.22)
+            rgba[m & edge] = (*other_col, 0.95)
         return rgba
 
     ov_t = overlay(lt, color_of_t, miss_ids, (0.05, 0.05, 0.05))
@@ -116,14 +128,14 @@ def main():
     lat0, lat1 = float(ds.lat[i0]), float(ds.lat[i0 + P - 1])
 
     norm = LogNorm(vmin=THR, vmax=max(truth.max(), fc.max()))
-    cmap = plt.get_cmap("Greys").copy()
+    cmap = plt.get_cmap("Blues").copy()
     cmap.set_under("#ffffff")
 
     lsm = get_landmask(ds.lat.values, ds.lon.values)
 
-    fig = plt.figure(figsize=(13.6, 9.4))
-    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 2.7], hspace=0.3,
-                          wspace=0.06)
+    fig = plt.figure(figsize=(13.6, 13.2))
+    gs = fig.add_gridspec(3, 2, height_ratios=[1, 1, 2.2], hspace=0.18,
+                          wspace=0.04)
     panels = [(gs[0, :], "truth (ERA5, valid 2020-08-15 06 UTC)", truth, ov_t, None),
               (gs[1, :], "GraphCast +6 h", fc, ov_p, None),
               (gs[2, 0], f"truth — 128-px block ({lon0:.0f}–{lon1:.0f}°E, "
@@ -132,17 +144,11 @@ def main():
     for spec, ttl, f, ov, z in panels:
         ax = fig.add_subplot(spec)
         ff, oo, mm_z = (f, ov, lsm) if z is None else (f[z], ov[z], lsm[z])
-        ax.imshow(ff, origin="lower", norm=norm, cmap=cmap, alpha=0.45,
-                  interpolation="nearest", aspect="auto")
-        ax.imshow(oo, origin="lower", interpolation="nearest", aspect="auto")
+        ax.imshow(ff, origin="lower", norm=norm, cmap=cmap,
+                  interpolation="nearest")
+        ax.imshow(oo, origin="lower", interpolation="nearest")
         ax.contour(mm_z, levels=[0.5], colors=["0.35"], linewidths=0.5)
         if z is not None:
-            labz = (lt if "truth" in ttl else lp)[z]
-            ids = (color_of_t if "truth" in ttl else color_of_p)
-            for lid, col in ids.items():
-                if (labz == lid).any():
-                    ax.contour(labz == lid, levels=[0.5], colors=[col],
-                               linewidths=1.4)
             if "truth" in ttl:
                 ybar = 10                          # panel row of the bar
                 latbar = -40 + 0.25 * (i0 + ybar)  # its latitude
@@ -166,10 +172,10 @@ def main():
         Line2D([], [], color="#d62728", lw=4, alpha=0.55,
                label=f"false alarm ({len(fas)})")],
         loc="lower center", ncol=3, fontsize=8.5, frameon=False,
-        bbox_to_anchor=(0.5, 0.045))
+        bbox_to_anchor=(0.5, 0.075))
     fig.suptitle(f"GraphCast pair recognition, +6 h, tropics — POD {npod:.2f}, "
                  f"FAR {nfar:.2f} (threshold {THR} mm/6 h, IoU ≥ {IOU_MIN})",
-                 fontsize=10.5, y=0.945)
+                 fontsize=10.5, y=0.92)
     fig.savefig(OUT / "fig_pairs_graphcast.png", dpi=130, bbox_inches="tight")
     plt.close(fig)
     print("saved fig_pairs_graphcast.png")
