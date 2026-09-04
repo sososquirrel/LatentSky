@@ -96,7 +96,7 @@ Questions
 |----|--------------------------------------------------------------------------------------------------------|--------|--------|
 | R1 | Definition: T(L) = POD e-folding time; it rises from ≈0.7 h (L < 65 km) to ≈8.8 h (L > 200 km); T(L) ∝ L^α with draft α = 1.30 for persistence (two-head: 1.70; committed fit form `metrics.fits.fit_exp_decay`, one block × one day, `docs/make_scaling_assets.py` — crossover ≈ 100 km; small-L decay has a slow non-exponential tail to address), the null every model must beat | fig_R1 | draft |
 | R2 | Decomposition: aggregate error hides compensating area (+4 %) and intensity (−9 %) errors (net −5 %; L ≈ 200 km, 0.25 h lead, diffusion) | fig_R2 | draft |
-| R3 | Deterministic vs diffusion: diffusion extends the intensity e-folding time τ_ρ by ≈2 h for 100 ≤ L ≤ 700 km and ≈5 h at L ≈ 60 km (9.3 h vs 4.3 h); below ≈45 km neither beats persistence [threshold to confirm] | fig_R3 | draft |
+| R3 | Deterministic vs generative (flow): the flow lifts τ(L) above both the two-head and persistence at every scale (α 1.66 vs 1.70; first model to beat the null everywhere) and collapses the band barycenters toward the origin (large: (−0.01, −0.13) at 3 h); small-L POD doubles at 2–3 h at the cost of FAR ≈ 0.94 [draft: one block × one day, per-draw; `docs/make_flow_decomp_scaling.py`] | fig_R3 | draft |
 
 Draft-number provenance (legacy pipeline, to re-derive in `experiments/` before any
 status moves past `draft`): R1 e-folding times from `_archive/../docs/predictability_horizon.csv`
