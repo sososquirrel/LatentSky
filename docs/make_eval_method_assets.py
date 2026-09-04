@@ -149,10 +149,21 @@ def main():
     allm = alldf[alldf.role == "match"].reset_index(drop=True)
     print(f"all-frames systems: {len(alldf)} (matched {len(allm)}) over 83 frames")
 
+    # full held-out test set (all days), if the CPU job has produced it
+    ALLTEST = Path("/glade/derecho/scratch/sabramian/latentsky/eval_method/systems_alltest_lead3h.csv.gz")
+    fullm = None
+    fulldf = None
+    if ALLTEST.exists():
+        import pandas as pd
+        fulldf = pd.read_csv(ALLTEST)
+        fullm = fulldf[fulldf.role == "match"].reset_index(drop=True)
+        print(f"full test set: {len(fulldf)} systems, {len(fullm)} matched")
+
     # --- figure 2: the decomposition for the matched pairs
     fig, axs = plt.subplots(1, 2, figsize=(9.4, 4.3), sharex=True, sharey=True)
     lim = 1.05 * max(np.abs(allm["dlnA"]).max(), np.abs(allm["dlnrho"]).max(),
                      np.abs(m["dlnA"]).max(), np.abs(m["dlnrho"]).max())
+    lim = min(lim, 3.2)
     from matplotlib.colors import LogNorm as _LN
     cnorm = _LN(vmin=min(m["scale"].min(), allm["scale"].min()),
                 vmax=max(m["scale"].max(), allm["scale"].max()))
@@ -178,15 +189,18 @@ def main():
             ha="center")
 
     ax = axs[1]
-    w = allm["P_t"].to_numpy()
-    sc = ax.scatter(allm["dlnA"], allm["dlnrho"], s=9, c=allm["scale"],
-                    cmap="viridis", norm=cnorm, alpha=0.45, linewidths=0)
+    stat = fullm if fullm is not None else allm
+    w = stat["P_t"].to_numpy()
+    npts = len(stat)
+    sc = ax.scatter(stat["dlnA"], stat["dlnrho"], s=max(1.2, 9 * 1521 / npts),
+                    c=stat["scale"], cmap="viridis", norm=cnorm,
+                    alpha=min(0.45, 60000 / npts * 0.45), linewidths=0, rasterized=True)
     vir = plt.get_cmap("viridis")
     bands = [("small < 65 km", 0, 65, 40), ("65–200 km", 65, 200, 115),
              ("large > 200 km", 200, np.inf, 350)]
     txt = []
     for j, (name, lo, hi, lrep) in enumerate(bands):
-        g = allm[(allm["scale"] >= lo) & (allm["scale"] < hi)]
+        g = stat[(stat["scale"] >= lo) & (stat["scale"] < hi)]
         wg = g["P_t"].to_numpy()
         bA = float((wg * g["dlnA"]).sum() / wg.sum())
         bR = float((wg * g["dlnrho"]).sum() / wg.sum())
@@ -198,31 +212,40 @@ def main():
               title="precip-weighted barycenter", title_fontsize=7)
     print("barycenters:", "; ".join(txt))
     decorate(ax)
-    ax.set_title(f"all frames of the day — {len(allm)} matched pairs", fontsize=9)
+    ttl = (f"full held-out test set — {npts:,} matched pairs" if fullm is not None
+           else f"all frames of the day — {npts} matched pairs")
+    ax.set_title(ttl, fontsize=9)
     cb = fig.colorbar(sc, ax=axs, shrink=0.85, pad=0.015)
     cb.set_label("system scale L = √A (km)", fontsize=8)
     fig.savefig(OUT / "eval_method_decomp.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
-    # --- figure 3: object-based POD / FAR by scale over the day
-    summ = summarize_by_scale(alldf, default_scale_edges(25, 600, 10)).by_scale
-    fig, ax = plt.subplots(figsize=(5.2, 3.6))
-    ax.plot(summ["scale_mid"], summ["POD"], "o-", color="#2166ac", label="POD")
-    ax.plot(summ["scale_mid"], summ["FAR"], "s--", color="#d62728", label="FAR")
-    ax.set_xscale("log")
-    ax.set_ylim(0, 1.02)
-    ax.set_xlabel("system scale L = √A (km)")
-    ax.set_ylabel("object-based rate")
-    ax.set_title("detection skill by scale — one day, two-head (+3 h)", fontsize=9)
-    for _, r in summ.iterrows():
-        ax.annotate(f"{int(r['n_truth'])}", (r["scale_mid"], 1.0), fontsize=6,
-                    color="0.45", ha="center", va="bottom", annotation_clip=False)
-    ax.text(0.02, 0.93, "counts: truth systems per bin", transform=ax.transAxes,
-            fontsize=6.5, color="0.45")
-    ax.legend(frameon=False, fontsize=8, loc="center right")
+    # --- figure 3: object-based POD / FAR by scale — day and full test set
+    edges = default_scale_edges(25, 600, 10)
+    summ_day = summarize_by_scale(alldf, edges).by_scale
+    panels = [("one day, one block", summ_day)]
+    if fulldf is not None:
+        summ_full = summarize_by_scale(fulldf, edges).by_scale
+        panels.append(("full held-out test set", summ_full))
+    fig, axs3 = plt.subplots(1, len(panels), figsize=(5.2 * len(panels), 3.6),
+                             sharey=True)
+    axs3 = np.atleast_1d(axs3)
+    for ax, (ttl, summ) in zip(axs3, panels):
+        ax.plot(summ["scale_mid"], summ["POD"], "o-", color="#2166ac", label="POD")
+        ax.plot(summ["scale_mid"], summ["FAR"], "s--", color="#d62728", label="FAR")
+        ax.set_xscale("log")
+        ax.set_ylim(0, 1.02)
+        ax.set_xlabel("system scale L = √A (km)")
+        ax.set_title(f"{ttl} — two-head (+3 h)", fontsize=9)
+        for _, r in summ.iterrows():
+            ax.annotate(f"{int(r['n_truth'])}", (r["scale_mid"], 1.0), fontsize=6,
+                        color="0.45", ha="center", va="bottom", annotation_clip=False)
+    axs3[0].set_ylabel("object-based rate")
+    axs3[-1].legend(frameon=False, fontsize=8, loc="center right")
     fig.savefig(OUT / "eval_method_podfar.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(summ[["scale_mid", "n_truth", "POD", "FAR"]].round(3).to_string(index=False))
+    if fulldf is not None:
+        print(summ_full[["scale_mid", "n_truth", "POD", "FAR"]].round(3).to_string(index=False))
 
     w = m["P_t"].to_numpy()
     print(dict(dlnA_w=float((w * m["dlnA"]).sum() / w.sum()),
