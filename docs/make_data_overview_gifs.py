@@ -36,7 +36,7 @@ PIECE, BLOCK = 8, (1, 4)
 H, W = 320, 1440
 NR, NC = compute_patch_grid(H, W, P)  # 2 x 11
 COL = {"train": "#e9edf1", "val": "#e08214", "test": "#2166ac"}
-DOMAIN_FRAMES = list(range(0, 96, 8))  # 12 frames, every 2h across the day
+DOMAIN_FRAMES = list(range(0, 96, 4))  # 24 frames, hourly across the day
 SPLIT_PIECES = [0, 8, 19, 29, 39]      # 5 example days, spread across the record
 
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
@@ -72,7 +72,7 @@ def make_domain_gif():
     frames = []
     for t in DOMAIN_FRAMES:
         pw = load("precipw", t)
-        fig, ax = plt.subplots(figsize=(10.5, 2.9), dpi=100)
+        fig, ax = plt.subplots(figsize=(13.2, 3.6), dpi=100)
         im = ax.imshow(pw, origin="lower", cmap="BrBG", vmin=-3, vmax=3,
                        interpolation="nearest", aspect="equal", extent=[0, W, 0, H])
         add_coastlines(ax)
@@ -80,7 +80,7 @@ def make_domain_gif():
         r, c = BLOCK
         ax.add_patch(Rectangle((c * P, r * P), P, P, fill=False, ec="#b2182b", lw=2.2))
         ax.set_xticks([0, 360, 720, 1080, 1440])
-        ax.set_xticklabels(["0°", "90°E", "180°", "90°W", "0°"], fontsize=8)
+        ax.set_xticklabels(["0°", "90°E", "180°", "90°W", "0°"], fontsize=9)
         ax.set_yticks([0, 160, 320]); ax.set_yticklabels(["40°S", "0°", "40°N"], fontsize=8)
         ax.set_title(f"precipw (standardized), piece {PIECE}, frame {t} "
                      f"({t * 15 // 60}h{t * 15 % 60:02d}m into the day) — red = example block",
@@ -91,7 +91,7 @@ def make_domain_gif():
         plt.close(fig)
 
     out = OUT / "data_domain.gif"
-    frames[0].save(out, save_all=True, append_images=frames[1:], duration=500, loop=0,
+    frames[0].save(out, save_all=True, append_images=frames[1:], duration=350, loop=0,
                    optimize=True)
     print(f"wrote {out}  ({out.stat().st_size / 1024:.0f} KB, {len(frames)} frames)")
 
