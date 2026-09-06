@@ -79,26 +79,29 @@ def main():
     cmap = plt.get_cmap("Blues").copy(); cmap.set_under("#f7f9fb")
 
     def panel(f, title, fn, pnorm, pcmap, cblabel):
-        """Fixed canvas (no tight bbox): every frame has identical pixel
-        dimensions, so the page's click-through never shifts layout."""
-        fig = plt.figure(figsize=(5.4, 5.0))
-        ax = fig.add_axes([0.02, 0.02, 0.80, 0.86])
+        """One cell, sized to match a single input-grid box (1.907 inch map
+        at the same dpi), fixed canvas: title, map, horizontal colorbar.
+        Identical pixel dimensions across frames - no layout shift."""
+        fig = plt.figure(figsize=(2.0, 2.95))
+        ax = fig.add_axes([0.023, 0.265, 0.9535, 0.6464])
         im = ax.imshow(f, origin="lower", norm=pnorm, cmap=pcmap,
                        interpolation="nearest")
-        ax.set_title(title, fontsize=10)
+        ax.set_title(title, fontsize=8)
         ax.set_xticks([]); ax.set_yticks([])
-        cax = fig.add_axes([0.85, 0.08, 0.035, 0.74])
-        fig.colorbar(im, cax=cax).set_label(cblabel, fontsize=8)
+        cax = fig.add_axes([0.1, 0.12, 0.8, 0.045])
+        cb = fig.colorbar(im, cax=cax, orientation="horizontal")
+        cb.set_label(cblabel, fontsize=7)
+        cb.ax.tick_params(labelsize=6)
         fig.savefig(OUT / fn, dpi=130)
         plt.close(fig)
 
     def rain_panel(f, title, fn):
         panel(f, title, fn, norm, cmap, "rain (mm)")
 
-    rain_panel(now, "rain now (t = 0) — the persistence forecast", "lead_now.png")
+    rain_panel(now, "rain now (t = 0)", "lead_now.png")
     for L in LEADS:
         wet = float((targets[L] > 0.1).mean() * 100)
-        rain_panel(targets[L], f"true rain at +{L:g} h   (wet {wet:.0f} %)",
+        rain_panel(targets[L], f"truth +{L:g} h · wet {wet:.0f} %",
                    f"lead_{L:g}h.png")
 
     # --- diff panels, shared symlog scale, positive = red
@@ -107,8 +110,8 @@ def main():
     for L in LEADS:
         d = targets[L] - now
         frac = float(np.abs(d).sum() / max(now.sum(), 1e-6))
-        panel(d, f"Δ rain: (+{L:g} h) − now   (red = appears/intensifies)",
-              f"leaddiff_{L:g}h.png", snorm, "RdBu_r", "Δ rain (mm)")
+        panel(d, f"Δ: (+{L:g} h) − now", f"leaddiff_{L:g}h.png",
+              snorm, "RdBu_r", "Δ rain (mm), red = appears")
         print(f"+{L:g}h: |diff|/now volume ratio {frac:.2f}")
     print("saved lead explorer frames")
 
