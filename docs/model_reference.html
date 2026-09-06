@@ -624,7 +624,11 @@ constant speed, that answer is the same at any freeze point: a pixel starting at
 1.17 − 0.23 = 0.94 for the whole ride. So the correct answer is one fixed picture,
 <b>truth − x₀</b> (left panel; red = this pixel must gain rain, blue = lose), no
 matter where we froze. That is the entire gift of the straight line: one target
-serves every t, and training is ordinary least squares against it.</p>
+serves every t, and training is ordinary least squares against it. (Careful: the
+target is truth − x₀, <em>not</em> truth − x_t — the latter is the remaining
+<em>distance</em>, which shrinks with t; divide it by the remaining time 1 − t and
+the t cancels, giving back truth − x₀. The network answers with speed, not
+distance.)</p>
 <p style="margin-bottom:.3rem">The right panel is the trained network's actual
 answer on this frozen frame. It is close but visibly smoother than the target — and
 that is not a failure, it is the mechanism: many different (sprinkle, truth) pairs
