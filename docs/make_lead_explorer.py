@@ -44,76 +44,69 @@ def main():
     now = np.asarray(ytab[FRAME], dtype=np.float32)[sl]
     targets = {L: np.asarray(ytab[FRAME + int(round(L * 4)) + 1],
                              dtype=np.float32)[sl] for L in LEADS}
+    inputs = {v: np.asarray(np.load(PIECES / f"{v}_piece{PIECE:02d}.npy",
+                                    mmap_mode="r")[FRAME], dtype=np.float32)[sl]
+              for v in INPUT_VARS}
 
-    # --- inputs grid: 3x3 met channels + rain_log1p centered beneath
-    fig = plt.figure(figsize=(6.2, 8.9))
-    gs = fig.add_gridspec(4, 3, hspace=0.25, wspace=0.06,
-                          left=0.02, right=0.98, top=0.93, bottom=0.02)
-
-    def draw(ax, v, title_kw=None):
-        f = np.asarray(np.load(PIECES / f"{v}_piece{PIECE:02d}.npy",
-                               mmap_mode="r")[FRAME], dtype=np.float32)[sl]
-        lim = float(np.abs(f).max())
-        kw = (dict(vmin=-lim, vmax=lim) if CMAPS[v] in ("RdBu_r", "BrBG")
-              else {})
-        ax.imshow(f, origin="lower", cmap=CMAPS[v], interpolation="nearest", **kw)
-        ax.set_title(v, fontsize=8, family="monospace", **(title_kw or {}))
-        ax.set_xticks([]); ax.set_yticks([])
-
-    met = [v for v in INPUT_VARS if v != "rain_log1p"]
-    for k, v in enumerate(met):
-        draw(fig.add_subplot(gs[k // 3, k % 3]), v)
-    ax = fig.add_subplot(gs[3, 1])
-    draw(ax, "rain_log1p", title_kw=dict(color="#2166ac", fontweight="bold"))
-    for sp in ax.spines.values():
-        sp.set_visible(True); sp.set_color("#2166ac"); sp.set_linewidth(2)
-    fig.suptitle("input: the ten channels at t = 0\n"
-                 "(bottom: the current rain — the nested persistence input)",
-                 fontsize=9.5, y=0.985)
-    fig.savefig(OUT / "lead_inputs.png", dpi=130)
-    plt.close(fig)
-
-    # --- rain panels, shared scale
     vmax = max(float(now.max()), max(float(t.max()) for t in targets.values()))
-    norm = LogNorm(vmin=0.1, vmax=vmax)
-    cmap = plt.get_cmap("Blues").copy(); cmap.set_under("#f7f9fb")
-
-    def panel(f, title, fn, pnorm, pcmap, cblabel):
-        """One cell, sized to match a single input-grid box (1.907 inch map
-        at the same dpi), fixed canvas: title, map, horizontal colorbar.
-        Identical pixel dimensions across frames - no layout shift."""
-        fig = plt.figure(figsize=(2.0, 2.95))
-        ax = fig.add_axes([0.023, 0.265, 0.9535, 0.6464])
-        im = ax.imshow(f, origin="lower", norm=pnorm, cmap=pcmap,
-                       interpolation="nearest")
-        ax.set_title(title, fontsize=8)
-        ax.set_xticks([]); ax.set_yticks([])
-        cax = fig.add_axes([0.1, 0.12, 0.8, 0.045])
-        cb = fig.colorbar(im, cax=cax, orientation="horizontal")
-        cb.set_label(cblabel, fontsize=7)
-        cb.ax.tick_params(labelsize=6)
-        fig.savefig(OUT / fn, dpi=130)
-        plt.close(fig)
-
-    def rain_panel(f, title, fn):
-        panel(f, title, fn, norm, cmap, "rain (mm)")
-
-    rain_panel(now, "rain now (t = 0)", "lead_now.png")
-    for L in LEADS:
-        wet = float((targets[L] > 0.1).mean() * 100)
-        rain_panel(targets[L], f"truth +{L:g} h · wet {wet:.0f} %",
-                   f"lead_{L:g}h.png")
-
-    # --- diff panels, shared symlog scale, positive = red
+    rnorm = LogNorm(vmin=0.1, vmax=vmax)
+    rcmap = plt.get_cmap("Blues").copy(); rcmap.set_under("#ffffff")
     dlim = max(float(np.abs(targets[L] - now).max()) for L in LEADS)
     snorm = SymLogNorm(linthresh=0.1, vmin=-dlim, vmax=dlim)
+
     for L in LEADS:
-        d = targets[L] - now
-        frac = float(np.abs(d).sum() / max(now.sum(), 1e-6))
-        panel(d, f"Δ: (+{L:g} h) − now", f"leaddiff_{L:g}h.png",
-              snorm, "RdBu_r", "Δ rain (mm), red = appears")
-        print(f"+{L:g}h: |diff|/now volume ratio {frac:.2f}")
-    print("saved lead explorer frames")
+        fig = plt.figure(figsize=(12.6, 5.6))
+        # background zones: inputs (cool) vs output (warm)
+        fig.patches.append(plt.Rectangle((0.005, 0.015), 0.755, 0.955,
+                                         transform=fig.transFigure,
+                                         color="#edf2f7", zorder=-2))
+        fig.patches.append(plt.Rectangle((0.775, 0.015), 0.22, 0.955,
+                                         transform=fig.transFigure,
+                                         color="#fbeedd", zorder=-2))
+        gs_in = fig.add_gridspec(2, 5, left=0.018, right=0.75,
+                                 top=0.86, bottom=0.17, hspace=0.28, wspace=0.07)
+        gs_out = fig.add_gridspec(2, 1, left=0.80, right=0.972,
+                                  top=0.86, bottom=0.17, hspace=0.28)
+        for k, v in enumerate(INPUT_VARS):
+            ax = fig.add_subplot(gs_in[k // 5, k % 5])
+            f = inputs[v]
+            lim = float(np.abs(f).max())
+            kw = (dict(vmin=-lim, vmax=lim) if CMAPS[v] in ("RdBu_r", "BrBG")
+                  else {})
+            ax.imshow(f, origin="lower", cmap=CMAPS[v],
+                      interpolation="nearest", **kw)
+            ax.set_title(v, fontsize=7.5, family="monospace")
+            ax.set_xticks([]); ax.set_yticks([])
+            if v == "rain_log1p":
+                for sp in ax.spines.values():
+                    sp.set_visible(True); sp.set_color("#2166ac")
+                    sp.set_linewidth(2)
+        ax_t = fig.add_subplot(gs_out[0])
+        im_r = ax_t.imshow(targets[L], origin="lower", norm=rnorm, cmap=rcmap,
+                           interpolation="nearest")
+        wet = float((targets[L] > 0.1).mean() * 100)
+        ax_t.set_title(f"true rain +{L:g} h · wet {wet:.0f} %", fontsize=8.5)
+        ax_t.set_xticks([]); ax_t.set_yticks([])
+        ax_d = fig.add_subplot(gs_out[1])
+        im_d = ax_d.imshow(targets[L] - now, origin="lower", norm=snorm,
+                           cmap="RdBu_r", interpolation="nearest")
+        ax_d.set_title(f"Δ: (+{L:g} h) − now", fontsize=8.5)
+        ax_d.set_xticks([]); ax_d.set_yticks([])
+
+        fig.text(0.385, 0.935, "INPUT — the ten channels at t = 0",
+                 ha="center", fontsize=10.5)
+        fig.text(0.885, 0.935, f"OUTPUT — target at +{L:g} h",
+                 ha="center", fontsize=10.5, color="#b05e0a")
+        cax1 = fig.add_axes([0.50, 0.085, 0.17, 0.022])
+        cb1 = fig.colorbar(im_r, cax=cax1, orientation="horizontal")
+        cb1.set_label("rain (mm)", fontsize=7); cb1.ax.tick_params(labelsize=6)
+        cax2 = fig.add_axes([0.80, 0.085, 0.17, 0.022])
+        cb2 = fig.colorbar(im_d, cax=cax2, orientation="horizontal")
+        cb2.set_label("Δ rain (mm) — red = appears/intensifies", fontsize=7)
+        cb2.ax.tick_params(labelsize=6)
+        fig.savefig(OUT / f"lead_frame_{L:g}h.png", dpi=125)
+        plt.close(fig)
+        print(f"saved lead_frame_{L:g}h.png")
 
 
 if __name__ == "__main__":
