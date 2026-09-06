@@ -34,6 +34,7 @@ P, PIECE, FRAME, BLOCK = 128, 8, 64, (1, 4)
 LEADS = [0.25, 0.5, 1, 2, 3, 6]
 
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
+matplotlib.rcParams["savefig.bbox"] = None  # fixed canvas for the explorer frames
 
 
 def main():
@@ -67,16 +68,22 @@ def main():
     norm = LogNorm(vmin=0.1, vmax=vmax)
     cmap = plt.get_cmap("Blues").copy(); cmap.set_under("#f7f9fb")
 
-    def rain_panel(f, title, fn):
-        fig, ax = plt.subplots(figsize=(4.6, 4.2))
-        im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap,
+    def panel(f, title, fn, pnorm, pcmap, cblabel):
+        """Fixed canvas (no tight bbox): every frame has identical pixel
+        dimensions, so the page's click-through never shifts layout."""
+        fig = plt.figure(figsize=(5.4, 5.0))
+        ax = fig.add_axes([0.02, 0.02, 0.80, 0.86])
+        im = ax.imshow(f, origin="lower", norm=pnorm, cmap=pcmap,
                        interpolation="nearest")
         ax.set_title(title, fontsize=10)
         ax.set_xticks([]); ax.set_yticks([])
-        fig.colorbar(im, ax=ax, shrink=0.85, pad=0.02).set_label("rain (mm)",
-                                                                 fontsize=8)
-        fig.savefig(OUT / fn, dpi=130, bbox_inches="tight")
+        cax = fig.add_axes([0.85, 0.08, 0.035, 0.74])
+        fig.colorbar(im, cax=cax).set_label(cblabel, fontsize=8)
+        fig.savefig(OUT / fn, dpi=130)
         plt.close(fig)
+
+    def rain_panel(f, title, fn):
+        panel(f, title, fn, norm, cmap, "rain (mm)")
 
     rain_panel(now, "rain now (t = 0) — the persistence forecast", "lead_now.png")
     for L in LEADS:
@@ -89,17 +96,9 @@ def main():
     snorm = SymLogNorm(linthresh=0.1, vmin=-dlim, vmax=dlim)
     for L in LEADS:
         d = targets[L] - now
-        fig, ax = plt.subplots(figsize=(4.6, 4.2))
-        im = ax.imshow(d, origin="lower", norm=snorm, cmap="RdBu_r",
-                       interpolation="nearest")
         frac = float(np.abs(d).sum() / max(now.sum(), 1e-6))
-        ax.set_title(f"Δ rain: (+{L:g} h) − now   (red = appears/intensifies)",
-                     fontsize=10)
-        ax.set_xticks([]); ax.set_yticks([])
-        fig.colorbar(im, ax=ax, shrink=0.85, pad=0.02).set_label("Δ rain (mm)",
-                                                                 fontsize=8)
-        fig.savefig(OUT / f"leaddiff_{L:g}h.png", dpi=130, bbox_inches="tight")
-        plt.close(fig)
+        panel(d, f"Δ rain: (+{L:g} h) − now   (red = appears/intensifies)",
+              f"leaddiff_{L:g}h.png", snorm, "RdBu_r", "Δ rain (mm)")
         print(f"+{L:g}h: |diff|/now volume ratio {frac:.2f}")
     print("saved lead explorer frames")
 
