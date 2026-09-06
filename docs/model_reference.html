@@ -594,6 +594,65 @@ it learns the transport from the deterministic forecast to the truth <em>directl
 and returns sharp <em>samples</em> of the conditional distribution instead of its mean —
 at the price of stochasticity and 33 network passes instead of 1.</p>
 
+<h3>Theory in one page: the ODE and what it means</h3>
+<p>Fix the conditioning c (the ten channels). There are two random fields we care
+about: the <b>source</b> x₀ — the deterministic forecast in z-space plus a draw of
+noise, x₀ = z<sub>fc</sub> + σ·ε — and the <b>target</b> x₁ — the true rain field in
+z-space. Each has a probability distribution given c: the source distribution is a
+narrow cloud around the forecast; the target distribution is the set of rain fields
+the atmosphere could actually produce given this meteorology. The flow's entire job
+is a <b>transport problem</b>: find a velocity field v(x, c, t) such that solving the
+ordinary differential equation</p>
+<pre><code>dx/dt = v(x, c, t),   from t = 0 to t = 1,   starting at x(0) = x₀</code></pre>
+<p>delivers endpoints x(1) that are distributed like the truth. One field, one ODE —
+no reverse Markov chain, no noise schedule. Equivalently, in terms of distributions,
+v moves probability mass according to the continuity equation
+<span class="mono">∂<sub>t</sub>p<sub>t</sub> + ∇·(p<sub>t</sub>v) = 0</span>: the
+field does not push one image around, it carries the whole source <em>distribution</em>
+onto the whole target distribution.</p>
+
+<p><b>Where does such a field come from?</b> Rectified flow answers with a
+construction of disarming simplicity. Take a training pair (x₀, x₁) — a noised
+forecast and its own truth — and connect them by a straight line:</p>
+<pre><code>x_t = (1 − t)·x₀ + t·x₁        so that        dx_t/dt = x₁ − x₀   (constant along the line)</code></pre>
+<p>Then train the network by plain least squares to predict that line's velocity from
+any point on it:</p>
+<pre><code>minimize   E ‖ v_θ(x_t, c, t) − (x₁ − x₀) ‖²</code></pre>
+<p>The crucial fact is what least squares converges to. Many training lines pass
+near the same point (x, t) — the same partially-corrected field is compatible with
+several truths — and the regression minimizer is their <b>conditional average</b>:</p>
+<pre><code>v*(x, c, t) = E[ x₁ − x₀ | x_t = x, c ]</code></pre>
+<p>This single identity carries the three interpretations that make the method
+comprehensible:</p>
+<ul>
+<li><b>The field is an average of straight lines, and that is enough.</b> No
+individual ODE trajectory retraces a training line — it follows the local average of
+all lines passing through it. But because the continuity equation is linear in the
+flux p<sub>t</sub>v, averaging the line velocities at fixed (x, t) leaves the
+<em>marginal</em> flow of probability untouched: the endpoints are still distributed
+exactly like x₁. Individual paths bend; the distribution arrives intact. That is the
+whole theorem behind the method.</li>
+<li><b>t is not weather time.</b> The target at t = 1 is the truth at the <em>same</em>
+valid time as the forecast; t is the <b>progress variable of the correction</b> —
+"what fraction of the way from the noised forecast to a plausible truth have we
+moved". At t = 0 the network must state the entire remaining correction; near t = 1
+almost nothing is left to say. Training at random t teaches the correction from every
+intermediate state the ODE will actually visit.</li>
+<li><b>All randomness lives in the starting point.</b> Given the draw of ε, the ODE
+is deterministic — 32 Heun steps, no noise injected along the way. Different ε give
+different x₀, whose trajectories commit to different plausible truths: that is the
+ensemble, and why σ = 0 (identical starting points) collapses the whole construction
+back to a single deterministic answer — the regression, i.e. the two-head model we
+started from. σ is the one knob separating the two model classes, and it is not
+tuned: it is set to the measured forecast-error rms per lead.</li>
+</ul>
+<p>In this project's terms the object being learned is concrete:
+v* = E[x₁ − x₀ | x_t, c] is <b>the forecast's remaining error field, conditioned on
+the meteorology</b> — "given the large-scale state and how much correction has
+already been applied, here is what is still wrong". The rest of this section shows
+each ingredient on real fields: the training pair and the network's actual v̂
+(training), the 32-step integration (sampling), and single pixels riding it.</p>
+
 <div class="tablewrap"><table class="spec"><tbody>
 <tr><td>Network</td><td>the same ConditionalDiffusionUNet (131 M) reused as a velocity
 field v(x, cond, t); t ∈ [0, 1] via the existing time embedding</td></tr>
