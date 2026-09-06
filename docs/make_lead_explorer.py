@@ -45,22 +45,32 @@ def main():
     targets = {L: np.asarray(ytab[FRAME + int(round(L * 4)) + 1],
                              dtype=np.float32)[sl] for L in LEADS}
 
-    # --- inputs grid (portrait, sits left of the lead panel)
-    fig, axs = plt.subplots(4, 3, figsize=(6.2, 8.6))
-    for ax in axs.ravel():
-        ax.axis("off")
-    for ax, v in zip(axs.ravel(), INPUT_VARS):
+    # --- inputs grid: 3x3 met channels + rain_log1p centered beneath
+    fig = plt.figure(figsize=(6.2, 8.9))
+    gs = fig.add_gridspec(4, 3, hspace=0.25, wspace=0.06,
+                          left=0.02, right=0.98, top=0.93, bottom=0.02)
+
+    def draw(ax, v, title_kw=None):
         f = np.asarray(np.load(PIECES / f"{v}_piece{PIECE:02d}.npy",
                                mmap_mode="r")[FRAME], dtype=np.float32)[sl]
         lim = float(np.abs(f).max())
         kw = (dict(vmin=-lim, vmax=lim) if CMAPS[v] in ("RdBu_r", "BrBG")
               else {})
-        ax.axis("on")
         ax.imshow(f, origin="lower", cmap=CMAPS[v], interpolation="nearest", **kw)
-        ax.set_title(v, fontsize=8, family="monospace")
+        ax.set_title(v, fontsize=8, family="monospace", **(title_kw or {}))
         ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("input: the ten channels at t = 0", fontsize=10, y=0.995)
-    fig.savefig(OUT / "lead_inputs.png", dpi=130, bbox_inches="tight")
+
+    met = [v for v in INPUT_VARS if v != "rain_log1p"]
+    for k, v in enumerate(met):
+        draw(fig.add_subplot(gs[k // 3, k % 3]), v)
+    ax = fig.add_subplot(gs[3, 1])
+    draw(ax, "rain_log1p", title_kw=dict(color="#2166ac", fontweight="bold"))
+    for sp in ax.spines.values():
+        sp.set_visible(True); sp.set_color("#2166ac"); sp.set_linewidth(2)
+    fig.suptitle("input: the ten channels at t = 0\n"
+                 "(bottom: the current rain — the nested persistence input)",
+                 fontsize=9.5, y=0.985)
+    fig.savefig(OUT / "lead_inputs.png", dpi=130)
     plt.close(fig)
 
     # --- rain panels, shared scale
