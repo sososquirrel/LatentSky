@@ -44,19 +44,21 @@ def main():
     targets = {L: np.asarray(ytab[FRAME + int(round(L * 4)) + 1],
                              dtype=np.float32)[sl] for L in LEADS}
 
-    # --- inputs grid
-    fig, axs = plt.subplots(2, 5, figsize=(10.4, 4.6))
+    # --- inputs grid (portrait, sits left of the lead panel)
+    fig, axs = plt.subplots(4, 3, figsize=(6.2, 8.6))
+    for ax in axs.ravel():
+        ax.axis("off")
     for ax, v in zip(axs.ravel(), INPUT_VARS):
         f = np.asarray(np.load(PIECES / f"{v}_piece{PIECE:02d}.npy",
                                mmap_mode="r")[FRAME], dtype=np.float32)[sl]
         lim = float(np.abs(f).max())
         kw = (dict(vmin=-lim, vmax=lim) if CMAPS[v] in ("RdBu_r", "BrBG")
               else {})
+        ax.axis("on")
         ax.imshow(f, origin="lower", cmap=CMAPS[v], interpolation="nearest", **kw)
         ax.set_title(v, fontsize=8, family="monospace")
         ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("what the model sees: the ten standardized channels at t = 0",
-                 fontsize=10, y=0.99)
+    fig.suptitle("input: the ten channels at t = 0", fontsize=10, y=0.995)
     fig.savefig(OUT / "lead_inputs.png", dpi=130, bbox_inches="tight")
     plt.close(fig)
 
