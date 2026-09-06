@@ -4,6 +4,7 @@ frames). CPU-friendly (batched two-head forwards); writes
 data/eval_method/systems_alltest_lead3h.csv.gz. Meant for a CPU PBS job."""
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -22,11 +23,14 @@ OUTDIR = Path("/glade/derecho/scratch/sabramian/latentsky/eval_method")
 INPUT_VARS = ["precipw", "t2m", "olrtoa", "mse_500hPa", "mse_850hPa",
               "uzonal_500hPa", "uzonal_850hPa", "umeridional_500hPa",
               "umeridional_850hPa", "rain_log1p"]
-P, DELTA, THR, IOU_MIN = 128, 13, 0.1, 0.1
+P, THR, IOU_MIN = 128, 0.1, 0.1
 
 
 def main():
+    lead = float(sys.argv[1]) if len(sys.argv) > 1 else 3.0
+    DELTA = int(round(lead * 4)) + 1
     OUTDIR.mkdir(parents=True, exist_ok=True)
+    print("lead:", lead, "delta:", DELTA, flush=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if device.type == "cpu":
         torch.set_num_threads(16)
@@ -34,7 +38,7 @@ def main():
 
     twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
     twohead.load_state_dict(torch.load(
-        RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead3h/checkpoint.pt",
+        RUNS / f"unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead{lead:g}h/checkpoint.pt",
         map_location=device, weights_only=True))
     twohead = twohead.to(device).eval()
 
@@ -70,7 +74,7 @@ def main():
         print(f"piece {pid}: {len(blocks)} test blocks done", flush=True)
 
     out = pd.concat(rows, ignore_index=True)
-    out.to_csv(OUTDIR / "systems_alltest_lead3h.csv.gz", index=False,
+    out.to_csv(OUTDIR / f"systems_alltest_lead{lead:g}h.csv.gz", index=False,
                compression="gzip")
     n = out.role.value_counts().to_dict()
     print("DONE", len(out), "systems:", n, flush=True)
