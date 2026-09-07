@@ -1,12 +1,20 @@
 # AGU Advances draft
 
-`main.tex` targets the official AGU class `agujournal2019.cls`. That class is not
-on this login node (no TeX install) and is not fetchable from a stable URL, so:
+Compile on the cluster:
 
-- **Compile on Overleaf**: open the official "AGU (American Geophysical Union)"
-  template on Overleaf, replace its `main.tex` with this one, keep the template's
-  `agujournal2019.cls`, `agutexSI2019.cls`, and `trackchanges.sty`.
-- Or drop those three files into this folder and compile locally on a node with TeX.
+```
+module load texlive/20250308
+pdflatex main.tex   # (run twice + bibtex once refs are real)
+```
+
+`agujournal2019.cls` and `trackchanges.sty` are vendored in this folder
+(fetched from the myst-templates/agu2019 mirror of the official AGU template).
+Note AGU published a newer `agujournal2025.cls`
+(github.com/AGU-Publications/agujournal2025-latex-template); switch before
+submission if the journal requires it — the environments (keypoints, abstract,
+plain-language summary) carry over.
+
+Overleaf also works: its official AGU template ships the same class.
 
 AGU Advances specifics honored in the skeleton:
 - exactly **3 Key Points**, ≤ 140 characters each, no math markup;
