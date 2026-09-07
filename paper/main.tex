@@ -151,6 +151,19 @@ the generative member restores intensity, and below ${\sim}60$~km no model
 detects anything at $0.25^{\circ}$, the argument that kilometer-scale training
 data is necessary.
 
+A word on ambition. The models trained here are deliberately modest --- a
+$125$~M-parameter U-Net and its flow correction, trained on 40 days of data on
+a single GPU --- and we make no claim to compete with operational systems
+trained on decades of reanalysis at vastly larger compute. They are the
+instrument's controlled experiment, not its product: small enough that every
+design choice is inspectable, matched to each other so that the only
+difference between the deterministic and generative forecast is the training
+objective. The contribution is the measurement --- a scaling law
+$T(L) \propto L^{\alpha}$ and its decomposition into what the atmosphere
+forbids and what the estimator destroys --- and the framework that produces
+it, which applies unchanged to any forecast, as Section~\ref{sec:res-wb2}
+demonstrates on the operational models themselves.
+
 Section~\ref{sec:methods} describes the data, the two models, and the
 evaluation; Section~\ref{sec:results} presents the three results in that order;
 Section~\ref{sec:discussion} discusses what the horizon does and does not
