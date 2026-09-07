@@ -35,24 +35,10 @@ plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 
 
 def tau_series():
-    midsf = np.sqrt(FINE_EDGES[:-1] * FINE_EDGES[1:])
-    podf = {m: np.zeros((len(FINE_EDGES) - 1, len(FLOW_LEADS)))
-            for m in STYLES}
-    for j, L in enumerate(FLOW_LEADS):
-        base = pd.read_csv(OUT / f"scaling_systems_lead{L:g}h.csv")
-        fl = pd.read_csv(OUT / f"scaling_systems_flow_lead{L:g}h.csv")
-        for m, sub in [("two-head", base[base.model == "two-head"]),
-                       ("persistence", base[base.model == "persistence"]),
-                       ("flow", fl)]:
-            podf[m][:, j] = pod_by_band(sub, FINE_EDGES)
-
-    def efold(y):
-        ok = y > 0
-        if ok.sum() < 3 or y[0] <= 0:
-            return np.nan
-        return fit_exp_decay(FLOW_LEADS[ok] - FLOW_LEADS[0], y[ok] / y[0])["tau"]
-
-    tauf = {m: np.array([efold(podf[m][k]) for k in range(len(midsf))])
+    """Full-record taus from make_scaling_fullrecord.py's cached csv."""
+    df = pd.read_csv(OUT / "tau_fullrecord.csv")
+    midsf = np.sort(df.L_mid.unique())
+    tauf = {m: df[df.model == m].sort_values("L_mid").tau.to_numpy()
             for m in STYLES}
     return midsf, tauf
 
@@ -75,7 +61,7 @@ def fig_tau(midsf, tauf, with_flow, fn):
     ax.set_xlim(25, 800); ax.set_ylim(0.3, 110)
     ax.set_xlabel("system scale L (km)")
     ax.set_ylabel("τ(L) — POD e-folding time (h)")
-    ax.set_title("the predictability horizon τ(L) ∝ L^α\n"
+    ax.set_title("the predictability horizon τ(L) ∝ L^α — full record\n"
                  + ("with the flow correction" if with_flow
                     else "deterministic model vs the null"), fontsize=9)
     ax.legend(fontsize=7.5, frameon=False, loc="upper left")
