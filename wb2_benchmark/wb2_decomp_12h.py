@@ -80,9 +80,13 @@ def main():
     cn = LogNorm(vmin=40, vmax=1000)
     lim = 0.9
     fig, axs = plt.subplots(1, 3, figsize=(11.4, 4.0), sharex=True, sharey=True)
-    panels = [("graphcast", axs[0], "graphcast"),
-              ("fuxi", axs[1], "fuxi"),
-              ("gencast", axs[2], "gencast:  mean ■ → member ◆")]
+    nm = {name: int(np.mean([len(m) for m in dfs]))
+          for name, dfs in series.items()}
+    panels = [("graphcast", axs[0], f"graphcast  (n = {nm['graphcast']})"),
+              ("fuxi", axs[1], f"fuxi  (n = {nm['fuxi']})"),
+              ("gencast", axs[2],
+               f"gencast:  mean ■ (n = {nm['gencast mean']}) → "
+               f"member ◆ (n = {nm['gencast member']})")]
     for key, ax, title in panels:
         ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
         xs = np.linspace(-lim, lim, 2)
@@ -114,8 +118,9 @@ def main():
         Line2D([], [], marker="X", ls="none", ms=9, mfc=vir(cn(l)), mec="0.1",
                label=b) for b, _, _, l in BANDS],
         fontsize=7.5, frameon=False, loc="lower left")
-    fig.suptitle("the size/intensity bias of AI weather forecasts — "
-                 "+12 h, precip-weighted band barycenters", fontsize=10, y=1.0)
+    fig.suptitle("the size/intensity bias of AI weather forecasts — +12 h, "
+                 "2020-08-15 (two initializations), matched-pair band "
+                 "barycenters, precip-weighted", fontsize=10, y=1.0)
     fig.savefig(OUT / "fig_wb2_decomp_12h.png", dpi=150, bbox_inches="tight")
     print("saved fig_wb2_decomp_12h.png")
 
