@@ -1,0 +1,105 @@
+%% LatentSky — AGU Advances manuscript
+%% Compile on Overleaf with the official AGU template (class agujournal2019),
+%% or drop agujournal2019.cls + agutexSI2019.cls into this folder.
+%% Structure mirrors docs/model_reference.html sections 0–9 (the "five acts").
+
+\documentclass[draft]{agujournal2019}
+\usepackage{url}
+\usepackage{lineno}
+\usepackage[inline]{trackchanges}
+\usepackage{soul}
+\linenumbers
+
+\journalname{AGU Advances}
+
+\begin{document}
+
+\title{The size of the storm sets the limit: a scale-decomposed predictability
+horizon for kilometer-scale precipitation, and what generative modeling restores}
+
+%% TODO authors/affiliations — Sophie Abramian; Sara <last name>; Tim <last name>
+\authors{S. Abramian\affil{1}, ...\affil{2}}
+\affiliation{1}{...}
+\affiliation{2}{...}
+\correspondingauthor{Sophie Abramian}{sophieabramian@gmail.com}
+
+%% ===================== KEY POINTS (three, <= 140 chars each) ================
+\begin{keypoints}
+\item The detection horizon of km-scale precipitation grows as a power law of
+system size, $T(L) \propto L^{1.8}$, from 0.5 h at 30 km to a day at 500 km
+\item A rectified flow trained on the forecast's own measured error removes the
+conditional-mean bias and beats the persistence null at every scale
+\item Operational AI forecasts share the same size-dependent limits; sampling
+restores representation, small-system placement remains unsolved
+\end{keypoints}
+
+%% ===================== ABSTRACT ============================================
+\begin{abstract}
+%% TODO (~250 words). Skeleton:
+%% 1. Question: what sets the limit of km-scale precipitation prediction?
+%% 2. Instrument: object-based P = rho*A decomposition; horizon T(L) = POD
+%%    e-folding time per scale band; persistence as nested null.
+%% 3. Law: T(L) ∝ L^alpha, alpha = 1.8 (deterministic), 1.4 (persistence),
+%%    crossover at ~100 km; full held-out record (132 blocks x 40 days).
+%% 4. Diagnosis: the conditional mean's compensating size/intensity bias.
+%% 5. Fix: conditional rectified flow on the forecast's measured error;
+%%    per-draw scoring; first model above the null at every scale, alpha 1.63,
+%%    barycenters collapse, small-L POD triples at FAR 0.92 (priced).
+%% 6. Universality: WB2 models show the same scale story; diffusion member
+%%    adds 150-500 km detection and erases intensity bias; below 60 km nothing
+%%    works at 0.25 degrees -- km-scale truth is necessary.
+\end{abstract}
+
+\section*{Plain Language Summary}
+%% TODO (~200 words, no jargon): "How far ahead can rain be predicted? It
+%% depends on the size of the rain system..." — the crossfade/sprinkle story
+%% of the method in two sentences; the open small-storm problem.
+
+%% ===================== 1. INTRODUCTION =====================================
+\section{Introduction}
+%% Act 0 (html §0): what sets the limit of prediction; placement vs
+%% representation split; why km-scale; why object-based; contributions list.
+%% Cite: Lorenz scale-dependent predictability; convective-scale predictability
+%% (Hohenegger & Schar; Zhang); object-based verification (MODE, SAL);
+%% ML weather (GraphCast, FuXi, GenCast, FGN); DYAMOND.
+
+%% ===================== 2. DATA AND MODELS ==================================
+\section{Data and models}
+\subsection{DYAMOND km-scale data and leakage-safe split}   % html §1–2
+\subsection{Deterministic two-head U-Net}                    % html §3
+\subsection{Conditional rectified flow}                      % html §4 (the six steps, compressed)
+%% Include: sigma = measured error rms; per-draw scoring rule; DDPM as
+%% sampling-protocol sensitivity (one paragraph).
+
+%% ===================== 3. THE INSTRUMENT ===================================
+\section{A scale-decomposed object evaluation}               % html §5–6
+%% P = rho*A identity; matching; POD/FAR by scale; known caveats (IoU null
+%% advantage, threshold percolation, many-to-one).
+
+%% ===================== 4. RESULTS ==========================================
+\section{The predictability horizon and its scaling}         % html §7
+%% Fig R1: POD(t;L) decay + tau(L) ∝ L^alpha (full record, three models).
+\section{What generative modeling restores}                  % html §8
+%% Fig R2: decomposition before/after (two-head vs flow clouds, shared axes).
+%% Fig R3: POD/FAR + tau toggles content; priced FAR; pre-registered predictions.
+\section{The same lens on operational AI forecasts}          % html §9
+%% Fig I1: +12h POD/FAR (findings 1–2) + decomposition clouds (finding 3);
+%% segmentation diagnosis; rate-vs-boundaries resolution argument.
+
+%% ===================== 5. DISCUSSION =======================================
+\section{Discussion and outlook}
+%% - time evolution: valid-time matching + persistence-as-no-evolution null;
+%%   Lagrangian tracking as future work (html §7 note)
+%% - limitations: one DYAMOND summer, tropics; alpha fit range caveats
+%% - implications for training objectives (CRPS-on-marginals vs joint sampling)
+
+\section{Open Research}
+%% Data availability: DYAMOND pieces, WB2 public zarrs; code: repo + scripts;
+%% full-record system tables.
+
+\acknowledgments
+%% NCAR CISL Casper/Derecho allocation UCLB0066; DYAMOND; WeatherBench2.
+
+\bibliography{refs}
+
+\end{document}
