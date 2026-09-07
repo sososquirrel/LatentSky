@@ -133,10 +133,12 @@ measure.
 
 \subsection{Kilometer-scale data}\label{sec:data}
 
-The dataset is a continuous ${\sim}40$-day integration of the global System
-for Atmospheric Modeling (gSAM) from the DYAMOND protocol \cite{stevens2019},
-run at ${\sim}4$~km native resolution
-%% TODO confirm exact DYAMOND phase (2 vs 3), gSAM configuration and period
+The dataset is a continuous ${\sim}40$-day global storm-resolving integration
+of the Model for Prediction Across Scales (MPAS, NCAR) from the DYAMOND
+protocol \cite{stevens2019}, run at kilometer-scale native resolution
+%% TODO confirm with Sophie/Sara: DYAMOND phase, exact MPAS mesh (~3.75 km?),
+%% period; the repo does not record the provenance of the piece files —
+%% docs/scale_decomposition_method.md loosely says "SAM crop", overridden here
 and regridded to a regular $0.25^{\circ}$ grid
 (${\approx}28$~km) over the tropical belt $40^{\circ}$S--$40^{\circ}$N at
 15-minute resolution: 40 days of $96$ frames on a $320 \times 1440$ grid. The
