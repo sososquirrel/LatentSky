@@ -60,15 +60,15 @@ def main():
 
     cnorm = LogNorm(vmin=28.0, vmax=1500.0)
     vir = plt.get_cmap("viridis")
-    xlim, ylim = 2.7, 1.0   # fitted to the WB2 clouds (zoom of the ±3.2 frame)
+    xlim, ylim = 1.5, 1.5   # square zoom of the ±3.2 frame
     fig, axs = plt.subplots(1, 4, figsize=(14.4, 3.9), sharex=True, sharey=True)
     for ax, label in zip(axs, NAMES):
         m = allm[allm.model == label]
         ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
         xs = np.linspace(-xlim, xlim, 2)
         ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.0)
-        sc = ax.scatter(m["dlnA"], m["dlnrho"], s=1.5, c=m["scale"],
-                        cmap="viridis", norm=cnorm, alpha=0.25, linewidths=0,
+        sc = ax.scatter(m["dlnA"], m["dlnrho"], s=1.8, c=m["scale"],
+                        cmap="viridis", norm=cnorm, alpha=0.4, linewidths=0,
                         rasterized=True)
         for bname, lo, hi, lrep in BANDS:
             g = m[(m.scale >= lo) & (m.scale < hi)]
