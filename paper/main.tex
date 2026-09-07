@@ -59,37 +59,243 @@ restores representation, small-system placement remains unsolved
 
 %% ===================== 1. INTRODUCTION =====================================
 \section{Introduction}
-%% Act 0 (html §0): what sets the limit of prediction; placement vs
-%% representation split; why km-scale; why object-based; contributions list.
-%% Cite: Lorenz scale-dependent predictability; convective-scale predictability
-%% (Hohenegger & Schar; Zhang); object-based verification (MODE, SAL);
-%% ML weather (GraphCast, FuXi, GenCast, FGN); DYAMOND.
 
-%% ===================== 2. DATA AND MODELS ==================================
-\section{Data and models}
-\subsection{DYAMOND km-scale data and leakage-safe split}   % html §1–2
-\subsection{Deterministic two-head U-Net}                    % html §3
-\subsection{Conditional rectified flow}                      % html §4 (the six steps, compressed)
-%% Include: sigma = measured error rms; per-draw scoring rule; DDPM as
-%% sampling-protocol sensitivity (one paragraph).
+How far ahead can precipitation be predicted? The honest answer depends on the
+rain: a 500-km monsoon rain shield will still be found eight hours from now; a
+30-km convective cell may not survive the next one. That predictability grows
+with spatial scale is one of the oldest results of predictability theory
+\cite{lorenz1969}, and its convective-scale limit has been studied extensively
+in idealized and case settings \cite{hohenegger2007, zhang2003}. Yet the way
+precipitation forecasts are routinely evaluated --- pixel-wise scores averaged
+over a domain --- collapses this scale dependence into a single number and, worse,
+biases the comparison itself: a model trained and scored on mean squared error
+returns the conditional mean of an increasingly wide predictive distribution,
+a smooth field whose systems are too large and too weak. Pixel scores reward
+exactly this blur (the double-penalty problem \cite{ravuri2021}), so the
+apparent predictability limit mixes two things of very different nature: what
+the atmosphere forbids, and what the estimator destroys.
 
-%% ===================== 3. THE INSTRUMENT ===================================
-\section{A scale-decomposed object evaluation}               % html §5–6
-%% P = rho*A identity; matching; POD/FAR by scale; known caveats (IoU null
-%% advantage, threshold percolation, many-to-one).
+This paper separates the two, at kilometer scale, with an instrument simple
+enough to state in one identity. Every precipitating system --- a connected
+rainy object --- carries a total precipitation $P$ that factors exactly into an
+area and an area-weighted intensity, $P = \rho A$, so that for a matched
+truth--forecast pair the logarithmic error splits with no cross term:
+$\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho$. Object-based
+verification has a long tradition \cite{davis2006, wernli2008}; what we add is
+to use it to \emph{define a horizon}. Binning systems by their size
+$L = \sqrt{A}$ and fitting the decay of the probability of detection with lead
+time yields an e-folding time $T(L)$ per scale band --- the detection horizon
+--- measured identically for every forecast, including the persistence null,
+which each of our models receives as an input so that the null is nested by
+construction.
 
-%% ===================== 4. RESULTS ==========================================
-\section{The predictability horizon and its scaling}         % html §7
-%% Fig R1: POD(t;L) decay + tau(L) ∝ L^alpha (full record, three models).
-\section{What generative modeling restores}                  % html §8
-%% Fig R2: decomposition before/after (two-head vs flow clouds, shared axes).
-%% Fig R3: POD/FAR + tau toggles content; priced FAR; pre-registered predictions.
-\section{The same lens on operational AI forecasts}          % html §9
-%% Fig I1: +12h POD/FAR (findings 1–2) + decomposition clouds (finding 3);
-%% segmentation diagnosis; rate-vs-boundaries resolution argument.
+Three questions organize the paper. First, \emph{what sets the limit}: measured
+on a storm-resolving DYAMOND integration \cite{stevens2019}, the horizon follows
+a power law of system size, $T(L) \propto L^{\alpha}$ with $\alpha = 1.79$ for
+the deterministic model and $1.41$ for persistence. Second, \emph{how much of
+the limit is the estimator}: the decomposition shows the deterministic model's
+compensating pathology --- systems too large ($\mathrm{d}\ln A > 0$) and too
+weak ($\mathrm{d}\ln\rho < 0$), invisible to aggregate scores --- and a
+conditional rectified flow \cite{lipman2023, liu2023} trained to transport the
+forecast to the truth along its own measured error removes it, becoming the
+first forecast above the persistence null at every scale, at an explicitly
+priced false-alarm cost. Third, \emph{whether the limits transfer}: applied
+unchanged to four operational AI weather models from WeatherBench~2
+\cite{rasp2024} --- GraphCast \cite{lam2023}, FuXi \cite{chen2023}, GenCast
+\cite{price2025}, and FGN --- the same scale story holds, per-draw sampling of
+the generative member restores intensity, and below ${\sim}60$~km no model
+detects anything at $0.25^{\circ}$, the argument that kilometer-scale training
+data is necessary.
+
+Section~\ref{sec:methods} describes the data, the two models, and the
+evaluation; Section~\ref{sec:results} presents the three results in that order;
+Section~\ref{sec:discussion} discusses what the horizon does and does not
+measure.
+
+%% ===================== 2. DATA AND METHODS =================================
+\section{Data and Methods}\label{sec:methods}
+
+\subsection{Kilometer-scale data}\label{sec:data}
+
+The dataset is a continuous ${\sim}40$-day global storm-resolving DYAMOND
+integration \cite{stevens2019}, regridded to a regular $0.25^{\circ}$ grid
+(${\approx}28$~km) over the tropical belt $40^{\circ}$S--$40^{\circ}$N at
+15-minute resolution: 40 days of $96$ frames on a $320 \times 1440$ grid. The
+kilometer-scale origin of the data matters more than the evaluation grid: the
+integration resolves deep convection explicitly, so the target field contains
+the sharp, small, short-lived systems that parameterized or coarse reanalysis
+products smooth away --- precisely the systems whose predictability we want to
+measure.
+
+Both models receive the identical ten input channels: precipitable water, 2-m
+temperature, top-of-atmosphere outgoing longwave radiation, moist static energy
+and horizontal winds at 850 and 500~hPa, and the current rain field itself
+(log-transformed). The last channel is a deliberate design choice, not leakage:
+every model is handed the persistence forecast as an input, so the persistence
+null is nested --- any skill above it is information the model added. The
+target is the raw rain field (mm per 15~min) at one of six trained leads,
+$0.25$, $0.5$, $1$, $2$, $3$, and $6$~h; one model is trained per lead. Training
+operates on $128 \times 128$ non-overlapping patches ($22$ blocks per frame).
+The train/validation/test split assigns each of the $880$ (block, day) units to
+one split for all $96$ frames of its day ($70/15/15$; $132$ test blocks), which
+closes both spatial and temporal-autocorrelation leakage; construction details
+and the residual-risk analysis are in Supporting Information Text~S1.
+
+\subsection{Deterministic model: a two-head U-Net}\label{sec:unet}
+
+The deterministic forecast is a U-Net (125~M parameters; five encoder--decoder
+stages, $64$ to $1024$ channels, $2048$-channel bottleneck) with two parallel
+output heads: a non-negative rain-intensity head and a wet/dry classification
+head. The loss combines a masked intensity MSE on wet pixels, a
+binary cross-entropy on the wet/dry head over the full field, and a
+differentiable fractions-skill-score term evaluated at six kernel sizes chosen
+to coincide with the $L$ bins of the evaluation ($28$--$900$~km), so the
+training loss and the verification share one scale vocabulary. A FiLM layer
+conditions the bottleneck on the patch's OLR statistics, a proxy for the
+convective regime. Architecture, loss weights, and training schedule are given
+in Text~S2.
+
+Trained with MSE on intensity, this model returns the conditional mean of the
+predictive distribution. As lead grows the distribution widens and the mean
+blurs: this is not a defect of the architecture but a property of the loss, and
+it is the specific pathology the evaluation of Section~\ref{sec:evaluation}
+isolates and the model of Section~\ref{sec:flow} corrects.
+
+\subsection{Generative correction: a conditional rectified flow}\label{sec:flow}
+
+The rectified flow learns the transport from the deterministic forecast to the
+truth, and returns sharp samples of the conditional distribution instead of its
+mean. In log-rain space, the source is the forecast perturbed by its own error,
+$x_0 = z_{\mathrm{fc}} + \sigma \varepsilon$ with
+$\varepsilon \sim \mathcal{N}(0, I)$, where $\sigma$ is not a tuning knob but
+the measured wet-masked forecast error (rms) at that lead ($0.10$ at $+15$~min
+to $0.20$ at $+6$~h). Training draws $t \sim \mathcal{U}(0,1)$, forms the
+straight-line interpolant $x_t = (1-t)\,x_0 + t\,x_1$ toward the truth $x_1$,
+and regresses a velocity network $\hat{v}(x_t, t, c)$ --- the same U-Net trunk,
+conditioned on the ten input channels $c$ and on $t$ --- onto the constant
+displacement $v = x_1 - x_0$. Sampling integrates
+$\mathrm{d}x/\mathrm{d}t = \hat{v}$ from a fresh draw of $x_0$ to $t=1$ with
+$32$ Heun steps. The noise scale is the entire source of stochasticity:
+$\sigma \to 0$ collapses the flow to a deterministic regression, and each new
+$\varepsilon$ yields a different sharp realization consistent with the same
+smooth forecast.
+
+One scoring rule governs every generative result in this paper: metrics are
+computed per draw and then averaged over draws, never on the draw-averaged
+field. The mean field is again a conditional-mean estimate; scoring it would
+turn the generative model back into the regression and erase exactly the
+difference we measure. (A denoising diffusion model warm-started from the same
+forecast was evaluated as a sampling-protocol sensitivity; it reaches a
+small-scale power ceiling of $0.80$--$0.85$ attributable to its train/test
+mismatch and is reported in Text~S3.)
+
+\subsection{Evaluation: the $\rho A$ decomposition on matched pairs}
+\label{sec:evaluation}
+
+Systems are detected independently in the truth and forecast fields as
+8-connected components above $0.1$~mm, with all areas latitude-weighted. Each
+system carries $A$ (area, km$^2$), $P$ (total precipitation, mm\,km$^2$),
+$\rho = P/A$ (area-weighted intensity, which makes $P = \rho A$ exact), and its
+scale $L = \sqrt{A}$.
+
+Matching is by spatial overlap within each frame: intersection-over-union is
+computed between every truth--forecast pair of systems, and pairs are accepted
+greedily in descending IoU order, one-to-one, down to $\mathrm{IoU} \ge 0.1$.
+Every system then has a role: \emph{matched} (both sides exist), \emph{missed}
+(truth system with no counterpart), or \emph{false alarm} (forecast system with
+no counterpart). Misses and false alarms give the probability of detection
+(POD) and false-alarm ratio (FAR) per log-spaced $L$ bin; matched pairs give
+the log-additive error decomposition
+$\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho$, in which negative
+means underestimated and the log form weighs a $+50\%$ error identically on a
+$30$-km cell and a $400$-km mesoscale system. The horizon is then defined per
+scale band as the e-folding time of detection,
+$\mathrm{POD}(t; L) = \mathrm{POD}_0(L)\, e^{-t/\tau(L)}$, fitted across all
+six leads. Persistence is evaluated under the identical detection, matching,
+and fitting; because long-lived storms still overlap their past selves at loose
+IoU, persistence is a genuinely strong null for detection, and every
+sensitivity of the matching (IoU threshold, rain threshold, many-to-one
+matching) is reported in Text~S4.
+
+%% ===================== 3. RESULTS ==========================================
+\section{Results}\label{sec:results}
+
+\subsection{The deterministic limit: the size of the storm sets the horizon}
+\label{sec:res-det}
+
+%% Fig 1: POD(t;L) decay + tau(L) power law, full record, two-head vs persistence.
+Fitted over the full held-out record ($132$ test blocks $\times$ $40$ days,
+${\sim}10^6$ systems per model and lead), the detection horizon rises from
+$\tau \approx 0.5$~h for the smallest resolved systems ($L \approx 30$~km) to
+beyond a day for $L > 400$~km, and follows a power law
+$T(L) \propto L^{\alpha}$ with $\alpha = 1.79$ for the two-head model and
+$\alpha = 1.41$ for persistence. The two curves cross near $L \approx 100$~km:
+above it the model separates cleanly from the null, below it persistence wins
+--- small, short-lived convection is where the deterministic forecast has
+nothing to add over the observation that storms briefly persist.
+
+%% Fig 2: dlnA-dlnrho clouds, two-head, +3 h, per band with barycenters.
+The decomposition says why aggregate scores miss this. At $+3$~h the matched
+pairs of the two-head model sit in a quadrant of compensating errors: band
+barycenters $(\mathrm{d}\ln A, \mathrm{d}\ln\rho) = (+0.53, -1.05)$ for small
+systems, $(+0.14, -0.75)$ at mid scales, $(+0.20, -0.39)$ for large ---
+systems systematically too large and too weak, with the two errors partially
+canceling in $\mathrm{d}\ln P$. This is the signature of the conditional mean,
+and it grows toward small scales, exactly where the horizon is shortest.
+
+\subsection{What the flow restores}\label{sec:res-flow}
+
+%% Fig 3: before/after — clouds collapse + POD(L) and tau(L) with the flow.
+The rectified flow removes the pathology it was trained on. At $+3$~h the band
+barycenters collapse toward the origin: small systems from $(+0.53, -1.05)$ to
+$(+0.21, -0.24)$, mid from $(+0.14, -0.75)$ to $(-0.15, -0.15)$, large from
+$(+0.20, -0.39)$ to $(-0.14, -0.04)$. Size and intensity are restored at every
+scale, per draw --- these are single sharp realizations, not an ensemble mean.
+
+Detection improves with representation. The flow's POD exceeds the two-head's
+in every scale band and at every lead ($0.79$ vs $0.72$ at $L \approx 190$~km,
+$+3$~h); for the smallest band the POD nearly triples ($0.078$ vs $0.028$).
+The horizon steepens to $\alpha = 1.63$ and, most importantly, sits above
+\emph{both} the deterministic model and persistence at every scale
+($\tau = 0.83$~h vs $0.53$/$0.55$~h at $L \approx 30$~km): the
+$100$-km crossover disappears, making the flow the first forecast in this study
+to beat the nested null everywhere. The instrument prices the cost in the same
+breath: in the smallest band the tripled detection comes with FAR $0.92$ vs
+$0.64$ --- the flow finds small storms by proposing many, and we state this as
+the trade it is rather than hiding it in an aggregate score.
+
+\subsection{The same lens on operational AI forecasts}\label{sec:res-wb2}
+
+%% Fig 4: WB2 POD(L) at +12 h (GC, FuXi, GenCast mean + member) and
+%% dlnA-dlnrho clouds for the month; identical pipeline, ERA5 truth,
+%% rate-equivalent thresholds.
+The evaluation transfers unchanged to WeatherBench~2: GraphCast, FuXi, GenCast,
+and FGN against ERA5 over the same tropical belt, at rate-equivalent thresholds
+($2.4$~mm per $6$~h $=$ the km-scale $0.1$~mm per $15$~min). This part is an
+outlook, not a ranking against LatentSky --- different data, resolution, and
+leads. Three observations carry it.
+
+First, the identical scale story: POD rises monotonically with $L$ for every
+model, and below $L \approx 60$~km every model --- deterministic or generative
+--- sits at $\mathrm{POD} \le 0.13$ at $+6$ and $+12$~h, already a medium lead
+for convection. Second, sampling helps where the models are competent:
+at $+12$~h a single GenCast member gives the highest POD of any forecast from
+${\approx}240$~km up ($0.78$--$0.82$ vs GraphCast's $0.68$--$0.73$), at a FAR
+cost ($0.32$ vs $0.17$), while the GenCast ensemble mean falls back into the
+deterministic pack --- the per-draw scoring rule matters as much for
+operational models as for ours. Third, over a full month of matched systems
+(${\sim}8{,}000$ pairs per model), the deterministic models carry a systematic
+too-weak bias worst at small scales ($\mathrm{d}\ln\rho$ barycenters $-0.24$,
+$-0.17$, $-0.06$ from small to large bands), and the diffusion member erases it
+at every scale ($-0.06$, $-0.03$, $+0.01$). The error clouds are wide in
+$\mathrm{d}\ln A$ and narrow in $\mathrm{d}\ln\rho$ --- the reverse of the
+km-scale clouds: at $0.25^{\circ}$ the rain rate is recoverable but the system
+boundaries are not. Sampling fixes representation; small-system placement
+remains unsolved at this resolution, which is the case for kilometer-scale
+training data.
 
 %% ===================== 5. DISCUSSION =======================================
-\section{Discussion and outlook}
+\section{Discussion and outlook}\label{sec:discussion}
 %% - time evolution: valid-time matching + persistence-as-no-evolution null;
 %%   Lagrangian tracking as future work (html §7 note)
 %% - limitations: one DYAMOND summer, tropics; alpha fit range caveats
