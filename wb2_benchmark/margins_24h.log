@@ -1,0 +1,18 @@
+graphcast (2020-08, 60 valid times) done
+fuxi (2020-08, 60 valid times) done
+gencast (2020-08, 60 valid times) done
+fgn (2022-08, 62 valid times) done
+
++24 h, month-pooled, margin over own persistence null:
+  graphcast  small<100  : POD 0.165 null 0.111 margin +0.054 (n=19991)
+  graphcast  mid100-400 : POD 0.563 null 0.213 margin +0.350 (n=4562)
+  graphcast  large>400  : POD 0.898 null 0.573 margin +0.325 (n=1752)
+  fuxi       small<100  : POD 0.157 null 0.111 margin +0.046 (n=19991)
+  fuxi       mid100-400 : POD 0.530 null 0.213 margin +0.317 (n=4562)
+  fuxi       large>400  : POD 0.954 null 0.573 margin +0.381 (n=1752)
+  gencast    small<100  : POD 0.127 null 0.111 margin +0.017 (n=19991)
+  gencast    mid100-400 : POD 0.508 null 0.213 margin +0.295 (n=4562)
+  gencast    large>400  : POD 0.887 null 0.573 margin +0.314 (n=1752)
+  fgn        small<100  : POD 0.109 null 0.119 margin -0.011 (n=23865)
+  fgn        mid100-400 : POD 0.395 null 0.216 margin +0.179 (n=5065)
+  fgn        large>400  : POD 0.830 null 0.593 margin +0.236 (n=2019)

@@ -55,8 +55,11 @@ def main():
             tprev = vt - np.timedelta64(24, "h")
             if vt not in tvals or tprev not in tvals:
                 continue
+            pf_raw = ds.total_precipitation_24hr.values[i]
+            if np.isnan(pf_raw).all():
+                continue  # partial fetches leave all-NaN frames (fgn 2022)
             yt = to_mm(tr.total_precipitation_24hr.sel(valid_time=vt).values)
-            pf = to_mm(ds.total_precipitation_24hr.values[i])
+            pf = to_mm(pf_raw)
             pp = to_mm(tr.total_precipitation_24hr.sel(valid_time=tprev).values)
             for df_, a in [(match_systems(yt, pf, THR, area_row,
                                           iou_min=IOU_MIN), acc),

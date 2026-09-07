@@ -1218,8 +1218,13 @@ cross-year ranking of the raw curves is not licensed, and each model is read as 
 around 100–250 km; FGN's ensemble mean manages +0.11 and falls below its null at
 large scales — but its <em>single member</em> (dashed, per-draw) stays positive
 everywhere and reaches +0.15: part of the gap is the mean-field artifact (§4's
-scoring rule; members figure below), and the remainder is partly the one-to-one
-matching's penalty on sharp stochastic members and the single-day sample.
+scoring rule; members figure below), and the remainder is largely lead-specific: at WB2's headline
++24 h lead, month-pooled (<span class="mono">wb2_benchmark/margins_24h.py</span>,
+with near-identical 2020/2022 nulls), the generative family is competitive —
+GenCast's mean +0.30 vs GraphCast +0.35 and FuXi +0.32 at mid scales, FGN's mean
++0.18 — so the +6 h weakness reflects the shortest lead sitting outside these
+models' design envelope, precisely the regime the km-scale flow of §8 was trained
+for.
 Illustration grade: one day, no sensitivity requirement beyond the threshold check
 below (FRAME I1).
 </figcaption>
