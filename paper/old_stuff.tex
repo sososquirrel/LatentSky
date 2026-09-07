@@ -1,183 +1,151 @@
-\documentclass{adonis}
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{newtxtext,newtxmath}
+
 \usepackage{hyperref}
 \usepackage{tabularx}
 \usepackage{xurl}
 \usepackage{graphicx}
-% main details
-\title{Reconstruct 3D derived variables using 2d Variables in Cloud Resolving Models}
-\subtitle{Master Internship}
-\author{  Sophie Abramian$^1$  and Sara Shamekh$^2$}
 
-% secondary details
-\affiliation{\textsuperscript{2} New York University, \textsuperscript{1} Columbia University}
-%\correspondence{nicholasmamo@gmail.com}
-\version{\today}
 
-% headers
-\runningauthor{Sara Shamekh and Sophie Abramian}
-\runningtitle{Master Internship}
-
+\usepackage {tikz}
+\usepackage[utf8]{inputenc}
+\usepackage[mono=false]{libertinus}
+\usepackage[T1]{fontenc}
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}
+\usepackage{tocloft}
+\usepackage{multicol}
+\renewcommand{\cftsecfont}{\bfseries\sffamily}
+\usepackage[numbers]{natbib}
+\usepackage{enumitem,lipsum}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{geometry}
+\geometry{margin=0.9in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{hyperref}
+\usepackage[breakable]{tcolorbox}
+\usepackage{bbm}
+\usepackage{parskip}
+\usepackage{physics}
+\usepackage[hang,flushmargin]{footmisc}
+\usepackage{mathtools}
+\usepackage{stmaryrd}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+% \usepackage{mathrsfs}
+\usetikzlibrary{arrows}
+\usepackage{comment}
+\usepackage{blkarray}
+\usepackage{multirow}
 \begin{document}
-\maketitle
 
-\begin{abstract}
-     
-\end{abstract}
+\section{Motivation}
+Precipitation remains one of the least predictable components of the Earth system. This difficulty shows up across modeling paradigms: traditional climate and NWP models struggle with drizzle bias, phase errors, and extremes; modern AI weather systems often inherit similar issues despite high skill on large-scale flow. The reasons are well known: rain is intermittent and thresholded, triggered by strongly nonlinear interactions across scales, and sensitive to small errors in humidity, stability, and vertical motion. Microphysical and convective processes are only partially resolved on typical grids, creating intrinsic stochasticity at the resolved scale.
 
-\tableofcontents
+Most AI forecasts advance the atmospheric \emph{state} autoregressively in time and then obtain precipitation either (i) by diagnosing it (Pangu)with a separate network from predicted state variables, or (ii) by predicting precipitation jointly with other targets (GenCast), typically at 3–6h time steps. This design leaves a basic scientific question under-explored: \emph{even if the state variables were predicted perfectly, how far into the future is precipitation itself predictable?}
 
-\newpage
+We propose to quantify an \textbf{intrinsic window of predictability for precipitation} that is \emph{conditional on perfect knowledge of the large-scale state}. Formally, let $X_t$ denote a set of resolved prognostic variables (e.g., ${T,q,\mathbf{u},\omega,  \ldots}$) and let $P_t$ denote precipitation. We study the conditional distribution
+\[p(P(t+\tau)| X(t:t+m))\]
 
-\section{General context and motivations}
+and define a lead-time–dependent skill function $\mathcal{S}(\tau)$ (e.g., CRPS skill, Brier skill, or mutual information $I(P_{t+\tau};X_{t:t+m})$). The \emph{predictability horizon} $\tau^\star$ is the smallest $\tau$ for which $\mathcal{S}(\tau)$ drops below a pre-specified threshold (near persistence/climatology). This horizon represents an upper bound: no autoregressive AI system that relies on these state variables can exceed it, because it reflects uncertainty in mapping state to rain rather than errors in state prediction.
 
-
-Clouds can organize into spectacular, multicloud structures known as deep convective systems.
-When these systems grow to span hundreds of kilometers—the mesoscale—they become
-mesoscale convective systems (MCSs). MCSs, which span spatial scales on the order of 100 km, are key contributors to extreme weather events in the tropics, including intense gust fronts, heavy rainfall, and flash flooding. These systems encompass a range of phenomena such as tropical cyclones—characterized by the strongest winds observed on Earth—and squall lines, which can extend over several hundred kilometers. MCSs play a crucial role in the global water cycle. However, their organization and dynamics remain insufficiently understood and are therefore not explicitly represented in current climate models.
-
-This limitation arises because the typical spatial scale of MCSs falls below the grid resolution of global climate models, which treat deep convection as subgrid-scale processes. As a result, their behavior is approximated through parameterizations, i.e. simplified representations of unresolved physical processes. Consequently, current models struggle to capture the initiation and development of such extreme systems, and their response to climate change remains highly uncertain. Addressing this gap is a central objective of ongoing climate research initiatives focused on clouds, circulation, and climate sensitivity.
-
-Advances in numerical modeling have enabled the study of convective processes in idealized configurations using cloud-resolving models (CRM). These models explicitly solve the governing equations of fluid dynamics and moisture transport, allowing a more accurate representation of atmospheric dynamics under varying thermodynamic conditions. While some processes, such as cloud microphysics, still require parameterization due to their small-scale nature, CRMs achieve high spatial ($\sim$1 km) and temporal (hourly) resolution over limited domains ($\sim$200 km) and short time periods (days). These simulations are computationally demanding.
-
-A recent initiative has extended the application of CRMs to the global scale, producing simulations at kilometer-scale resolution. These simulations, such as those from the DYAMOND3 project, generate petabytes of data and offer unprecedented detail into the interactions between large-scale atmospheric circulation and smaller-scale convective processes. DYAMOND3 includes outputs from more than nine models, with typical resolutions around 4 km and some simulations spanning an entire year.
-
-While these high-resolution datasets yield more realistic representations of convection, realism alone does not guarantee improved understanding. To bridge persistent knowledge gaps regarding the formation, evolution, and environmental interactions of deep convective systems, it is essential to go beyond existing literature and develop new analytical frameworks.
-
-These recent developments have generated significant scientific interest, but they also raise a critical question: Is it feasible to retain such vast quantities of data? How might we compress or reduce the information contained in these datasets to facilitate analysis, sharing, and long-term storage? By identifying redundancies and interdependencies among variables across different dimensions, we may uncover new insights into the atmospheric system and enhance our understanding of convective phenomena.
-
-In this internship, we apply machine learning techniques to investigate the following research questions:
-
-\begin{itemize}
-\item To what extent can three-dimensional atmospheric fields be reconstructed using only two-dimensional variables?
-\item What is the minimal subset of two-dimensional variables required for accurate reconstruction?
-\item What insights can be gained from such an approach regarding the structure of the atmosphere?
-\end{itemize}
-
-In the next sections, we describe in more details the experiments that can be conducted in order to answer these question. The strategy used is first to start with output from idealized simulations of the CRM SAM, and then to expand the study to global km-scale simulation. 
-
-
-\newpage
-\section{Experiments in Idealized Cloud-Resolving Model Simulations}
-\subsection{Selection of Physical and Dynamical Variables}
-
-\textit{Input Variables (2d)}:
-Variables that may have a strong prediction power because are key environmental factors. These variables are also relevant because they are typically well captured by satellite observations.
-
-\begin{itemize}
-    \item Precipitable Water
-    \item Long Wave Net Top of the Atmosphere
-    \item Sea Surface Temperature
-\end{itemize}
-
-Rq: All the 2d data from SAM, as well as some integrated variables can be added. 
-
-\textit{Target Variables Level 1  (2d)}:
-Level 1 means that we expectthe targets to have a high correlation between one of the input variable, this case might be used to set up the pipeline and test it. 
-
-\begin{itemize}
-    \item Cloud Water Path
-    \item Cloud Top Height
-    \item Ice Water Path
-\end{itemize}
-
-\textit{Target Variables Level 2  (2d)}:
-Level 2 means that we still use 2d variables (no compression of information), but these variables have a more intricate relationship to the input variables.
-
-\begin{itemize}
-    \item Vertical Velocity at 500hPa, 850hPa
-    \item Latent heat Flux
-    \item Sensible Heat Flux
-    \item Precipitation
-\end{itemize}
-
-\textit{Target Variables (Integrated 3d)}:
-\begin{itemize}
-    \item Integral of the Moist Static Energy in the boundary layer
-    \item Integral of the Moist Static Energy in the mid troposphere
-\end{itemize}
-
-\textit{Target Variables (3d)}:
-\begin{itemize}
-    \item Cloud Mask (based on Cloud Fraction)
-    \item Cloud Fraction (Non-precipitating Condensate (Water+Ice)  
-    \item Precipitating Water (Rain+Snow)  
-\end{itemize}
-
-
-\section{Design and Architecture of AI Models}
-\subsection{Models}
-
-To reconstruct 3D or vertically integrated atmospheric variables from 2D surface or column-integrated variables, we implement and compare several machine learning architectures, ranging from simple to advanced generative models. These models are evaluated based on their ability to capture spatial structures and reproduce physically meaningful fields.
-
-\subsubsection{Autoencoder}
-An autoencoder is a type of neural network used to learn efficient representations of input data. It consists of an encoder that compresses the input into a latent space and a decoder that reconstructs the input from this latent representation. This model serves as a baseline to evaluate the ability of simple latent representations to recover atmospheric variables.
-
-\subsubsection{UNet Autoencoder}
-The UNet architecture is an enhanced autoencoder that includes skip connections between corresponding encoding and decoding layers. These connections help retain spatial resolution and detailed structures during reconstruction. For climate data, UNet is particularly powerful as it captures interactions between different spatial scales, allowing large-scale features to inform small-scale reconstructions and vice versa.
-
-\subsubsection{Variational Autoencoder (VAE)}
-The VAE extends the autoencoder by learning a probability distribution over the latent space. This structure enables the model to operate in a generative mode, allowing for the sampling of new physically plausible states. Additionally, the probabilistic nature of the VAE provides insight into the distribution and uncertainty of the predicted outputs, which can show stronger signal than predicting a mean (and limit the average effect).
-
-\subsubsection{Diffusion Model}
-Diffusion models learn to generate data by reversing a gradual noise-adding process. Starting from pure noise, the model learns how to iteratively denoise toward a target distribution. These models have shown strong generative capabilities and are explored here as a means to reconstruct high-dimensional fields from limited 2D input data. Their capacity to model complex spatial correlations makes them promising for this application.
+By separating \emph{state-evolution skill} from \emph{state-to-precipitation skill}, we (i) isolate where AI forecasts hit a hard ceiling, (ii) diagnose which variables (and temporal context $m$--- we can consider this in the future!) carry the most predictive information for rain occurrence, rate, and extremes, and (iii) assess how sampling cadence (0.25h vs.\ 3h) scale modify $\tau^\star$. The outcome is a principled target for future AI architectures: if the observed ceiling is low for a given regime or scale, progress requires adding new predictors (e.g., higher-resolution vertical structure or convective proxies) or embracing stochastic outputs, rather than further tuning the autoregressive core.
 
 
 
-\subsection{Evaluation Criteria and Performance Metrics}
+\section{Lead-Conditioned U-Net for Rain Occurrence and Amount}
 
-To evaluate the performance of the models in reconstructing output fields, we can use complementary metrics that reflect different aspects of the reconstruction quality:
+We train a convolutional encoder--decoder (U-Net) that ingests large-scale state at time \(t\)---sea surface temperature (SST), column-integrated water vapor (PW), and outgoing longwave radiation (OLR)---and predicts precipitation at a fixed lead \(t+\tau\). Because precipitation fields are sparse and thresholded, we decompose the task into (i) \emph{occurrence} (rain/no-rain) and (ii) \emph{amount} (conditional intensity when it rains), sharing a single backbone and using two task heads. Formally, with \(P_{t+\tau}\) the true rate and threshold \(r_0\) (e.g., \(0.01\,\mathrm{mm\,h^{-1}}\)), define the binary label
+\[
+Z_{t+\tau} \;=\; \mathbb{1}\!\left[P_{t+\tau}\ge r_0\right],
+\qquad
+Y_{t+\tau} \;=\; P_{t+\tau}\, .
+\]
+For each lead \(\tau\), a separate model is trained to map \((\mathrm{X(t)})\mapsto (\widehat{p}_{t+\tau}, \widehat{Y}_{t+\tau})\), where \(\widehat{p}\in(0,1)\) is the occurrence probability and \(\widehat{Y}\ge 0\) is the amount.
 
-\subsubsection{Mean Square Error (MSE)}
-The Mean Square Error computes the average of the squared differences between predicted and true values at each grid point. It is sensitive to the exact spatial structure and pattern of the field, making it a strong constraint when accurate localization of features (e.g., convective cells or precipitation centers) is essential. However, this sensitivity can also penalize predictions that are qualitatively correct but slightly shifted in space.
-
-\subsubsection{Wasserstein Loss (in Spectral Space)}
-The Wasserstein loss, which is the distance between the distributions the preediced and true values, is tolerant to spatial displacements. Rather than penalizing exact pointwise mismatches, it emphasizes the similarity in the overall distribution across spatial scales. This makes it a valuable metric for assessing whether the model reproduces the correct variability and structure of the field—even when features are not perfectly aligned spatially. It is particularly relevant in generative settings where statistical realism is prioritized over exact replication.
-
-\subsection{Spatiotemporal Scales of Interest}
-\textit{Spatial scale}
-Does the prediction change depending on the spatial scale?
-Test:
-\begin{itemize}
-    \item predict the whole domain (128x128)
-    \item split the dataset into smaller pieces (64, 32)
-    \item use large domain to predict a smaller scale (128->32)
-    \item use small domain to predict a larger scale (32->128)
-\end{itemize}
-
-\textit{Time scale}
-Does the prediction change depending if we add history?
-Test:
-\begin{itemize}
-    \item predict target variable at time t based on input variable at time t
-    \item predict target variable at time t based on (t, t-1)
-    \item increase the past interval (t, t-1, .., t-N)
-\end{itemize}
+\paragraph{Data.}
+The dataset analyzed in this study is the DYAMOND MPAS-Atmosphere (MPAS) global cloud-resolving simulation, performed at ~3.8 km horizontal resolution with 15-min output over a 40-day winter period. MPAS employs a fully compressible, nonhydrostatic dynamical core on an unstructured mesh, enabling explicit simulation of convective processes. Cloud microphysics are represented with a double-moment scheme for cloud and rain hydrometeors. Global cloud-resolving models (GCRMs) explicitly resolve deep convection and cloud systems, providing dynamically consistent four-dimensional fields essential for process understanding and data-driven modeling (Satoh et al., 2019). However, GCRMs remain model-dependent and exhibit systematic biases. MPAS generally reproduces mean precipitation and its diurnal cycle within the multi-model range (Stevens et al., 2019) but tends to overestimate deep convective clouds and heavy rainfall compared with the IMERG precipitation product (0.1° × 0.1°, 30-min; Feng et al., 2025). Despite these limitations, the DYAMOND MPAS data provide high temporal resolution, physically consistent fields, and a uniform data structure, making them well suited for precipitation analysis and machine-learning applications.
 
 
-\section{Application to Global Kilometer-Scale Cloud-Resolving Simulations}
-\subsection{Case Study: gSAM Simulation}
-\subsection{Comparative Analysis Across GCRM Frameworks}
+\paragraph{Architecture.}
+The network is a standard U-Net with skip connections and bilinear upsampling. ADD INFORMATION ABOUT THE NETWORK: an occurrence head outputs logits whose sigmoid gives \(\widehat{p}\); an amount head outputs parameters of a positive distribution for wet pixels. Add what the regressor does: is it predicting P directly or log P!
 
-\section{Toward Application on Satellite Observations}
-\subsection{Feasibility and Limitations of Satellite-Based Inference}
-\subsection{Available Datasets and Preprocessing Considerations}
+\paragraph{Training objective.}
+TODO: what is our objective function?
 
-\section{Useful Paper}
+\paragraph{Metrics and skill as a function of lead.}
+TODO: We need to define our metrics!
 
-\begin{itemize}
-    \item SAM Model
-    \item 3D Cloud reconstruction through geospatially-aware
-Masked Autoencoders
-    \item Climate in a Bottle: Towards a Generative Foundation Model for the Kilometer-Scale Global Atmosphere
-    \item DYAMOND paper
-\end{itemize}
+Let \(\mathcal{S}_{\text{occ}}(\tau)\) and \(\mathcal{S}_{\text{amt}}(\tau)\) denote chosen skill measures (e.g., PR-AUC for occurrence and \(1-\)normalized CRPS for amounts) relative to a baseline. We summarize the decay with lead by fitting an exponential envelope \( \mathcal{S}(\tau)\approx \mathcal{S}_0 e^{-\tau/T_e}\), yielding e-folding times \(T_e^{\text{occ}}\) and \(T_e^{\text{amt}}\), and define a predictability horizon
+\[
+\tau^\star \;=\; \inf\{\tau:\ \mathcal{S}(\tau)\le \mathcal{S}_{\text{base}}+\epsilon\},
+\]
+where \(\mathcal{S}_{\text{base}}\) is persistence or climatology skill and \(\epsilon\) a small tolerance. Baselines include (i) spatially varying climatology (seasonal rain frequency and conditional mean) and (ii) persistence \(P_{t+\tau}=P_t\) (with occurrence from \(Z_t\) and amount from \(Y_t\) at wet pixels, zero otherwise), ensuring that \(\mathcal{S}(\tau)\) quantifies genuine lead information beyond trivial heuristics.
 
-\section{Down the road questions}
-\begin{itemize}
-    \item What is the best strategy for saving the data \textit{sparsely} so to be able to reconstruct the flow with a least loss of information? we may need to go very irregular in term of temporal and spatial sampling. 
-\end{itemize}
+\paragraph{Scientific readouts.}
+This design directly exposes how lead \(\tau\) degrades (a) the ability to identify where it will rain and (b) the fidelity of amounts where it does, conditional on perfect large-scale state at time \(t\). Comparing \(\mathcal{S}_{\text{occ}}(\tau)\) and \(\mathcal{S}_{\text{amt}}(\tau)\) reveals whether localization or intensity saturates first; stratifying the same curves by PW/OLR/SST anomalies (similar to SST-PW plot for example) links the observed horizons to physically interpretable regimes.
 
 
+\section{Input Configurations \texorpdfstring{$\mathbf{X}(t)$}{X(t)}}
 
-	
+We evaluate how different choices of input state \(X(t)\) affect precipitation predictability at lead \(t+\tau\). The experiments are grouped into three progressively enriched configurations:
+
+\paragraph{Case 1: Large-scale radiative--moist background.}
+Inputs include precipitable water (PW), sea-surface temperature (SST), and outgoing longwave radiation (OLR) at time \(t\).
+This baseline probes how far a coarse thermodynamic and radiative state---without explicit vertical structure---can carry precipitation occurrence and amount skill.
+
+\paragraph{Case 2: Role of thermodynamics (vertical structure).}
+We augment Case~1 with specific humidity \(q\) and temperature \(T\) at 850, 600, and 400\,hPa.
+This configuration tests whether adding column stratification (moisture and stability) extends the predictability horizon by sharpening information about saturation deficit, lapse rate, and convective inhibition/available potential energy proxies.
+
+\paragraph{Case 3: Role of dynamics.}
+We further augment Case~2 with vertical velocity \(w\) (or \(\omega\)) at 850 and 400\,hPa, providing explicit large-scale ascent/descent as a trigger for convection and stratiform organization.
+
+\paragraph{Coupling and interpretability.}
+Thermodynamics and dynamics are strongly coupled: persistent moisture and stability anomalies co-vary with ascent patterns, so a substantial fraction of the information in \(w\) may already be encoded in \((q,T)\).
+Our analysis explicitly asks whether providing \(w\) \emph{adds incremental predictive information} beyond thermodynamic structure: if skill-vs-lead curves \(\mathcal{S}(\tau)\) and their horizons \(\tau^\star\) improve when \(w\) is included, we gain evidence that explicit dynamics convey flow information not recoverable from thermodynamic proxies alone.
+
+
+\section{Some thoughts based on what we have learned so far:}
+
+
+There are two separable things our experiments are revealing:
+
+1. What determines skill at t=0? — input variable sensitivity, answered by your variable ablation \\
+2. What determines $\tau^\star$?  the intrinsic decorrelation timescale of precipitation-relevant atmospheric modes, independent of input choice
+
+
+One interesting thing to look at is how $\tau^\star$ varies with location. It would be interesting to see if there is a difference between land vs ocean, and between tropics vs extra-tropics. 
+
+
+Precipitation prediction can be conceptually decomposed into two distinct challenges. The first is predicting the \textit{amplitude} of convective events --- their intensity and vertical structure. The second, and more elusive, is predicting the \textit{trigger}: whether and where convection actually initiates. The large-scale thermodynamic environment, captured by variables such as column water vapor, outgoing longwave radiation, and moist static energy profiles, largely controls the amplitude. Given that convection occurs, how intense will it be? This component is relatively predictable because it inherits the memory timescale of the large-scale circulation. The trigger, by contrast, is governed by subgrid processes --- boundary layer thermals, cold pool collisions, and mesoscale convergence features --- that are effectively stochastic at the resolved scale of $0.25^\circ$. Even with perfect knowledge of the thermodynamic environment, the precise location and timing of convective initiation cannot be determined deterministically, introducing an irreducible uncertainty that grows with lead time.
+
+It is important to note, however, that at zero lead time this trigger uncertainty is effectively eliminated by the input variables themselves. OLR is a near-direct observation of current convective state: deep convection emits at low brightness temperatures, clear sky at high. Similarly, PW tells the model where the atmospheric column is close to saturation. At $t = 0$, the model is not predicting the trigger --- it is reading it directly from the inputs. The residual error at zero lead time therefore reflects amplitude uncertainty, namely subgrid variability in convective intensity that cannot be resolved at $0.25^\circ$, rather than trigger stochasticity. As lead time increases, OLR and PW at $t_0$ progressively lose their ability to constrain where convection will fire at $t_0 + t$, and trigger uncertainty switches on. The skill decay we observe is precisely the timescale over which this transfer happens.
+
+This decomposition can be made quantitative, and doing so carefully will significantly strengthen the interpretation of the results. The total prediction error at lead time $t$ can be written schematically as
+%
+\begin{equation}
+    \epsilon(t) = \epsilon_A(t) + \epsilon_{\mathcal{T}}(t),
+\end{equation}
+%
+[note before continue: the equation above assumes an additive decomposition. We can start by this and then modify it based on what we observe. the contribution might be multiplicative! ]
+where $\epsilon_A$ captures amplitude uncertainty and $\epsilon_{\mathcal{T}}$ captures trigger uncertainty. To separate these empirically, we can proceed in two steps. First, we binarize precipitation at a physically meaningful threshold, say $P > 0.1$ mm~hr$^{-1}$ to distinguish raining from non-raining grid points (I believe you have done this already), and compute a categorical skill score for occurrence prediction as a function of lead time. Good choices are the Equitable Threat Score (ETS) or the Brier Skill Score (BSS), both of which measure how well the model identifies where convection fires relative to a climatological baseline, without any regard for intensity. The model should have a very good skill at time lag zero since we re shoing it the OLR and it tells everything about where convection s happening.The decay of this occurrence skill with lead time gives us an empirical handle on $\epsilon_{\mathcal{T}}(t)$. Second, we restrict verification to only those grid points where precipitation actually occurs in the target field, conditioning on observed occurrence, and compute $R^2$ or RMSE for intensity alone at those points. The decay of this conditioned skill is our empirical $\epsilon_A(t)$. If, as theory predicts, $\epsilon_{\mathcal{T}}$ grows faster than $\epsilon_A$, we have clean empirical evidence that trigger unpredictability dominates the predictability horizon. It would be also very interesting to see how they drop: linearly or exponentioally ? 
+
+To make this even more precise, we fit an exponential model
+%
+\begin{equation}
+    S(t) = \left(S_0 - S_\infty\right) e^{-t/\tau} + S_\infty
+\end{equation}
+%
+to each skill curve separately, where $S_0$ is the skill at zero lead time, $S_\infty$ is the climatological floor, and $\tau$ is the e-folding decay timescale. This gives three interpretable parameters per experiment and per decomposition component. The story across the input variable experiments then becomes sharp and clean: adding thermodynamic profiles increases $S_0$ modestly, adding winds increases $S_0$ more substantially (we need to do the test with three baseline input + dynamics), but does $\tau$ remains essentially constant across all experiments?. The starting hypothesis is that the rate at which the atmosphere forgets is set by the intrinsic decorrelation timescale of the trigger, and no choice of input variables at $t_0$ can change that.
 \end{document}

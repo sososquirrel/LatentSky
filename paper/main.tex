@@ -91,6 +91,22 @@ systems themselves, and the scale-decomposed horizon of this paper is one such
 framework --- it asks the predictability question system by system, size by
 size.
 
+A second confusion hides in how precipitation is produced by modern forecast
+systems. Most AI weather models advance the atmospheric \emph{state}
+autoregressively and obtain precipitation either by diagnosing it from the
+predicted state with a separate network \cite{bi2023} or by predicting it
+jointly with the other targets \cite{price2025}, typically at 3--6~h steps.
+Their precipitation error therefore compounds two sources: error in the state,
+and the irreducible uncertainty of mapping state to rain. This paper isolates
+the second. Every model we train receives the \emph{simultaneous},
+kilometer-scale-resolved large-scale state as input --- the question it
+answers is: even if the state variables were known perfectly, how far into
+the future is precipitation itself predictable? The horizon we measure is
+conditional on perfect state knowledge and is therefore an upper bound: no
+autoregressive system that derives rain from these state variables can exceed
+it, because it reflects the stochasticity of the state-to-rain map, not
+errors in state prediction.
+
 This paper separates the two, at kilometer scale, with an instrument simple
 enough to state in one identity. Every precipitating system --- a connected
 rainy object --- carries a total precipitation $P$ that factors exactly into an
@@ -103,7 +119,19 @@ $L = \sqrt{A}$ and fitting the decay of the probability of detection with lead
 time yields an e-folding time $T(L)$ per scale band --- the detection horizon
 --- measured identically for every forecast, including the persistence null,
 which each of our models receives as an input so that the null is nested by
-construction.
+construction. The decomposition maps onto the two physically distinct
+challenges of precipitation prediction: the \emph{trigger} --- whether and
+where convection initiates, governed by boundary-layer thermals, cold-pool
+collisions, and mesoscale convergence that are effectively stochastic at the
+resolved scale --- and the \emph{amplitude} --- how intense it is, largely
+controlled by the thermodynamic environment and inheriting its longer memory.
+Detection (POD, and hence the horizon $T(L)$) measures the trigger;
+the matched-pair errors $\mathrm{d}\ln A$ and $\mathrm{d}\ln\rho$ measure the
+amplitude and its spatial organization, conditional on the trigger being
+found. At zero lead the inputs read the trigger directly --- outgoing longwave
+radiation is a near-direct observation of where deep convection is active ---
+so the decay of detection with lead is precisely the timescale over which
+trigger information is lost.
 
 Three questions organize the paper. First, \emph{what sets the limit}: measured
 on a storm-resolving DYAMOND integration \cite{stevens2019}, the horizon follows
@@ -133,20 +161,25 @@ measure.
 
 \subsection{Kilometer-scale data}\label{sec:data}
 
-The dataset is a continuous ${\sim}40$-day global storm-resolving integration
-of the Model for Prediction Across Scales (MPAS, NCAR) from the DYAMOND
-protocol \cite{stevens2019}, run at kilometer-scale native resolution
-%% TODO confirm with Sophie/Sara: DYAMOND phase, exact MPAS mesh (~3.75 km?),
-%% period; the repo does not record the provenance of the piece files —
-%% docs/scale_decomposition_method.md loosely says "SAM crop", overridden here
-and regridded to a regular $0.25^{\circ}$ grid
-(${\approx}28$~km) over the tropical belt $40^{\circ}$S--$40^{\circ}$N at
-15-minute resolution: 40 days of $96$ frames on a $320 \times 1440$ grid. The
-kilometer-scale origin of the data matters more than the evaluation grid: the
-integration resolves deep convection explicitly, so the target field contains
-the sharp, small, short-lived systems that parameterized or coarse reanalysis
-products smooth away --- precisely the systems whose predictability we want to
-measure.
+The dataset is the DYAMOND MPAS-Atmosphere global cloud-resolving simulation
+\cite{stevens2019}, performed at ${\sim}3.8$~km horizontal resolution with
+15-minute output over a 40-day winter period. MPAS employs a fully
+compressible, nonhydrostatic dynamical core on an unstructured mesh, enabling
+explicit simulation of convective processes; cloud microphysics are
+represented with a double-moment scheme for cloud and rain hydrometeors.
+Global cloud-resolving models explicitly resolve deep convection and cloud
+systems, providing dynamically consistent four-dimensional fields essential
+for process understanding and data-driven modeling \cite{satoh2019}, though
+they remain model-dependent: MPAS reproduces mean precipitation and its
+diurnal cycle within the multi-model range \cite{stevens2019} but tends to
+overestimate deep convective clouds and heavy rainfall compared with the IMERG
+product \cite{feng2025}. For this study the fields are regridded to a regular
+$0.25^{\circ}$ grid (${\approx}28$~km) over the tropical belt
+$40^{\circ}$S--$40^{\circ}$N: 40 days of $96$ frames on a $320 \times 1440$
+grid. The kilometer-scale origin of the data matters more than the evaluation
+grid: the target field contains the sharp, small, short-lived systems that
+parameterized or coarse reanalysis products smooth away --- precisely the
+systems whose predictability we want to measure.
 
 Both models receive the identical ten input channels: precipitable water, 2-m
 temperature, top-of-atmosphere outgoing longwave radiation, moist static energy
@@ -319,7 +352,16 @@ training data.
 \section{Discussion and outlook}\label{sec:discussion}
 %% - time evolution: valid-time matching + persistence-as-no-evolution null;
 %%   Lagrangian tracking as future work (html §7 note)
-%% - limitations: one DYAMOND summer, tropics; alpha fit range caveats
+%% - limitations: one DYAMOND winter, tropics; alpha fit range caveats
+%%   (top bands barely decay over 6 h -> tau extrapolated)
+%% - trigger vs amplitude, quantitatively (project notes): eps(t) =
+%%   eps_A(t) + eps_T(t); POD decay ~ eps_T, matched dln-rho ~ eps_A; test
+%%   whether eps_T grows faster (theory predicts yes); fit form with floor
+%%   S(t) = (S0 - Sinf) exp(-t/tau) + Sinf as a sensitivity on the B=0 fit
+%% - hypothesis for future work: tau is set by the intrinsic decorrelation of
+%%   the trigger, invariant to input choice (Case 1/2/3 ablation — background
+%%   vs +thermo profiles vs +dynamics — should change S0, not tau)
+%% - tau*(location): land vs ocean, tropics vs extratropics
 %% - implications for training objectives (CRPS-on-marginals vs joint sampling)
 
 \section{Open Research}
