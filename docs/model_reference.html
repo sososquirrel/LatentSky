@@ -1178,9 +1178,11 @@ All models at +12 h — the diffusion model's shortest lead — on one day, one 
 (2020-08-15; <span class="mono">wb2_benchmark/gencast_12h.py</span>). Two findings.
 <b>(1) Detection depends steeply on system size for every model</b>: POD ≈ 0.1 below
 60 km rising to ≈1 above 800 km — the same scale story as §6. <b>(2) Sampling helps
-between roughly 150 and 500 km, and only there</b>: GenCast's single member,
-scored per-draw, detects the most of any model in that band (0.78–0.82 vs
-GraphCast's 0.68–0.73) at a false-alarm cost below persistence's — while the same
+between roughly 150 and 500 km, and only there — and it comes at a cost of
+FAR</b>: GenCast's single member, scored per-draw, detects the most of any model
+in that band (0.78–0.82 vs GraphCast's 0.68–0.73), but its false-alarm ratio
+roughly doubles relative to the deterministic models (0.32 vs 0.17 near 240 km) —
+the price of betting, still well below persistence's 0.82 — while the same
 model's ensemble mean falls back among the deterministic curves (the §4 scoring
 rule, on an operational model). Below ≈60 km every curve, member included, stays
 at POD ≤ 0.13: <b>even with diffusion, no operational model can yet predict small
