@@ -53,12 +53,16 @@ def fig_tau(midsf, tauf, with_flow, fn):
         out = fit_powerlaw(midsf[ok], t[ok])
         a = out["beta"]
         c0 = out["tau_ref"] / (out["L_ref"] ** a)
-        ax.plot(midsf[ok], t[ok], mk, color=colr, ms=5.5, ls="none",
-                label=f"{m}: α = {a:.2f}")
         Lg = np.geomspace(28, 700, 40)
-        ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=1.1, alpha=0.8)
+        ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=2.0,
+                label=f"{m}: α = {a:.2f}")
+        ax.plot(midsf[ok], t[ok], mk, color=colr, ms=4.5, ls="none",
+                alpha=0.85, mec="none")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlim(25, 800); ax.set_ylim(0.3, 110)
+    ax.grid(True, which="major", ls=":", lw=0.5, color="0.75")
+    ax.grid(True, which="minor", ls=":", lw=0.3, color="0.9")
+    ax.set_axisbelow(True)
     ax.set_xlabel("system scale L (km)")
     ax.set_ylabel("τ(L) — POD e-folding time (h)")
     ax.set_title("the predictability horizon τ(L) ∝ L^α — full record\n"
