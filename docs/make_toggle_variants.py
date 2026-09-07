@@ -44,20 +44,23 @@ def tau_series():
 
 
 def fig_tau(midsf, tauf, with_flow, fn):
-    fig, ax = plt.subplots(figsize=(5.6, 4.1))
-    models = ["two-head", "persistence"] + (["flow"] if with_flow else [])
-    for m in models:
+    """One color per experiment; with_flow=True dims the deterministic pair
+    (alpha 0.45) and adds the flow on top - the flip only adds the curve."""
+    fig, ax = plt.subplots(figsize=(4.8, 3.8))
+    order = ["two-head", "persistence"] + (["flow"] if with_flow else [])
+    for m in order:
         mk, colr = STYLES[m]
+        dim = 0.45 if (with_flow and m != "flow") else 1.0
         t = tauf[m]
         ok = np.isfinite(t) & (t > 0) & (t < 100)
         out = fit_powerlaw(midsf[ok], t[ok])
         a = out["beta"]
         c0 = out["tau_ref"] / (out["L_ref"] ** a)
         Lg = np.geomspace(28, 700, 40)
-        ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=2.0,
+        ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=1.8, alpha=dim,
                 label=f"{m}: α = {a:.2f}")
         ax.plot(midsf[ok], t[ok], mk, color=colr, ms=4.5, ls="none",
-                alpha=0.85, mec="none")
+                alpha=dim, mec="none", zorder=4)
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlim(25, 800); ax.set_ylim(0.3, 110)
     ax.grid(True, which="major", ls=":", lw=0.5, color="0.75")
