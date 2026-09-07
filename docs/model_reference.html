@@ -1145,7 +1145,7 @@ percolates into a single belt-spanning "system", which trivializes large-L match
 (sensitivity below). This is not a comparison with LatentSky — different data,
 resolution and physics — and deliberately shallow. Two questions drive the section:
 <b>how strongly does the detection of the operational AI forecasts depend on system
-size</b>, and does generative sampling help where it matters most — the small
+size</b>, and does generative sampling help where it is the hardest — the small
 systems?</p>
 
 <h3>The three models, and what each one is</h3>
@@ -1251,8 +1251,9 @@ signature on an operational model: sampling converts placement information into
 detections, averaging destroys them. The small-system answer, however, is
 sobering: below ≈60 km every curve — deterministic, mean and diffusion member
 alike — sits at POD ≤ 0.13. <b>Even with diffusion, no operational model can yet
-predict small systems at short lead</b>; that is the open problem, and the regime
-the km-scale flow of §8 is built to attack. The same mean-vs-member test on FGN (which
+predict small systems at +6 h/+12 h lead. Yet it improves the prediction between
+150 and 500 km</b> — that open small-scale problem is the regime the km-scale flow
+of §8 is built to attack. The same mean-vs-member test on FGN (which
 trades GenCast's joint diffusion sampling for one-pass members trained on
 marginals) shows the same direction but a weaker model
 (<span class="mono">fgn_members_6h.py</span>, <span class="mono">margins_24h.py</span>) —
