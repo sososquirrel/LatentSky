@@ -111,13 +111,23 @@ def main():
     ov_p = overlay(lp, color_of_p, fa_ids, (0.84, 0.15, 0.16))
 
     # richest 128x128 block (the LatentSky patch size): most distinct truth
-    # systems, precip volume as tie-break
+    # systems, precip volume as tie-break — excluding windows dominated by one
+    # huge missed system (usually a merger artifact of 1-1 matching, which
+    # reads as unfair on a zoom)
     P = 128
     vol2 = truth * area_row[:, None]
+    missed_mask = np.isin(lt, list(miss_ids)) if miss_ids else np.zeros_like(lt,
+                                                                             bool)
     best, i0, j0 = (-1, -1.0), 0, 0
     for ii in range(0, truth.shape[0] - P + 1, 16):
         for jj in range(0, truth.shape[1] - P + 1, 16):
             w = lt[ii:ii + P, jj:jj + P]
+            wm = missed_mask[ii:ii + P, jj:jj + P]
+            if wm.any():
+                # largest single missed system's pixel count inside the window
+                ids, cnts = np.unique(w[wm], return_counts=True)
+                if cnts.max() > 400:   # ~ >300 km-wide merged miss: skip
+                    continue
             nsys = len(np.unique(w)) - (1 if (w == 0).any() else 0)
             score = (nsys, float(vol2[ii:ii + P, jj:jj + P].sum()))
             if score > best:
