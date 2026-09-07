@@ -60,12 +60,12 @@ def main():
 
     cnorm = LogNorm(vmin=28.0, vmax=1500.0)
     vir = plt.get_cmap("viridis")
-    lim = 3.2
+    xlim, ylim = 2.7, 1.5   # fitted to the WB2 clouds (zoom of the ±3.2 frame)
     fig, axs = plt.subplots(1, 4, figsize=(14.4, 3.9), sharex=True, sharey=True)
     for ax, label in zip(axs, NAMES):
         m = allm[allm.model == label]
         ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
-        xs = np.linspace(-lim, lim, 2)
+        xs = np.linspace(-xlim, xlim, 2)
         ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.0)
         sc = ax.scatter(m["dlnA"], m["dlnrho"], s=1.5, c=m["scale"],
                         cmap="viridis", norm=cnorm, alpha=0.25, linewidths=0,
@@ -77,7 +77,7 @@ def main():
                     float((w * g.dlnrho).sum() / w.sum()),
                     "X", ms=11, mfc=vir(cnorm(lrep)), mec="0.05", mew=1.1,
                     zorder=6)
-        ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
+        ax.set_xlim(-xlim, xlim); ax.set_ylim(-ylim, ylim)
         ax.grid(True, which="major", ls=":", lw=0.5, color="0.88")
         ax.set_axisbelow(True)
         ax.set_xlabel("dlnA  (area error)")
