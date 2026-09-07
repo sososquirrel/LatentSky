@@ -58,48 +58,64 @@ def main():
                            for s in range(ds.sample.size)],
     }
 
-    STYLE = {"graphcast": ("o", "#1b7837"), "fuxi": ("^", "#762a83"),
-             "gencast mean": ("s", "#35978f"), "gencast member": ("D", "#b2182b")}
-    vir = plt.get_cmap("viridis")
-    from matplotlib.colors import LogNorm
-    cn = LogNorm(vmin=40, vmax=1000)
-    fig, ax = plt.subplots(figsize=(5.6, 5.0))
-    lim = 1.3
-    ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
-    xs = np.linspace(-lim, lim, 2)
-    ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.0)
+    # barycenters per model/band
+    bary = {}
     for name, dfs in series.items():
-        mk, colr = STYLE[name]
         for bname, lo, hi, lrep in BANDS:
             pts = []
-            for m in dfs:  # per draw, then average the barycenters
+            for m in dfs:
                 g = m[(m.scale >= lo) & (m.scale < hi)]
                 if len(g) < 5:
                     continue
                 w = g["P_t"].to_numpy()
                 pts.append(((w * g.dlnA).sum() / w.sum(),
                             (w * g.dlnrho).sum() / w.sum()))
-            if not pts:
-                continue
-            bA, bR = np.mean(pts, axis=0)
-            ax.plot(bA, bR, mk, ms=10, mfc=vir(cn(lrep)), mec=colr, mew=1.8,
-                    zorder=5)
-            print(f"{name:15s} {bname:15s}: ({bA:+.2f}, {bR:+.2f})")
-    handles = ([Line2D([], [], marker=STYLE[n][0], ls="none", ms=8, mfc="0.85",
-                       mec=STYLE[n][1], mew=1.8, label=n) for n in STYLE]
-               + [Line2D([], [], marker="s", ls="none", ms=8,
-                         mfc=vir(cn(l)), mec="0.4", label=b)
-                  for b, _, _, l in BANDS])
-    ax.legend(handles=handles, fontsize=7, frameon=False, loc="lower left",
-              ncol=2)
-    ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
-    ax.grid(True, which="major", ls=":", lw=0.5, color="0.85")
-    ax.set_axisbelow(True)
-    ax.set_xlabel("dlnA  (area error)")
-    ax.set_ylabel(r"dln$\rho$  (intensity error)")
-    ax.set_title("the size/intensity bias of AI weather forecasts\n"
-                 "(+12 h, 2020-08-15, precip-weighted band barycenters)",
-                 fontsize=9.5)
+            if pts:
+                bary[(name, bname)] = tuple(np.mean(pts, axis=0))
+                print(f"{name:15s} {bname:15s}: ({bary[(name,bname)][0]:+.2f}, "
+                      f"{bary[(name,bname)][1]:+.2f})")
+
+    vir = plt.get_cmap("viridis")
+    from matplotlib.colors import LogNorm
+    cn = LogNorm(vmin=40, vmax=1000)
+    lim = 0.9
+    fig, axs = plt.subplots(1, 3, figsize=(11.4, 4.0), sharex=True, sharey=True)
+    panels = [("graphcast", axs[0], "graphcast"),
+              ("fuxi", axs[1], "fuxi"),
+              ("gencast", axs[2], "gencast:  mean ■ → member ◆")]
+    for key, ax, title in panels:
+        ax.axhline(0, color="0.6", lw=0.7); ax.axvline(0, color="0.6", lw=0.7)
+        xs = np.linspace(-lim, lim, 2)
+        ax.plot(xs, -xs, ls=":", color="#b2182b", lw=1.0)
+        for bname, lo, hi, lrep in BANDS:
+            col = vir(cn(lrep))
+            if key != "gencast":
+                bA, bR = bary[(key, bname)]
+                ax.plot(bA, bR, "X", ms=13, mfc=col, mec="0.1", mew=1.1,
+                        zorder=5)
+            else:
+                mA, mR = bary[("gencast mean", bname)]
+                sA, sR = bary[("gencast member", bname)]
+                ax.annotate("", xy=(sA, sR), xytext=(mA, mR),
+                            arrowprops=dict(arrowstyle="-|>", color=col,
+                                            lw=1.8), zorder=4)
+                ax.plot(mA, mR, "s", ms=9, mfc=col, mec="0.1", mew=1.0,
+                        zorder=5)
+                ax.plot(sA, sR, "D", ms=9, mfc=col, mec="#b2182b", mew=1.8,
+                        zorder=6)
+        ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
+        ax.grid(True, which="major", ls=":", lw=0.5, color="0.85")
+        ax.set_axisbelow(True)
+        ax.set_xlabel("dlnA  (area error)")
+        ax.set_title(title, fontsize=9.5)
+    axs[0].set_ylabel(r"dln$\rho$  (intensity error)")
+    from matplotlib.lines import Line2D
+    axs[0].legend(handles=[
+        Line2D([], [], marker="X", ls="none", ms=9, mfc=vir(cn(l)), mec="0.1",
+               label=b) for b, _, _, l in BANDS],
+        fontsize=7.5, frameon=False, loc="lower left")
+    fig.suptitle("the size/intensity bias of AI weather forecasts — "
+                 "+12 h, precip-weighted band barycenters", fontsize=10, y=1.0)
     fig.savefig(OUT / "fig_wb2_decomp_12h.png", dpi=150, bbox_inches="tight")
     print("saved fig_wb2_decomp_12h.png")
 
