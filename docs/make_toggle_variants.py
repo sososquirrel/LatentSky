@@ -44,10 +44,15 @@ def tau_series():
 
 
 def fig_tau(midsf, tauf, with_flow, fn):
-    """One color per experiment; with_flow=True dims the deterministic pair
-    (alpha 0.45) and adds the flow on top - the flip only adds the curve."""
-    fig, ax = plt.subplots(figsize=(4.8, 3.8))
+    """Toggle view: markers colored by POD0 (plasma), model identity via
+    edge color + marker shape + fit line. with_flow=True dims the
+    deterministic pair (alpha 0.45) and adds the flow on top."""
+    df = pd.read_csv(OUT / "tau_fullrecord.csv")
+    pod0 = {m: df[df.model == m].sort_values("L_mid")["pod_0.25h"].to_numpy()
+            for m in STYLES}
+    fig, ax = plt.subplots(figsize=(5.4, 4.0))
     order = ["two-head", "persistence"] + (["flow"] if with_flow else [])
+    sc = None
     for m in order:
         mk, colr = STYLES[m]
         dim = 0.45 if (with_flow and m != "flow") else 1.0
@@ -59,8 +64,11 @@ def fig_tau(midsf, tauf, with_flow, fn):
         Lg = np.geomspace(28, 700, 40)
         ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=1.8, alpha=dim,
                 label=f"{m}: α = {a:.2f}")
-        ax.plot(midsf[ok], t[ok], mk, color=colr, ms=4.5, ls="none",
-                alpha=dim, mec="none", zorder=4)
+        sc = ax.scatter(midsf[ok], t[ok], c=pod0[m][ok], cmap="plasma",
+                        vmin=0, vmax=1, marker=mk, s=46, edgecolors=colr,
+                        linewidths=1.3, alpha=dim, zorder=4)
+    cb = fig.colorbar(sc, ax=ax, shrink=0.85, pad=0.02)
+    cb.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlim(25, 800); ax.set_ylim(0.3, 110)
     ax.grid(True, which="major", ls=":", lw=0.5, color="0.75")

@@ -145,14 +145,10 @@ def main():
     for m, mk, colr in [("two-head", "o", "#2166ac"), ("persistence", "s", "0.4")]:
         t = tauf[m]
         a, c0, ok = powerlaw(midsf, t)
-        pod0 = podf[m][:, 0]
-        sc2 = ax.scatter(midsf[ok], t[ok], c=pod0[ok], cmap="plasma", vmin=0, vmax=1,
-                         marker=mk, s=42, edgecolors=colr, linewidths=1.3,
-                         label=f"{m}: α = {a:.2f}", zorder=4)
+        ax.plot(midsf[ok], t[ok], mk, color=colr, ms=4.5, ls="none",
+                label=f"{m}: α = {a:.2f}", zorder=4)
         Lg = np.geomspace(midsf[ok].min(), midsf[ok].max(), 40)
-        ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=1.1, alpha=0.8)
-    cb2 = fig.colorbar(sc2, ax=ax, shrink=0.85, pad=0.02)
-    cb2.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)
+        ax.plot(Lg, c0 * Lg ** a, "-", color=colr, lw=1.4)
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlabel("system scale L (km)")
     ax.set_ylabel("τ(L) — POD e-folding time (h)")
