@@ -1022,6 +1022,18 @@ legible illustration; the <b>full-record re-derivation over all six leads is don
 and lives in §8: α = 1.79 (two-head), 1.63 (flow), 1.41 (persistence), every draft
 value within ~0.1. The tighter-IoU sensitivity remains open for the registered R1.</p>
 
+<div class="note"><b>Does snapshot matching miss the time evolution of systems?</b>
+No — it measures it statistically, by design. Matching is done at <em>valid</em>
+time, so the reference is always the systems that actually exist at t + L: dead
+systems produce no spurious misses, and births are legitimately part of the test.
+The lead family POD(t; L) → τ(L) is then a statistical description of predicted
+evolution — and the persistence null is exactly the "no-evolution" hypothesis, so
+any margin above it is correctly predicted motion, growth, decay or birth. What
+this study deliberately does not do is <em>Lagrangian tracking</em> — following an
+individual system across leads to split its error into displacement, growth and
+lifecycle; the 15-min cadence of the data supports it (overlap-chaining across
+frames), and it is declared future work.</div>
+
 <h2 id="added">8 · What flow matching adds (R3 preview)</h2>
 <p>With five flow leads trained, the pre-registered predictions
 (journal/2026-09-03) met their data — same matching, same fit conventions, single
