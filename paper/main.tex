@@ -75,6 +75,22 @@ exactly this blur (the double-penalty problem \cite{ravuri2021}), so the
 apparent predictability limit mixes two things of very different nature: what
 the atmosphere forbids, and what the estimator destroys.
 
+The systems in question matter well beyond forecast verification. Deep
+convection organizes into mesoscale convective systems spanning
+${\sim}100$~km --- key contributors to tropical extreme weather, from intense
+gust fronts to heavy rainfall and flash flooding, and a major term in the
+global water cycle. Their typical scale falls below the grid of global climate
+models, which represent deep convection through parameterizations, so their
+initiation, development, and response to climate change remain highly
+uncertain. Global storm-resolving simulations now resolve these systems
+explicitly: the DYAMOND protocol \cite{stevens2019} collects kilometer-scale
+integrations from more than nine models, producing petabytes of data at
+${\sim}4$~km resolution. But realism alone does not guarantee understanding;
+datasets of this kind call for analytical frameworks posed at the scale of the
+systems themselves, and the scale-decomposed horizon of this paper is one such
+framework --- it asks the predictability question system by system, size by
+size.
+
 This paper separates the two, at kilometer scale, with an instrument simple
 enough to state in one identity. Every precipitating system --- a connected
 rainy object --- carries a total precipitation $P$ that factors exactly into an
@@ -117,8 +133,11 @@ measure.
 
 \subsection{Kilometer-scale data}\label{sec:data}
 
-The dataset is a continuous ${\sim}40$-day global storm-resolving DYAMOND
-integration \cite{stevens2019}, regridded to a regular $0.25^{\circ}$ grid
+The dataset is a continuous ${\sim}40$-day integration of the global System
+for Atmospheric Modeling (gSAM) from the DYAMOND protocol \cite{stevens2019},
+run at ${\sim}4$~km native resolution
+%% TODO confirm exact DYAMOND phase (2 vs 3), gSAM configuration and period
+and regridded to a regular $0.25^{\circ}$ grid
 (${\approx}28$~km) over the tropical belt $40^{\circ}$S--$40^{\circ}$N at
 15-minute resolution: 40 days of $96$ frames on a $320 \times 1440$ grid. The
 kilometer-scale origin of the data matters more than the evaluation grid: the

@@ -1,0 +1,183 @@
+\documentclass{adonis}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{xurl}
+\usepackage{graphicx}
+% main details
+\title{Reconstruct 3D derived variables using 2d Variables in Cloud Resolving Models}
+\subtitle{Master Internship}
+\author{  Sophie Abramian$^1$  and Sara Shamekh$^2$}
+
+% secondary details
+\affiliation{\textsuperscript{2} New York University, \textsuperscript{1} Columbia University}
+%\correspondence{nicholasmamo@gmail.com}
+\version{\today}
+
+% headers
+\runningauthor{Sara Shamekh and Sophie Abramian}
+\runningtitle{Master Internship}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+     
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+\section{General context and motivations}
+
+
+Clouds can organize into spectacular, multicloud structures known as deep convective systems.
+When these systems grow to span hundreds of kilometers—the mesoscale—they become
+mesoscale convective systems (MCSs). MCSs, which span spatial scales on the order of 100 km, are key contributors to extreme weather events in the tropics, including intense gust fronts, heavy rainfall, and flash flooding. These systems encompass a range of phenomena such as tropical cyclones—characterized by the strongest winds observed on Earth—and squall lines, which can extend over several hundred kilometers. MCSs play a crucial role in the global water cycle. However, their organization and dynamics remain insufficiently understood and are therefore not explicitly represented in current climate models.
+
+This limitation arises because the typical spatial scale of MCSs falls below the grid resolution of global climate models, which treat deep convection as subgrid-scale processes. As a result, their behavior is approximated through parameterizations, i.e. simplified representations of unresolved physical processes. Consequently, current models struggle to capture the initiation and development of such extreme systems, and their response to climate change remains highly uncertain. Addressing this gap is a central objective of ongoing climate research initiatives focused on clouds, circulation, and climate sensitivity.
+
+Advances in numerical modeling have enabled the study of convective processes in idealized configurations using cloud-resolving models (CRM). These models explicitly solve the governing equations of fluid dynamics and moisture transport, allowing a more accurate representation of atmospheric dynamics under varying thermodynamic conditions. While some processes, such as cloud microphysics, still require parameterization due to their small-scale nature, CRMs achieve high spatial ($\sim$1 km) and temporal (hourly) resolution over limited domains ($\sim$200 km) and short time periods (days). These simulations are computationally demanding.
+
+A recent initiative has extended the application of CRMs to the global scale, producing simulations at kilometer-scale resolution. These simulations, such as those from the DYAMOND3 project, generate petabytes of data and offer unprecedented detail into the interactions between large-scale atmospheric circulation and smaller-scale convective processes. DYAMOND3 includes outputs from more than nine models, with typical resolutions around 4 km and some simulations spanning an entire year.
+
+While these high-resolution datasets yield more realistic representations of convection, realism alone does not guarantee improved understanding. To bridge persistent knowledge gaps regarding the formation, evolution, and environmental interactions of deep convective systems, it is essential to go beyond existing literature and develop new analytical frameworks.
+
+These recent developments have generated significant scientific interest, but they also raise a critical question: Is it feasible to retain such vast quantities of data? How might we compress or reduce the information contained in these datasets to facilitate analysis, sharing, and long-term storage? By identifying redundancies and interdependencies among variables across different dimensions, we may uncover new insights into the atmospheric system and enhance our understanding of convective phenomena.
+
+In this internship, we apply machine learning techniques to investigate the following research questions:
+
+\begin{itemize}
+\item To what extent can three-dimensional atmospheric fields be reconstructed using only two-dimensional variables?
+\item What is the minimal subset of two-dimensional variables required for accurate reconstruction?
+\item What insights can be gained from such an approach regarding the structure of the atmosphere?
+\end{itemize}
+
+In the next sections, we describe in more details the experiments that can be conducted in order to answer these question. The strategy used is first to start with output from idealized simulations of the CRM SAM, and then to expand the study to global km-scale simulation. 
+
+
+\newpage
+\section{Experiments in Idealized Cloud-Resolving Model Simulations}
+\subsection{Selection of Physical and Dynamical Variables}
+
+\textit{Input Variables (2d)}:
+Variables that may have a strong prediction power because are key environmental factors. These variables are also relevant because they are typically well captured by satellite observations.
+
+\begin{itemize}
+    \item Precipitable Water
+    \item Long Wave Net Top of the Atmosphere
+    \item Sea Surface Temperature
+\end{itemize}
+
+Rq: All the 2d data from SAM, as well as some integrated variables can be added. 
+
+\textit{Target Variables Level 1  (2d)}:
+Level 1 means that we expectthe targets to have a high correlation between one of the input variable, this case might be used to set up the pipeline and test it. 
+
+\begin{itemize}
+    \item Cloud Water Path
+    \item Cloud Top Height
+    \item Ice Water Path
+\end{itemize}
+
+\textit{Target Variables Level 2  (2d)}:
+Level 2 means that we still use 2d variables (no compression of information), but these variables have a more intricate relationship to the input variables.
+
+\begin{itemize}
+    \item Vertical Velocity at 500hPa, 850hPa
+    \item Latent heat Flux
+    \item Sensible Heat Flux
+    \item Precipitation
+\end{itemize}
+
+\textit{Target Variables (Integrated 3d)}:
+\begin{itemize}
+    \item Integral of the Moist Static Energy in the boundary layer
+    \item Integral of the Moist Static Energy in the mid troposphere
+\end{itemize}
+
+\textit{Target Variables (3d)}:
+\begin{itemize}
+    \item Cloud Mask (based on Cloud Fraction)
+    \item Cloud Fraction (Non-precipitating Condensate (Water+Ice)  
+    \item Precipitating Water (Rain+Snow)  
+\end{itemize}
+
+
+\section{Design and Architecture of AI Models}
+\subsection{Models}
+
+To reconstruct 3D or vertically integrated atmospheric variables from 2D surface or column-integrated variables, we implement and compare several machine learning architectures, ranging from simple to advanced generative models. These models are evaluated based on their ability to capture spatial structures and reproduce physically meaningful fields.
+
+\subsubsection{Autoencoder}
+An autoencoder is a type of neural network used to learn efficient representations of input data. It consists of an encoder that compresses the input into a latent space and a decoder that reconstructs the input from this latent representation. This model serves as a baseline to evaluate the ability of simple latent representations to recover atmospheric variables.
+
+\subsubsection{UNet Autoencoder}
+The UNet architecture is an enhanced autoencoder that includes skip connections between corresponding encoding and decoding layers. These connections help retain spatial resolution and detailed structures during reconstruction. For climate data, UNet is particularly powerful as it captures interactions between different spatial scales, allowing large-scale features to inform small-scale reconstructions and vice versa.
+
+\subsubsection{Variational Autoencoder (VAE)}
+The VAE extends the autoencoder by learning a probability distribution over the latent space. This structure enables the model to operate in a generative mode, allowing for the sampling of new physically plausible states. Additionally, the probabilistic nature of the VAE provides insight into the distribution and uncertainty of the predicted outputs, which can show stronger signal than predicting a mean (and limit the average effect).
+
+\subsubsection{Diffusion Model}
+Diffusion models learn to generate data by reversing a gradual noise-adding process. Starting from pure noise, the model learns how to iteratively denoise toward a target distribution. These models have shown strong generative capabilities and are explored here as a means to reconstruct high-dimensional fields from limited 2D input data. Their capacity to model complex spatial correlations makes them promising for this application.
+
+
+
+\subsection{Evaluation Criteria and Performance Metrics}
+
+To evaluate the performance of the models in reconstructing output fields, we can use complementary metrics that reflect different aspects of the reconstruction quality:
+
+\subsubsection{Mean Square Error (MSE)}
+The Mean Square Error computes the average of the squared differences between predicted and true values at each grid point. It is sensitive to the exact spatial structure and pattern of the field, making it a strong constraint when accurate localization of features (e.g., convective cells or precipitation centers) is essential. However, this sensitivity can also penalize predictions that are qualitatively correct but slightly shifted in space.
+
+\subsubsection{Wasserstein Loss (in Spectral Space)}
+The Wasserstein loss, which is the distance between the distributions the preediced and true values, is tolerant to spatial displacements. Rather than penalizing exact pointwise mismatches, it emphasizes the similarity in the overall distribution across spatial scales. This makes it a valuable metric for assessing whether the model reproduces the correct variability and structure of the field—even when features are not perfectly aligned spatially. It is particularly relevant in generative settings where statistical realism is prioritized over exact replication.
+
+\subsection{Spatiotemporal Scales of Interest}
+\textit{Spatial scale}
+Does the prediction change depending on the spatial scale?
+Test:
+\begin{itemize}
+    \item predict the whole domain (128x128)
+    \item split the dataset into smaller pieces (64, 32)
+    \item use large domain to predict a smaller scale (128->32)
+    \item use small domain to predict a larger scale (32->128)
+\end{itemize}
+
+\textit{Time scale}
+Does the prediction change depending if we add history?
+Test:
+\begin{itemize}
+    \item predict target variable at time t based on input variable at time t
+    \item predict target variable at time t based on (t, t-1)
+    \item increase the past interval (t, t-1, .., t-N)
+\end{itemize}
+
+
+\section{Application to Global Kilometer-Scale Cloud-Resolving Simulations}
+\subsection{Case Study: gSAM Simulation}
+\subsection{Comparative Analysis Across GCRM Frameworks}
+
+\section{Toward Application on Satellite Observations}
+\subsection{Feasibility and Limitations of Satellite-Based Inference}
+\subsection{Available Datasets and Preprocessing Considerations}
+
+\section{Useful Paper}
+
+\begin{itemize}
+    \item SAM Model
+    \item 3D Cloud reconstruction through geospatially-aware
+Masked Autoencoders
+    \item Climate in a Bottle: Towards a Generative Foundation Model for the Kilometer-Scale Global Atmosphere
+    \item DYAMOND paper
+\end{itemize}
+
+\section{Down the road questions}
+\begin{itemize}
+    \item What is the best strategy for saving the data \textit{sparsely} so to be able to reconstruct the flow with a least loss of information? we may need to go very irregular in term of temporal and spatial sampling. 
+\end{itemize}
+
+
+
+	
+\end{document}
