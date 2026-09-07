@@ -60,7 +60,7 @@ def main():
 
     cnorm = LogNorm(vmin=28.0, vmax=1500.0)
     vir = plt.get_cmap("viridis")
-    xlim, ylim = 2.7, 1.5   # fitted to the WB2 clouds (zoom of the ±3.2 frame)
+    xlim, ylim = 2.7, 1.0   # fitted to the WB2 clouds (zoom of the ±3.2 frame)
     fig, axs = plt.subplots(1, 4, figsize=(14.4, 3.9), sharex=True, sharey=True)
     for ax, label in zip(axs, NAMES):
         m = allm[allm.model == label]
