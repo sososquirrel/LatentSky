@@ -357,9 +357,19 @@ $-0.17$, $-0.06$ from small to large bands), and the diffusion member erases it
 at every scale ($-0.06$, $-0.03$, $+0.01$). The error clouds are wide in
 $\mathrm{d}\ln A$ and narrow in $\mathrm{d}\ln\rho$ --- the reverse of the
 km-scale clouds: at $0.25^{\circ}$ the rain rate is recoverable but the system
-boundaries are not. Sampling fixes representation; small-system placement
-remains unsolved at this resolution, which is the case for kilometer-scale
-training data.
+boundaries are not.
+
+The small-system floor itself, however, is not an indictment of resolution
+alone --- our own scaling law prices the lead. With
+$\tau(30~\mathrm{km}) \approx 0.8$~h even for the flow at kilometer scale, a
+$+6$~h forecast asks for detection seven e-folding times past the horizon: no
+model, at any resolution, should find a $30$-km system at $+6$ or $+12$~h.
+The two arguments therefore compose rather than compete. Kilometer-scale data
+is necessary for small systems to be \emph{representable} at all, and
+sub-hour forecast cadence is necessary to catch them \emph{within their
+horizon}; operational systems stepping at $6$~h fail both conditions at once,
+and fixing the resolution without the cadence would move nothing below
+${\sim}60$~km.
 
 %% ===================== 5. DISCUSSION =======================================
 \section{Discussion and outlook}\label{sec:discussion}
