@@ -107,12 +107,14 @@ def main():
     colors = {"FGN ensemble mean": "#e08214",
               "FGN single member (per-draw ×3)": "#b2182b",
               "persistence": "0.5"}
-    fig, axs = plt.subplots(1, 2, figsize=(9.4, 3.6), sharex=True)
+    fig, axs = plt.subplots(1, 3, figsize=(12.6, 3.6))
+    curves = {}
     for name, scores in series.items():
         pod = np.nanmean([s[0] for s in scores], axis=0)
         far = np.nanmean([s[1] for s in scores], axis=0)
         ns = scores[0][2]
         ok = ns >= NMIN
+        curves[name] = (pod, far, ok)
         ls = ":" if name == "persistence" else "-"
         axs[0].plot(mids[ok], pod[ok], "o", ls=ls, ms=4, color=colors[name],
                     label=name)
@@ -128,8 +130,31 @@ def main():
         ax.set_title(t + " (+6 h, 2022-08-15)", fontsize=9)
     axs[0].set_ylabel("object-based rate")
     axs[0].legend(frameon=False, fontsize=7.5, loc="upper left")
+
+    # --- panel 3: the member's detection gain over the mean, explicit
+    pod_m, _, ok = curves["FGN single member (per-draw ×3)"]
+    pod_mean = curves["FGN ensemble mean"][0]
+    d = pod_m - pod_mean
+    ax = axs[2]
+    bars = ax.bar(np.arange(ok.sum()), d[ok],
+                  color=np.where(d[ok] >= 0, "#b2182b", "#2166ac"))
+    for x, v in zip(np.arange(ok.sum()), d[ok]):
+        if v >= 0:
+            ax.text(x, v + 0.003, f"{v:+.2f}", ha="center", fontsize=6.5)
+        else:
+            ax.text(x, v - 0.003, f"{v:+.2f}", ha="center", va="top",
+                    fontsize=6.5)
+    ax.set_ylim(min(d[ok].min() - 0.015, -0.03), d[ok].max() + 0.015)
+    ax.axhline(0, color="0.3", lw=0.8)
+    ax.set_xticks(np.arange(ok.sum()))
+    ax.set_xticklabels([f"{m:.0f}" for m in mids[ok]], fontsize=7)
+    ax.grid(True, axis="y", ls=":", lw=0.5, color="0.8")
+    ax.set_axisbelow(True)
+    ax.set_xlabel("system scale L (km)")
+    ax.set_ylabel("ΔPOD")
+    ax.set_title("member − mean: the detection\nthe mean field hides", fontsize=9)
     fig.suptitle("the ensemble-scoring rule on an operational model: "
-                 "FGN mean vs FGN members", fontsize=9.5)
+                 "FGN mean vs FGN members", fontsize=9.5, y=1.04)
     fig.savefig(OUT / "fig_fgn_members.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("saved fig_fgn_members.png")
