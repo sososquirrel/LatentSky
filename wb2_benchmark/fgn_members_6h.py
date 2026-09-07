@@ -157,7 +157,15 @@ def main():
                  "FGN mean vs FGN members", fontsize=9.5, y=1.04)
     fig.savefig(OUT / "fig_fgn_members.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print("saved fig_fgn_members.png")
+    rows = []
+    for name, scores in series.items():
+        pod = np.nanmean([sc[0] for sc in scores], axis=0)
+        far = np.nanmean([sc[1] for sc in scores], axis=0)
+        for k in range(len(mids)):
+            rows.append(dict(series=name, L_mid=mids[k], pod=pod[k],
+                             far=far[k], n=int(scores[0][2][k])))
+    pd.DataFrame(rows).to_csv(OUT / "fgn_member_bands.csv", index=False)
+    print("saved fig_fgn_members.png + fgn_member_bands.csv")
 
 
 if __name__ == "__main__":

@@ -130,31 +130,61 @@ def main():
 
     mids = np.sqrt(BANDS[:-1] * BANDS[1:])
     NMIN = 20  # a band enters the plot only with >= NMIN truth systems
-    fig, ax = plt.subplots(figsize=(6.2, 4.3))
+    fig, axs = plt.subplots(1, 2, figsize=(11.4, 4.1))
+    ax = axs[0]
     persisted = set()
+    curves, nulls = {}, {}
     for model, cfg in MODELS.items():
         pods, ns = pod_by_band(df[df.model == model])
         ok = ns >= NMIN
+        curves[model] = (pods, ok)
         lbl = model + (" (2022)" if cfg["day"].startswith("2022") else "")
         ax.plot(mids[ok], pods[ok], "o-", ms=4.5, color=cfg["color"], label=lbl)
         pkey = "persistence-" + cfg["day"][:4]
+        pp, pn = pod_by_band(df[df.model == pkey])
+        nulls[cfg["day"][:4]] = (pp, pn >= NMIN)
         if pkey not in persisted:
             persisted.add(pkey)
-            pp, pn = pod_by_band(df[df.model == pkey])
-            pok = pn >= NMIN
             style = dict(color="0.45", ls=":") if cfg["day"].startswith("2020") \
                 else dict(color="0.65", ls="--")
+            pok = pn >= NMIN
             ax.plot(mids[pok], pp[pok], "s", ms=3.5, lw=1.2, alpha=0.9,
                     label=f"persistence (ERA5, {cfg['day'][:4]})", **style)
         print(model, "POD:", np.round(pods, 3), "n:", ns)
     ax.set_xscale("log")
     ax.set_ylim(0, 1.02)
+    ax.grid(True, which="major", ls=":", lw=0.5, color="0.8")
+    ax.set_axisbelow(True)
     ax.set_xlabel("system scale L = √A (km)")
     ax.set_ylabel("POD at +6 h (object-based)")
-    ax.set_title("WB2 AI forecasts through the same lens\n"
-                 "tropics 40°S–40°N, one August day, ERA5 truth, 2.4 mm/6 h",
-                 fontsize=9.5)
-    ax.legend(fontsize=7.5, frameon=False, loc="upper left")
+    ax.set_title("detection by scale (each model on its own day)", fontsize=9)
+    ax.legend(fontsize=7, frameon=False, loc="upper left")
+
+    # --- right: the fair comparison — skill margin over each model's OWN null
+    ax = axs[1]
+    for model, cfg in MODELS.items():
+        pods, ok = curves[model]
+        null, _ = nulls[cfg["day"][:4]]
+        lbl = model + (" (2022)" if cfg["day"].startswith("2022") else "")
+        ax.plot(mids[ok], (pods - null)[ok], "o-", ms=4.5, color=cfg["color"],
+                label=lbl)
+    fm = pd.read_csv(OUT / "fgn_member_bands.csv")
+    memb = fm[fm.series.str.startswith("FGN single")].sort_values("L_mid")
+    ok = memb.n.to_numpy() >= NMIN
+    null22 = nulls["2022"][0]
+    ax.plot(mids[ok], (memb.pod.to_numpy() - null22)[ok], "D--", ms=4.5,
+            color="#b2182b", label="fgn single member (2022)")
+    ax.axhline(0, color="0.3", lw=0.9)
+    ax.set_xscale("log")
+    ax.grid(True, which="major", ls=":", lw=0.5, color="0.8")
+    ax.set_axisbelow(True)
+    ax.set_xlabel("system scale L = √A (km)")
+    ax.set_ylabel("POD − POD of own persistence null")
+    ax.set_title("the fair comparison: skill over each model's own null",
+                 fontsize=9)
+    ax.legend(fontsize=7, frameon=False, loc="upper left")
+    fig.suptitle("WB2 AI forecasts through the same lens — tropics, one August "
+                 "day, ERA5 truth, 2.4 mm/6 h", fontsize=9.5, y=1.0)
     fig.savefig(OUT / "fig_I1_pod6h.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
     print("saved fig_I1_pod6h.png;", len(df), "systems")
