@@ -20,18 +20,19 @@ AI Precipitation Forecasts}
 %%  - A Scale-Aware Predictability Horizon for AI Precipitation Forecasts
 %%  - How Far Ahead Can AI Predict Rain? A Scale-Aware Predictability Horizon
 
-%% TODO authors/affiliations — Sophie Abramian; Sara <last name>; Tim <last name>
-\authors{S. Abramian\affil{1}, ...\affil{2}}
+%% TODO affiliations
+\authors{Sophie Abramian\affil{1}, Tim Zhou\affil{2}, Sara Shamekh\affil{3}}
 \affiliation{1}{...}
 \affiliation{2}{...}
+\affiliation{3}{...}
 \correspondingauthor{Sophie Abramian}{sophieabramian@gmail.com}
 
 %% ===================== KEY POINTS (three, <= 140 chars each) ================
 \begin{keypoints}
-\item The detection horizon of km-scale precipitation grows as a power law of
-system size, $T(L) \propto L^{1.8}$, from 0.5 h at 30 km to a day at 500 km
-\item A rectified flow trained on the forecast's own measured error removes the
-conditional-mean bias and beats the persistence null at every scale
+\item Decomposing rain into systems of intensity times area shows the detection
+horizon grows with system size as a power law, T(L) ~ L$^{1.8}$
+\item Flow matching turns blurry forecasts into sharp weather: it restores
+small-storm size and intensity and triples small-scale detection
 \item Operational AI forecasts share the same size-dependent limits; sampling
 restores representation, small-system placement remains unsolved
 \end{keypoints}
