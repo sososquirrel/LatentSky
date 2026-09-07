@@ -1219,6 +1219,38 @@ drizzle field percolates into one belt-spanning system (FAR 0.71 vs 0.39).
 </figcaption>
 
 <h2 id="repro">10 · Step-by-step reproduction</h2>
+
+<h3>Evaluation memo — how every number on this page is produced</h3>
+<div class="note" style="max-width:80ch">
+<p style="margin-top:0"><b>LatentSky inference.</b> Input = the ten standardized
+channels of one 128-px test block at frame t (met channels globally z-scored,
+current rain as <span class="mono">rain_log1p</span>); target = raw rain (mm) at
+t + lead. <b>Two-head</b>: one forward pass; checkpoints at
+<span class="mono">$SCRATCH/LatentSky_runs/unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead{0.25,0.5,1,2,3,6}h/</span>.
+<b>Flow</b>: source = z-forecast + σ·ε (σ measured per lead, 0.102–0.204), 32 Heun
+steps = 33 network passes per tile, one seeded draw per case; checkpoints at
+<span class="mono">$SCRATCH/LatentSky_runs/flow_models/flow_matching_lead*.checkpoint.pt</span>.</p>
+<p><b>Evaluation.</b> <span class="mono">match_systems(truth, pred, thr=0.1 mm,
+lat-weighted areas, IoU ≥ 0.1)</span> per block and frame. Full-record tables =
+132 test blocks × 40 days per lead (~1 M systems each) at
+<span class="mono">data/eval_method/systems_alltest{,_flow,_persistence}_lead*.csv.gz</span>.</p>
+<p><b>Compute.</b> One Casper A100 (<span class="mono">-q casper</span>,
+<span class="mono">gpu_type=a100</span>, project UCLB0066): flow full-record table
+≈ 45 min/lead, two-head ≈ 10 min/lead; the whole six-lead set ran as one serial
+overnight job (≈ 5 GPU-h, job 5834511). Persistence tables and every figure run on
+the login node CPU (seconds–minutes; scripts <span class="mono">docs/make_*.py</span>).
+Torch needs the env's NVIDIA libraries on <span class="mono">LD_LIBRARY_PATH</span>
+(see <span class="mono">experiments/_template/job.sh</span>);
+python = <span class="mono">/glade/work/sabramian/conda-envs/latentsky-env/bin/python</span>.</p>
+<p style="margin-bottom:0"><b>WB2 (§9).</b> No inference is run — forecasts are
+read from the public <span class="mono">gs://weatherbench2</span> zarrs
+(anonymous access), cropped to 40°S–40°N; truth = ERA5
+<span class="mono">total_precipitation_6hr</span> (summed for 12/24-h
+accumulations); thresholds rate-equivalent to 0.1 mm/15 min (2.4/4.8/9.6 mm per
+6/12/24 h). Scripts in <span class="mono">wb2_benchmark/</span>, fetches cached to
+<span class="mono">$SCRATCH/wb2_eval/</span>; a one-day case runs in minutes on the
+login CPU, a month-scale run ≈ 30–45 min (fetch-dominated).</p>
+</div>
 <ol>
 <li><b>Environment.</b> Python 3.11, PyTorch 2.6.0+cu124, NumPy 2.4.3, one NVIDIA A100.
 On Derecho: conda env at
