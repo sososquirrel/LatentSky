@@ -375,23 +375,19 @@ come with the visible sprinkle of small false alarms that prices them.}
 
 \begin{figure}
 \centering
-(a)\\
-\includegraphics[width=\textwidth]{figures/podfar_withflow.png}\\[2mm]
-(b)\hspace{0.44\textwidth}(c)\\
-\includegraphics[width=0.48\textwidth]{figures/pod_decay_flow.png}\hfill
-\includegraphics[width=0.46\textwidth]{figures/tau_withflow.png}
+\includegraphics[width=\textwidth]{figures/fig5_horizon.pdf}
 \caption{\textbf{The predictability horizon and its scaling} (full held-out
 record: $132$ test blocks $\times$ $40$ days, ${\sim}10^6$ systems per model
-and lead). (a)~Probability of detection and false-alarm ratio by system scale
-$L$ at $+3$~h for the two-head model, persistence, and the flow (per draw).
-(b)~POD decay with lead time per scale band (solid: flow; dotted: two-head;
-dashed: the exponential fits $\mathrm{POD}_0\, e^{-t/\tau}$ across the six
-trained leads). (c)~The e-folding time $\tau(L)$ with power-law fits
-$T(L) \propto L^{\alpha}$: $\alpha = 1.79$ (two-head), $1.63$ (flow), $1.41$
-(persistence); marker color gives each band's $\mathrm{POD}_0$. The two-head
-and persistence lines cross near $100$~km; the flow sits above both at every
-scale. The top two bands barely decay within $6$~h, so their $\tau$ is an
-extrapolation beyond the fitted leads.}
+and lead). (a)~Probability of detection and (b)~false-alarm ratio by system
+scale $L$ at $+3$~h for the two-head model, persistence, and the flow (per
+draw). (c)~POD decay with lead time per scale band (solid: flow; dotted:
+two-head). (d)~The e-folding time $\tau(L)$ fitted across the six trained
+leads, with power-law fits $T(L) \propto L^{\alpha}$: $\alpha = 1.79$
+(two-head), $1.63$ (flow), $1.41$ (persistence); marker color gives each
+band's $\mathrm{POD}_0$. The two-head and persistence lines cross near
+$100$~km; the flow sits above both at every scale. The top two bands barely
+decay within $6$~h, so their $\tau$ is an extrapolation beyond the fitted
+leads.}
 \label{fig:horizon}
 \end{figure}
 
@@ -409,17 +405,13 @@ nothing to add over the observation that storms briefly persist.
 
 \begin{figure}
 \centering
-(a)\\
-\includegraphics[width=0.92\textwidth]{figures/eval_method_decomp.png}\\[2mm]
-(b)\\
-\includegraphics[width=0.92\textwidth]{figures/flow_decomp_full.png}
-\caption{\textbf{The error decomposition on matched pairs} ($+3$~h; axes,
-color saturation, and density scale identical between rows). Each point is
-one matched truth--forecast pair in the
-$(\mathrm{d}\ln A, \mathrm{d}\ln\rho)$ plane --- left the example frame of
-Figure~\ref{fig:pairs}, right the full held-out record; crosses are the
-precipitation-weighted barycenters of the small ($<65$~km), mid
-($65$--$200$~km), and large ($>200$~km) bands; the dotted diagonal is
+\includegraphics[width=\textwidth]{figures/fig4_decomp.pdf}
+\caption{\textbf{The error decomposition on matched pairs} ($+3$~h, full
+held-out record; axes, point size, and transparency identical between
+panels). Each point is one matched truth--forecast pair in the
+$(\mathrm{d}\ln A, \mathrm{d}\ln\rho)$ plane, colored by system scale;
+crosses are the precipitation-weighted barycenters of the small ($<65$~km),
+mid ($65$--$200$~km), and large ($>200$~km) bands; the dotted diagonal is
 $\mathrm{d}\ln P = 0$, where area and intensity errors cancel exactly.
 (a)~The two-head model ($83{,}960$ pairs): the conditional-mean quadrant ---
 too large, too weak --- worst for small systems $(+0.53, -1.05)$.
