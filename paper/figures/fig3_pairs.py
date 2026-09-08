@@ -151,10 +151,10 @@ def main():
                label="false alarm"),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
-               frameon=False, bbox_to_anchor=(0.5, -0.22))
+               frameon=False, bbox_to_anchor=(0.5, -0.12))
     fig.subplots_adjust(wspace=0.04)
     cb = fig.colorbar(im, ax=list(axes), orientation="horizontal",
-                      fraction=0.05, pad=0.16, aspect=60)
+                      shrink=0.8, pad=0.16, aspect=110)
     cb.set_label("rain (mm)", fontsize=8)
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
