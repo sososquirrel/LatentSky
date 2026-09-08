@@ -1,9 +1,11 @@
-"""Paper architecture figure — the shared U-Net trunk, modern style.
+"""Paper architecture figure — two classic vertical U-Nets, modern style.
 
-Rounded vertical bars (height tracks spatial resolution, label carries the
-channel count), soft indigo encoder / violet bottleneck / teal decoder,
-curved dashed skips, colored chips for the model-specific edges: blue =
-two-head heads + OLR-FiLM, orange = flow velocity head + FiLM(t).
+(a) the deterministic two-head model    (b) the flow's velocity network
+
+Same trunk drawn identically in both panels: encoder descending on the left,
+decoder ascending on the right, dashed skip connections across, box width
+tracking the channel count. Panel differences: input channels (10 vs 11),
+bottleneck FiLM conditioning (OLR vs t), and the output heads.
 """
 import matplotlib
 
@@ -14,140 +16,125 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 plt.style.use("/glade/u/home/sabramian/LatentSky/docs/latentsky.mplstyle")
 
-# palette (soft, "google-paper")
-ENC = "#aab8f0"      # indigo fill
-ENC_E = "#4f63d2"
-BOT = "#c8a8ee"      # violet
-BOT_E = "#8b5cf6"
-DEC = "#9fd8cf"      # teal
-DEC_E = "#0f9d8f"
-BLUE = "#1a73e8"     # two-head accents
-ORANGE = "#e8710a"   # flow accents
-GRAY = "#9aa0a6"
+ENC, ENC_E = "#aab8f0", "#4f63d2"
+BOT, BOT_E = "#c8a8ee", "#8b5cf6"
+DEC, DEC_E = "#9fd8cf", "#0f9d8f"
+BLUE, ORANGE, GRAY = "#1a73e8", "#e8710a", "#9aa0a6"
 
 CH = [64, 128, 256, 512, 1024]
 RES = [128, 64, 32, 16, 8]
-
-CM = 1 / 2.54
-fig, ax = plt.subplots(figsize=(17.5 * CM, 7.2 * CM))
-ax.set_xlim(0, 104)
-ax.set_ylim(-14, 60)
-ax.axis("off")
-
-BW = 4.2            # bar width
-X0, DX = 10, 6.2    # encoder start / step
-XB = X0 + 5 * DX + 1.5          # bottleneck x
-XD0 = XB + DX + 1.5             # decoder start
+ROW_Y = [57, 47, 37, 27, 17]
+Y_BOT = 6
+BH = 6.2
+XL, XR = 27, 73
 
 
-def bar(x, h, fc, ec, label, res=None):
-    y0 = -h / 2 + 20
-    ax.add_patch(FancyBboxPatch((x, y0), BW, h,
-                                boxstyle="round,pad=0.6,rounding_size=1.6",
+def w_of(ch):
+    return 10 + 4.5 * np.log2(ch / 64)
+
+
+def rbox(ax, xc, y, w, fc, ec, label):
+    ax.add_patch(FancyBboxPatch((xc - w / 2, y), w, BH,
+                                boxstyle="round,pad=0.5,rounding_size=1.3",
                                 fc=fc, ec=ec, lw=1.2, zorder=3))
-    ax.text(x + BW / 2, y0 + h / 2, label, rotation=90, ha="center",
-            va="center", fontsize=7, color="0.15", zorder=4)
-    if res is not None:
-        ax.text(x + BW / 2, y0 - 3.2, f"{res}²", ha="center", va="top",
-                fontsize=6.5, color="0.45")
-    return x + BW / 2, y0 + h
+    ax.text(xc, y + BH / 2, label, ha="center", va="center", fontsize=7,
+            color="0.15", zorder=4)
 
 
-def harrow(x0, x1, y, color=GRAY, lw=1.1, ls="-", rad=0.0, zorder=2):
-    ax.add_patch(FancyArrowPatch((x0, y), (x1, y), arrowstyle="-|>",
-                                 mutation_scale=8, color=color, lw=lw,
-                                 ls=ls, zorder=zorder,
+def arrow(ax, p0, p1, color=GRAY, lw=1.0, ls="-", rad=0.0, ms=8):
+    ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>", mutation_scale=ms,
+                                 color=color, lw=lw, ls=ls, zorder=2,
                                  connectionstyle=f"arc3,rad={rad}"))
 
 
-# resolution -> bar height
-def h_of(res):
-    return 8 + 30 * np.log2(res / 4) / np.log2(32)
+def chip(ax, xc, y, w, text, color, fc="white"):
+    ax.add_patch(FancyBboxPatch((xc - w / 2, y), w, 6,
+                                boxstyle="round,pad=0.5,rounding_size=1.3",
+                                fc=fc, ec=color, lw=1.2, zorder=3))
+    ax.text(xc, y + 3, text, ha="center", va="center", fontsize=6.5,
+            color=color, zorder=4)
 
 
-tops_e, tops_d = [], []
-for i, (ch, res) in enumerate(zip(CH, RES)):
-    xe = X0 + i * DX
-    xd = XD0 + (4 - i) * DX
-    _, te = bar(xe, h_of(res), ENC, ENC_E, f"{ch}", res)
-    _, td = bar(xd, h_of(res), DEC, DEC_E, f"{ch}", res)
-    tops_e.append((xe, te))
-    tops_d.append((xd, td))
-    if i < 4:
-        y = 20
-        harrow(xe + BW + 0.7, X0 + (i + 1) * DX - 0.7, y)
-        harrow(XD0 + (4 - i - 1) * DX + BW + 0.7, xd - 0.7, y)
+def draw_unet(ax, flow):
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 84)
+    ax.axis("off")
+    acc = ORANGE if flow else BLUE
 
-bar(XB, h_of(4), BOT, BOT_E, "2048", 4)
-harrow(X0 + 4 * DX + BW + 0.7, XB - 0.7, 20)
-harrow(XB + BW + 0.7, XD0 - 0.7, 20)
+    for i, (ch, res, y) in enumerate(zip(CH, RES, ROW_Y)):
+        w = w_of(ch)
+        rbox(ax, XL, y, w, ENC, ENC_E, f"{ch}")
+        rbox(ax, XR, y, w, DEC, DEC_E, f"{ch}")
+        ax.text(3, y + BH / 2, f"{res}²", ha="left", va="center",
+                fontsize=6.5, color="0.45")
+        # skip connection
+        arrow(ax, (XL + w / 2 + 1, y + BH / 2), (XR - w / 2 - 1, y + BH / 2),
+              ls=(0, (4, 3)), lw=0.9, ms=7)
+        # down (pool) / up (transpose conv)
+        if i < 4:
+            wn = w_of(CH[i + 1])
+            arrow(ax, (XL - w / 2, y + 1), (XL - wn / 2 + 1, ROW_Y[i + 1] + BH - 1))
+            arrow(ax, (XR + wn / 2 - 1, ROW_Y[i + 1] + BH - 1), (XR + w / 2, y + 1))
+    ax.text(3, Y_BOT + BH / 2, "4²", ha="left", va="center", fontsize=6.5,
+            color="0.45")
 
-# skips: curved dashed arcs over the top
-for (xe, te), (xd, td) in zip(tops_e, tops_d):
-    ax.add_patch(FancyArrowPatch((xe + BW / 2, te + 0.8),
-                                 (xd + BW / 2, td + 0.8),
-                                 arrowstyle="-|>", mutation_scale=7,
-                                 color=GRAY, lw=0.9, ls=(0, (4, 3)),
-                                 connectionstyle="arc3,rad=-0.25", zorder=1))
+    # bottleneck
+    wb = w_of(2048)
+    rbox(ax, 50, Y_BOT, wb, BOT, BOT_E, "2048")
+    w5 = w_of(1024)
+    arrow(ax, (XL - w5 / 2, ROW_Y[4] + 1), (50 - wb / 2 + 1, Y_BOT + BH - 1))
+    arrow(ax, (50 + wb / 2 - 1, Y_BOT + BH - 1), (XR + w5 / 2, ROW_Y[4] + 1))
 
-# input chip
-ax.add_patch(FancyBboxPatch((1.0, 15.5), 6.4, 9,
-                            boxstyle="round,pad=0.6,rounding_size=1.6",
-                            fc="#f1f3f4", ec=GRAY, lw=1.1))
-ax.text(4.2, 21.5, "10 ch", ha="center", va="center", fontsize=7)
-ax.text(4.2, 17.8, "128²", ha="center", va="center", fontsize=6.5,
-        color="0.45")
-harrow(7.9, X0 - 0.7, 20)
-ax.text(4.2, 27.5, "+ $x_t$ (flow: 11 ch)", ha="center", fontsize=6.5,
-        color=ORANGE)
+    # input chip
+    n_in = "11 ch" if flow else "10 ch"
+    chip(ax, XL, 73, 16, f"input {n_in} @ 128²", "0.35", fc="#f1f3f4")
+    arrow(ax, (XL, 72.5), (XL, ROW_Y[0] + BH + 0.8))
+    if flow:
+        ax.text(XL, 80.5, "10 channels + flow state $x_t$", ha="center",
+                fontsize=6.5, color=ORANGE)
+    else:
+        ax.text(XL, 80.5, "10 weather channels", ha="center", fontsize=6.5,
+                color="0.45")
 
-# output head chips
-xh = XD0 + 4 * DX + BW + 2.2
+    # output heads
+    if flow:
+        chip(ax, XR, 73, 17, r"velocity $\hat{v}$", ORANGE)
+        arrow(ax, (XR, ROW_Y[0] + BH + 0.8), (XR, 72.5), color=ORANGE, lw=1.1)
+    else:
+        chip(ax, XR - 10, 73, 17, "rain (mm)", BLUE)
+        chip(ax, XR + 10.5, 73, 19, "wet / dry (logits)", BLUE)
+        arrow(ax, (XR - 2, ROW_Y[0] + BH + 0.8), (XR - 9, 72.5), color=BLUE,
+              lw=1.1, rad=-0.1)
+        arrow(ax, (XR + 2, ROW_Y[0] + BH + 0.8), (XR + 9, 72.5), color=BLUE,
+              lw=1.1, rad=0.1)
+
+    # FiLM chip -> bottleneck
+    film = "FiLM($t$)" if flow else "OLR-FiLM"
+    chip(ax, 87, Y_BOT + 1, 15, film, acc)
+    arrow(ax, (87 - 8, Y_BOT + 4), (50 + wb / 2 + 1, Y_BOT + 3.2),
+          color=acc, lw=1.0)
+
+    # side annotations
+    ax.text(XL - 12.5, 38, "encoder", rotation=90, ha="center", va="center",
+            fontsize=7, color=ENC_E)
+    ax.text(XR + 12.5, 38, "decoder", rotation=90, ha="center", va="center",
+            fontsize=7, color=DEC_E)
+    ax.text(50, ROW_Y[0] + BH + 2.0, "skip connections", ha="center",
+            fontsize=6, color=GRAY)
 
 
-def chip(y, text, color):
-    ax.add_patch(FancyBboxPatch((xh, y), 19.5, 6,
-                                boxstyle="round,pad=0.6,rounding_size=1.6",
-                                fc="white", ec=color, lw=1.3))
-    ax.text(xh + 9.75, y + 3, text, ha="center", va="center", fontsize=6.5,
-            color=color)
-    ax.add_patch(FancyArrowPatch((XD0 + 4 * DX + BW + 0.4, 20),
-                                 (xh - 0.2, y + 3), arrowstyle="-|>",
-                                 mutation_scale=7, color=color, lw=1.1,
-                                 connectionstyle="arc3,rad=0.12"))
-
-
-chip(33, "rain (softplus, mm)", BLUE)
-chip(24, "wet / dry (logits)", BLUE)
-chip(12, r"velocity $\hat{v}$", ORANGE)
-
-# FiLM chips under the bottleneck
-ax.add_patch(FancyBboxPatch((XB - 8.5, -6.5), 10.5, 5,
-                            boxstyle="round,pad=0.5,rounding_size=1.4",
-                            fc="white", ec=BLUE, lw=1.1))
-ax.text(XB - 3.25, -4, "OLR-FiLM", ha="center", va="center", fontsize=6.5,
-        color=BLUE)
-ax.add_patch(FancyBboxPatch((XB + 4.0, -6.5), 10.5, 5,
-                            boxstyle="round,pad=0.5,rounding_size=1.4",
-                            fc="white", ec=ORANGE, lw=1.1))
-ax.text(XB + 9.25, -4, "FiLM($t$)", ha="center", va="center", fontsize=6.5,
-        color=ORANGE)
-for x, colr in [(XB - 3.25, BLUE), (XB + 9.25, ORANGE)]:
-    ax.add_patch(FancyArrowPatch((x, -1.2), (XB + BW / 2, 12.5),
-                                 arrowstyle="-|>", mutation_scale=7,
-                                 color=colr, lw=1.0,
-                                 connectionstyle="arc3,rad=0.15"))
-
-# minimal annotations
-ax.text(X0 + 2 * DX, 47.5, "encoder", ha="center", fontsize=7.5,
-        color=ENC_E)
-ax.text(XD0 + 2 * DX, 47.5, "decoder", ha="center", fontsize=7.5,
-        color=DEC_E)
-ax.text((X0 + XD0 + 4 * DX) / 2 + BW / 2, 54, "skip connections",
-        ha="center", fontsize=6.5, color=GRAY)
-ax.text(xh + 9.75, 41, "two-head", ha="center", fontsize=7, color=BLUE)
-ax.text(xh + 9.75, 7, "flow", ha="center", fontsize=7, color=ORANGE)
-
+CM = 1 / 2.54
+fig, axs = plt.subplots(1, 2, figsize=(17.5 * CM, 8.6 * CM))
+draw_unet(axs[0], flow=False)
+draw_unet(axs[1], flow=True)
+axs[0].text(0.0, 1.0, "(a) two-head (deterministic)",
+            transform=axs[0].transAxes, fontsize=8, fontweight="bold",
+            ha="left", va="top")
+axs[1].text(0.0, 1.0, "(b) velocity network (flow matching)",
+            transform=axs[1].transAxes, fontsize=8, fontweight="bold",
+            ha="left", va="top")
+fig.subplots_adjust(wspace=0.06, left=0.01, right=0.99, top=0.99,
+                    bottom=0.01)
 fig.savefig("/glade/u/home/sabramian/LatentSky/paper/figures/fig1b_architecture.pdf",
             bbox_inches="tight")
 print("written")

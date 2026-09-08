@@ -212,15 +212,22 @@ split $616/132/132$ into train/val/test (Text~S1).}
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{figures/fig1b_architecture.pdf}
-\caption{\textbf{The shared U-Net trunk and each model's own edges.} Bar
-height tracks the spatial resolution ($128^2$ down to $4^2$), the label the
-channel count; dashed arcs are the skip connections. Both models use this
-identical trunk (two $3{\times}3$ convolutions, GroupNorm, ReLU per stage).
-Blue marks the deterministic two-head edges --- the parallel rain (softplus)
-and wet/dry (logits) heads and the OLR-FiLM bottleneck conditioning; orange
-marks the flow's velocity-network edges --- the flow state $x_t$ appended to
-the ten input channels, FiLM conditioning on $t$, and the single velocity
-head $\hat{v}$.}
+\caption{\textbf{The shared U-Net trunk, without and with flow matching.}
+Both models use the identical encoder--decoder trunk (two $3{\times}3$
+convolutions, GroupNorm, ReLU per stage; box width tracks the channel count,
+rows the spatial resolution from $128^2$ to the $4^2$ bottleneck; dashed
+arrows are the skip connections). (a)~The deterministic two-head model: ten
+weather channels in, two parallel $1{\times}1$ heads out --- rain intensity
+(softplus, mm) and wet/dry logits. Its bottleneck is conditioned by
+\emph{OLR-FiLM}: the patch's mean and minimum outgoing longwave radiation
+pass through a small MLP that returns per-channel scale and shift
+$(\gamma, \beta)$ applied to the bottleneck features --- a convective-regime
+gate (cold, deep tops vs warm, shallow ones). (b)~The flow's velocity
+network: the same trunk, with the current flow state $x_t$ appended as an
+eleventh input channel and a single velocity head $\hat{v}$. Here FiLM
+conditions on the crossfade progress $t$ --- the same $(\gamma, \beta)$
+mechanism, so one network can answer for every freeze point of the
+transport.}
 \label{fig:arch}
 \end{figure}
 
