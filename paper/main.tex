@@ -316,23 +316,20 @@ truth they are distributed around.
 
 \begin{figure}
 \centering
-A.\\
-\includegraphics[width=0.62\textwidth]{figures/flow_step1.png}\\[2mm]
-B.\\
-\includegraphics[width=0.9\textwidth]{figures/flow_step6.png}\\[2mm]
-C.\\
-\includegraphics[width=\textwidth]{figures/flow_step5b.png}
-\caption{\textbf{The rectified flow on one example} ($+3$~h, the standard
-test block; all rain panels share one log color scale). A.~The problem: the
-two-head forecast is the conditional mean --- too smooth, systems too large
-and too weak --- while the truth is one sharp reality. B.~Two flow draws
-from the same forecast (different noise sprinkles $\varepsilon$) beside the
-truth: sharp realizations that differ from each other exactly where the
-outcome is uncertain. C.~The velocity the network reports at Heun steps
-$1$, $17$, and $32$: nearly the same answer throughout --- the change between
-first and last step is small and concentrated on system edges --- so the
-transport is close to straight and $32$ steps suffice; the mean of the $32$
-answers equals the total displacement $x(1) - x_0$.}
+\includegraphics[width=\textwidth]{figures/fig3_flowsketch.pdf}
+\caption{\textbf{Flow matching, forecast to draws} ($+3$~h, the standard
+example block; all rain maps share one log color scale). The smooth two-head
+forecast, perturbed by its own measured error
+($x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$), enters the flow-matching
+module conditioned on the ten input channels $c$; each noise draw
+$\varepsilon$ yields a different sharp realization (draw A, draw B) of the
+same truth --- the draws differ from each other exactly where the outcome is
+uncertain. Below, the module unpacked: the transport equation
+$x_1 = x_0 + \int_0^1 \hat{v}(x_t, t, c)\,\mathrm{d}t$, integrated by the
+unrolled loop at the bottom --- the velocity network FM reads the current
+state $x_t$ (and $t$, $c$), returns $\hat{v}_t$, and the state advances by
+$\hat{v}_t\,\mathrm{d}t$, repeated for $32$ Heun steps from $t = 0$ to
+$1$.}
 \label{fig:flowmethod}
 \end{figure}
 
