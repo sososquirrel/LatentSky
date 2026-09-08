@@ -1,33 +1,43 @@
-"""Paper Fig 1a — the domain, the 22 blocks, and this day's split assignment.
+"""Paper Fig 1 — the domain and the 22 blocks (map exactly textwidth).
 
-Caption sentence: the tropical belt at 0.25 degrees is tiled into 22 blocks
-per day; each (block, day) belongs to train, val, or test for all 96 frames
-of its day. Val amber, test blue, train uncolored; red = the example block.
-No title, thin z-score colorbar below. CPU seconds.
+The map axes are exactly 17.5 cm wide; latitude tick labels hang to the LEFT
+of the map (in the page margin — main.tex right-aligns the canvas to the
+text block). Colorbar: thin, below, labeled with the normalization actually
+used (PW in mm, dataset-wide standardization), not "z-score". CPU seconds.
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
+import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.patches import Rectangle
-from paperfig import W2
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 sys.path.insert(0, str(REPO / "docs"))
 from make_data_overview_assets import (  # noqa: E402
-    BLOCK, FRAME, H, NC, NR, P, PIECE, W, add_coastlines, grid_lines, load)
+    BLOCK, H, P, W, add_coastlines, grid_lines, load)
 
+matplotlib.rcParams["savefig.bbox"] = None  # exact canvas, no auto-crop
 OUT = REPO / "paper" / "figures"
+
+CM = 1 / 2.54
+MAPW = 17.5 * CM                 # map axes width = textwidth
+LABW = 0.85 * CM                 # left strip for the latitude labels
+MAPH = MAPW * H / W              # equal-aspect map height
+CBH, GAP, BOT, TOP = 0.28 * CM, 0.62 * CM, 0.95 * CM, 0.12 * CM
+FW = LABW + MAPW
+FH = TOP + MAPH + GAP + CBH + BOT
 
 
 def main():
     pw = load("precipw")
-    fig, ax = plt.subplots(figsize=(W2, W2 * H / W + 0.75))
+    fig = plt.figure(figsize=(FW, FH))
+    ax = fig.add_axes([LABW / FW, (BOT + CBH + GAP) / FH,
+                       MAPW / FW, MAPH / FH])
     im = ax.imshow(pw, origin="lower", cmap="BrBG", vmin=-3, vmax=3,
-                   interpolation="nearest", aspect="equal",
+                   interpolation="nearest", aspect="auto",
                    extent=[0, W, 0, H])
     add_coastlines(ax)
     grid_lines(ax)
@@ -38,9 +48,16 @@ def main():
     ax.set_xticklabels(["0°", "90°E", "180°", "90°W", "0°"])
     ax.set_yticks([0, 160, 320])
     ax.set_yticklabels(["40°S", "0°", "40°N"])
-    cb = fig.colorbar(im, ax=ax, orientation="horizontal", fraction=0.05,
-                      pad=0.14, aspect=60)
-    cb.set_label("Precipitable Water [z-score]", fontsize=8,
+    ax.tick_params(axis="both", labelsize=8, length=2.5, width=0.7)
+    xlabs = ax.get_xticklabels()
+    xlabs[0].set_ha("left")
+    xlabs[-1].set_ha("right")
+
+    cax = fig.add_axes([(LABW + 0.16 * MAPW) / FW, BOT / FH,
+                        0.68 * MAPW / FW, CBH / FH])
+    cb = fig.colorbar(im, cax=cax, orientation="horizontal")
+    cb.set_label(r"Precipitable Water [mm], standardized"
+                 r" $(\mathrm{PW}-\mu)/\sigma$", fontsize=8,
                  fontstyle="italic")
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
