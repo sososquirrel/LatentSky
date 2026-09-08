@@ -15,7 +15,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from paperfig import COLOR, MARKER, W2, panel_label, thin_cbar
+from paperfig import COLOR, MARKER, W2, panel_label
 
 from latentsky.metrics import default_scale_edges, fit_powerlaw, summarize_by_scale
 
@@ -119,9 +119,16 @@ def main():
     ax_tau.set_ylabel("τ(L) (h)")
     ax_tau.legend(loc="upper left", fontsize=7.5)
     panel_label(ax_tau, "D.")
-    thin_cbar(fig, sc, ax_tau, "POD at 0.25 h lead (POD₀)")
-
+    # colorbar below panel D, without shrinking the panel itself: give it an
+    # explicit axis so D stays the same size as the POD panel
     fig.subplots_adjust(hspace=0.34, wspace=0.26)
+    pos = ax_tau.get_position()
+    cax = fig.add_axes([pos.x0 + 0.08 * pos.width, pos.y0 - 0.135,
+                        0.84 * pos.width, 0.016])
+    cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
+    cb.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)
+    cb.ax.tick_params(labelsize=7, length=2, width=0.6)
+    cb.outline.set_linewidth(0.5)
     fig.savefig(OUT / "fig5_horizon.pdf")
     print("saved fig5_horizon.pdf")
 
