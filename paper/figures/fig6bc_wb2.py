@@ -93,7 +93,7 @@ def main():
     ax_pod.set_xlabel("system scale L = √A (km)")
     ax_pod.set_ylabel("POD")
     ax_pod.legend(fontsize=7.5, loc="center left", bbox_to_anchor=(1.02, 0.5))
-    panel_label(ax_pod, "(b)")
+    panel_label(ax_pod, "B.")
 
     df = pd.read_csv(WB / "matches_12h_month.csv.gz")
     sc = None
@@ -123,7 +123,7 @@ def main():
         ax.set_xlabel(r"d$\ln A$")
         if j == 0:
             ax.set_ylabel(r"d$\ln\rho$")
-            panel_label(ax, "(c)")
+            panel_label(ax, "C.")
         else:
             ax.set_yticklabels([])
         ax.text(0.97, 0.03, f"{model}\n{len(m):,} pairs",

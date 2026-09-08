@@ -216,13 +216,13 @@ split $616/132/132$ into train/val/test (Text~S1).}
 Both models use the identical encoder--decoder trunk (two $3{\times}3$
 convolutions, GroupNorm, ReLU per stage; box width tracks the channel count,
 rows the spatial resolution from $128^2$ to the $4^2$ bottleneck; dashed
-arrows are the skip connections). (a)~The deterministic two-head model: ten
+arrows are the skip connections). A.~The deterministic two-head model: ten
 weather channels in, two parallel $1{\times}1$ heads out --- rain intensity
 (softplus, mm) and wet/dry logits. Its bottleneck is conditioned by
 \emph{OLR-FiLM}: the patch's mean and minimum outgoing longwave radiation
 pass through a small MLP that returns per-channel scale and shift
 $(\gamma, \beta)$ applied to the bottleneck features --- a convective-regime
-gate (cold, deep tops vs warm, shallow ones). (b)~The flow's velocity
+gate (cold, deep tops vs warm, shallow ones). B.~The flow's velocity
 network: the same trunk, with the current flow state $x_t$ appended as an
 eleventh input channel and a single velocity head $\hat{v}$. Here FiLM
 conditions on the crossfade progress $t$ --- the same $(\gamma, \beta)$
@@ -308,18 +308,23 @@ truth they are distributed around.
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{figures/fig2_flowmethod.pdf}
+A.\\
+\includegraphics[width=0.62\textwidth]{figures/flow_step1.png}\\[2mm]
+B.\\
+\includegraphics[width=0.9\textwidth]{figures/flow_step6.png}\\[2mm]
+C.\\
+\includegraphics[width=\textwidth]{figures/flow_step5b.png}
 \caption{\textbf{The rectified flow on one example} ($+3$~h, the standard
-test block; all rain panels share one log color scale, both velocity panels
-one symmetric scale). Top row, the result: (a)~the two-head forecast is the
-conditional mean --- too smooth, systems too large and too weak --- while
-(b)~the truth is one sharp reality; (c,~d)~two flow draws from the same
-forecast (different noise sprinkles $\varepsilon$) are sharp realizations
-that differ from each other exactly where the outcome is uncertain. Bottom
-row, the mechanism: (e)~the source $x_0 =$ forecast $+\,\sigma\varepsilon$;
-(f)~the training crossfade $x_t = (1-t)x_0 + t\,x_1$ frozen at $t = 0.5$;
-(g)~the constant target velocity $v = x_1 - x_0$; (h)~the network's answer
-$\hat{v}(x_t, t, c)$ at that same frozen moment.}
+test block; all rain panels share one log color scale). A.~The problem: the
+two-head forecast is the conditional mean --- too smooth, systems too large
+and too weak --- while the truth is one sharp reality. B.~Two flow draws
+from the same forecast (different noise sprinkles $\varepsilon$) beside the
+truth: sharp realizations that differ from each other exactly where the
+outcome is uncertain. C.~The velocity the network reports at Heun steps
+$1$, $17$, and $32$: nearly the same answer throughout --- the change between
+first and last step is small and concentrated on system edges --- so the
+transport is close to straight and $32$ steps suffice; the mean of the $32$
+answers equals the total displacement $x(1) - x_0$.}
 \label{fig:flowmethod}
 \end{figure}
 
@@ -386,10 +391,10 @@ come with the visible sprinkle of small false alarms that prices them.}
 \includegraphics[width=\textwidth]{figures/fig5_horizon.pdf}
 \caption{\textbf{The predictability horizon and its scaling} (full held-out
 record: $132$ test blocks $\times$ $40$ days, ${\sim}10^6$ systems per model
-and lead). (a)~Probability of detection and (b)~false-alarm ratio by system
+and lead). A.~Probability of detection and B.~false-alarm ratio by system
 scale $L$ at $+3$~h for the two-head model, persistence, and the flow (per
-draw). (c)~POD decay with lead time per scale band (solid: flow; dotted:
-two-head). (d)~The e-folding time $\tau(L)$ fitted across the six trained
+draw). C.~POD decay with lead time per scale band (solid: flow; dotted:
+two-head). D.~The e-folding time $\tau(L)$ fitted across the six trained
 leads, with power-law fits $T(L) \propto L^{\alpha}$: $\alpha = 1.79$
 (two-head), $1.63$ (flow), $1.41$ (persistence); marker color gives each
 band's $\mathrm{POD}_0$. The two-head and persistence lines cross near
@@ -399,7 +404,7 @@ leads.}
 \label{fig:horizon}
 \end{figure}
 
-Figure~\ref{fig:pairs}a shows the instrument at work on one frame; the
+Figure~\ref{fig:pairs}A shows the instrument at work on one frame; the
 statistics that follow pool ${\sim}10^6$ such systems. Fitted over the full
 held-out record ($132$ test blocks $\times$ $40$ days;
 Figure~\ref{fig:horizon}), the detection horizon rises from
@@ -421,16 +426,16 @@ $(\mathrm{d}\ln A, \mathrm{d}\ln\rho)$ plane, colored by system scale;
 crosses are the precipitation-weighted barycenters of the small ($<65$~km),
 mid ($65$--$200$~km), and large ($>200$~km) bands; the dotted diagonal is
 $\mathrm{d}\ln P = 0$, where area and intensity errors cancel exactly.
-(a)~The two-head model ($83{,}960$ pairs): the conditional-mean quadrant ---
+A.~The two-head model ($83{,}960$ pairs): the conditional-mean quadrant ---
 too large, too weak --- worst for small systems $(+0.53, -1.05)$.
-(b)~The flow, per draw ($125{,}159$ pairs): the barycenters collapse toward
+B.~The flow, per draw ($125{,}159$ pairs): the barycenters collapse toward
 the origin at every scale (small $(+0.21, -0.24)$, mid $(-0.15, -0.15)$,
 large $(-0.14, -0.04)$).}
 \label{fig:decomp}
 \end{figure}
 
 The decomposition says why aggregate scores miss this
-(Figure~\ref{fig:decomp}a). At $+3$~h the matched
+(Figure~\ref{fig:decomp}A). At $+3$~h the matched
 pairs of the two-head model sit in a quadrant of compensating errors: band
 barycenters $(\mathrm{d}\ln A, \mathrm{d}\ln\rho) = (+0.53, -1.05)$ for small
 systems, $(+0.14, -0.75)$ at mid scales, $(+0.20, -0.39)$ for large ---
@@ -441,7 +446,7 @@ and it grows toward small scales, exactly where the horizon is shortest.
 \subsection{What the flow restores}\label{sec:res-flow}
 
 The rectified flow removes the pathology it was trained on. In the
-decomposition plane (Figure~\ref{fig:decomp}b, axes identical to panel~a) the
+decomposition plane (Figure~\ref{fig:decomp}B, axes identical to panel~A) the
 $+3$~h band barycenters collapse toward the origin: small systems from
 $(+0.53, -1.05)$ to $(+0.21, -0.24)$, mid from $(+0.14, -0.75)$ to
 $(-0.15, -0.15)$, large from $(+0.20, -0.39)$ to $(-0.14, -0.04)$. Size and
@@ -449,12 +454,12 @@ intensity are restored at every scale, per draw --- these are single sharp
 realizations, not an ensemble mean.
 
 Detection improves with representation. On the example frame
-(Figure~\ref{fig:pairs}b) small systems appear where the two-head proposed
-none; over the full record (Figure~\ref{fig:horizon}a) the flow's POD exceeds
+(Figure~\ref{fig:pairs}B) small systems appear where the two-head proposed
+none; over the full record (Figure~\ref{fig:horizon}A) the flow's POD exceeds
 the two-head's in every scale band and at every lead ($0.79$ vs $0.72$ at
 $L \approx 190$~km, $+3$~h), and for the smallest band the POD nearly triples
 ($0.078$ vs $0.028$). The horizon steepens to $\alpha = 1.63$
-(Figure~\ref{fig:horizon}c) and, most importantly, sits above
+(Figure~\ref{fig:horizon}C) and, most importantly, sits above
 \emph{both} the deterministic model and persistence at every scale
 ($\tau = 0.83$~h vs $0.53$/$0.55$~h at $L \approx 30$~km): the
 $100$-km crossover disappears, making the flow the first forecast in this study
@@ -473,13 +478,13 @@ the trade it is rather than hiding it in an aggregate score.
 \includegraphics[width=\textwidth]{figures/fig6bc_wb2.pdf}
 \caption{\textbf{The same instrument on operational AI forecasts} (ERA5
 truth, tropical belt, threshold $2.4$~mm/6~h --- the rate equivalent of the
-km-scale $0.1$~mm/15~min). (a)~Matched pairs for GraphCast at $+6$~h, full
+km-scale $0.1$~mm/15~min). A.~Matched pairs for GraphCast at $+6$~h, full
 belt and a $128$-pixel zoom: the found systems, the missed small ones.
-(b)~POD by scale at $+12$~h (2020-08-15, two initializations): a single
+B.~POD by scale at $+12$~h (2020-08-15, two initializations): a single
 GenCast member is the best forecast from ${\approx}240$~km up
 ($0.78$--$0.82$) at a FAR cost ($0.32$ vs GraphCast's $0.17$); the ensemble
 mean falls back into the deterministic pack; below $60$~km every model is at
-$\mathrm{POD} \le 0.13$. (c)~Month-pooled decomposition
+$\mathrm{POD} \le 0.13$. C.~Month-pooled decomposition
 (${\sim}8{,}000$ matched pairs per model): the deterministic too-weak bias
 ($\mathrm{d}\ln\rho$ barycenters $-0.24/-0.17/-0.06$ small to large) is
 erased by the diffusion member ($-0.06/-0.03/+0.01$).}

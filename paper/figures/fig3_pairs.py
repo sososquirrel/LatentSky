@@ -104,9 +104,9 @@ def main():
                    linestyles=ls)
 
     fig, axes = plt.subplots(1, 3, figsize=(W2, W2 * 0.40))
-    panels = [("(a) truth", truth, None),
-              ("(b) two-head", det, "two-head"),
-              ("(c) flow draw", flow, "flow draw")]
+    panels = [("A. truth", truth, None),
+              ("B. two-head", det, "two-head"),
+              ("C. flow draw", flow, "flow draw")]
     im = None
     for ax, (lab, f, model) in zip(axes, panels):
         im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap,

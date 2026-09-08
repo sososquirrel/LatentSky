@@ -127,10 +127,10 @@ CM = 1 / 2.54
 fig, axs = plt.subplots(1, 2, figsize=(17.5 * CM, 8.6 * CM))
 draw_unet(axs[0], flow=False)
 draw_unet(axs[1], flow=True)
-axs[0].text(0.0, 1.0, "(a) two-head (deterministic)",
+axs[0].text(0.0, 1.0, "A. two-head (deterministic)",
             transform=axs[0].transAxes, fontsize=8, fontweight="bold",
             ha="left", va="top")
-axs[1].text(0.0, 1.0, "(b) velocity network (flow matching)",
+axs[1].text(0.0, 1.0, "B. velocity network (flow matching)",
             transform=axs[1].transAxes, fontsize=8, fontweight="bold",
             ha="left", va="top")
 fig.subplots_adjust(wspace=0.06, left=0.01, right=0.99, top=0.99,

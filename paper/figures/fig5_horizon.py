@@ -72,8 +72,8 @@ def main():
         ax.set_xlabel("system scale L = √A (km)")
         ax.set_ylabel(ylab)
     ax_pod.legend(loc="center left", fontsize=8)
-    panel_label(ax_pod, "(a)")
-    panel_label(ax_far, "(b)")
+    panel_label(ax_pod, "A.")
+    panel_label(ax_far, "B.")
 
     # --- (c) POD decay per band --------------------------------------------
     decay = pod_decay()
@@ -92,7 +92,7 @@ def main():
     ax_dec.plot([], [], "-", color="0.3", lw=1.5, label="flow")
     ax_dec.plot([], [], ":", color="0.3", lw=1.2, label="two-head")
     ax_dec.legend(loc="center", bbox_to_anchor=(0.72, 0.55), fontsize=7.5)
-    panel_label(ax_dec, "(c)")
+    panel_label(ax_dec, "C.")
 
     # --- (d) tau(L) scaling -------------------------------------------------
     df = pd.read_csv(ASSETS / "tau_fullrecord.csv")
@@ -118,7 +118,7 @@ def main():
     ax_tau.set_xlabel("system scale L (km)")
     ax_tau.set_ylabel("τ(L) (h)")
     ax_tau.legend(loc="upper left", fontsize=7.5)
-    panel_label(ax_tau, "(d)")
+    panel_label(ax_tau, "D.")
     thin_cbar(fig, sc, ax_tau, "POD at 0.25 h lead (POD₀)")
 
     fig.subplots_adjust(hspace=0.34, wspace=0.26)

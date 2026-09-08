@@ -63,8 +63,8 @@ def main():
     axs[0].set_ylabel(r"d$\ln\rho$  (intensity error)")
     axs[0].legend(loc="upper left", fontsize=7, bbox_to_anchor=(0.0, 0.93),
                   title="precip-weighted barycenter", title_fontsize=7)
-    panel_label(axs[0], "(a)")
-    panel_label(axs[1], "(b)")
+    panel_label(axs[0], "A.")
+    panel_label(axs[1], "B.")
     cb = fig.colorbar(sc, ax=axs, orientation="horizontal", fraction=0.04,
                       pad=0.16, aspect=55)
     cb.set_label("system scale L = √A (km)", fontsize=8)
