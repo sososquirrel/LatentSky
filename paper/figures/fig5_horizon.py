@@ -65,7 +65,7 @@ def main():
         kw = dict(color=COLOR[model], marker=MARKER[model], ms=3.5, lw=1.4)
         ax_pod.plot(summ["scale_mid"], summ["POD"], ls="-", label=model, **kw)
         ax_far.plot(summ["scale_mid"], summ["FAR"], ls="--", **kw)
-    for ax, ylab in [(ax_pod, "POD"), (ax_far, "FAR")]:
+    for ax, ylab in [(ax_pod, "Probability of Detection (POD)"), (ax_far, "False-Alarm Ratio (FAR)")]:
         ax.set_xscale("log")
         ax.set_xlim(25, 620)
         ax.set_ylim(0, 1.02)
@@ -85,7 +85,7 @@ def main():
     ax_dec.set_xlim(0, 6.2)
     ax_dec.set_ylim(0, 1.02)
     ax_dec.set_xlabel("lead time (h)")
-    ax_dec.set_ylabel("POD")
+    ax_dec.set_ylabel("Probability of Detection (POD)")
     ax_dec.plot([], [], "-", color="0.3", lw=1.5, label="flow")
     ax_dec.plot([], [], ":", color="0.3", lw=1.2, label="two-head")
     ax_dec.legend(loc="center", bbox_to_anchor=(0.72, 0.55), fontsize=7.5)

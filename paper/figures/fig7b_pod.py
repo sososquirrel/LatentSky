@@ -58,7 +58,7 @@ def main():
     ax.set_xlim(40, 3000)
     ax.set_ylim(0, 1.0)
     ax.set_xlabel("system scale L = √A (km)")
-    ax.set_ylabel("POD")
+    ax.set_ylabel("Probability of Detection (POD)")
     ax.legend(fontsize=7.5, loc="upper left")
     fig.savefig(OUT / "fig7b_pod.pdf")
     print("saved fig7b_pod.pdf")
