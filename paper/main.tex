@@ -295,23 +295,18 @@ truth they are distributed around.
 
 \begin{figure}
 \centering
-(a)\\
-\includegraphics[width=0.62\textwidth]{figures/flow_step1.png}\\[2mm]
-(b)\\
-\includegraphics[width=0.9\textwidth]{figures/flow_step6.png}\\[2mm]
-(c)\\
-\includegraphics[width=\textwidth]{figures/flow_step5b.png}
+\includegraphics[width=\textwidth]{figures/fig2_flowmethod.pdf}
 \caption{\textbf{The rectified flow on one example} ($+3$~h, the standard
-test frame; all rain panels share one log color scale). (a)~The problem: the
-two-head forecast is the conditional mean --- too smooth, systems too large
-and too weak --- while the truth is one sharp reality. (b)~Two flow draws
-from the same forecast (different noise sprinkles $\varepsilon$) beside the
-truth: sharp realizations that differ from each other exactly where the
-outcome is uncertain. (c)~The velocity the network reports at Heun steps
-$1$, $17$, and $32$: nearly the same answer throughout --- the change between
-first and last step is small and concentrated on system edges --- so the
-transport is close to straight and $32$ steps suffice; the mean of the $32$
-answers equals the total displacement $x(1) - x_0$.}
+test block; all rain panels share one log color scale, both velocity panels
+one symmetric scale). Top row, the result: (a)~the two-head forecast is the
+conditional mean --- too smooth, systems too large and too weak --- while
+(b)~the truth is one sharp reality; (c,~d)~two flow draws from the same
+forecast (different noise sprinkles $\varepsilon$) are sharp realizations
+that differ from each other exactly where the outcome is uncertain. Bottom
+row, the mechanism: (e)~the source $x_0 =$ forecast $+\,\sigma\varepsilon$;
+(f)~the training crossfade $x_t = (1-t)x_0 + t\,x_1$ frozen at $t = 0.5$;
+(g)~the constant target velocity $v = x_1 - x_0$; (h)~the network's answer
+$\hat{v}(x_t, t, c)$ at that same frozen moment.}
 \label{fig:flowmethod}
 \end{figure}
 
@@ -360,7 +355,7 @@ matching) is reported in Text~S4.
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{figures/flow_pairs_panel.png}
+\includegraphics[width=\textwidth]{figures/fig3_pairs.pdf}
 \caption{\textbf{The instrument on one frame} ($+3$~h, standard test frame,
 $120$ truth systems). Detected systems ($>0.1$~mm, 8-connected) in the truth,
 the two-head forecast, and one flow draw; a matched truth system (greedy
