@@ -16,7 +16,7 @@ BLUE, ORANGE, BLACK = "#1f6fb4", "#c55a11", "#222222"
 enc_ch = [64, 128, 256, 512, 1024]
 res = [128, 64, 32, 16, 8]
 
-fig, ax = plt.subplots(figsize=(9.2, 4.4))
+fig, ax = plt.subplots(figsize=(6.89, 3.3))
 ax.set_xlim(0, 100)
 ax.set_ylim(0, 56)
 ax.axis("off")
@@ -95,6 +95,6 @@ ax.plot([], [], color=ORANGE, label="flow edges")
 ax.legend(loc="lower left", fontsize=8, frameon=False,
           bbox_to_anchor=(0.0, -0.02))
 
-fig.savefig("/glade/u/home/sabramian/LatentSky/paper/figures/fig1b_architecture.png",
-            dpi=220, bbox_inches="tight")
+fig.savefig("/glade/u/home/sabramian/LatentSky/paper/figures/fig1b_architecture.pdf",
+            bbox_inches="tight")
 print("written")

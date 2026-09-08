@@ -197,18 +197,18 @@ measure.
 \begin{figure}
 \centering
 (a)\\
-\includegraphics[width=\textwidth]{figures/data_domain.png}\\[2mm]
+\includegraphics[width=\textwidth]{figures/fig1a_domain.pdf}\\[2mm]
 (b)\\
-\includegraphics[width=0.9\textwidth]{figures/fig1b_architecture.png}
-%% TODO fig 1a upgrade: color the 22 boxes by this day's train/val/test
-%% assignment (currently only the example block is highlighted in red).
+\includegraphics[width=0.9\textwidth]{figures/fig1b_architecture.pdf}
 \caption{\textbf{Data and architecture.} (a)~Precipitable water
 (standardized) over the tropical belt ($40^{\circ}$S--$40^{\circ}$N,
 $0.25^{\circ}$, one 15-min frame of the 40-day DYAMOND MPAS record), tiled
 into the $2 \times 11 = 22$ blocks per day that all training, evaluation, and
-splitting operate on; gray strips never enter the pipeline; the red box marks
-the example block used in Figures~\ref{fig:flowmethod}--\ref{fig:decomp}.
-The $880$ (block, day) units are split $616/132/132$ into train/val/test.
+splitting operate on; gray strips never enter the pipeline. Boxes show this
+day's split assignment (amber val, blue test, uncolored train); the red box
+marks the example block used in
+Figures~\ref{fig:flowmethod}--\ref{fig:decomp}. Over the 40 days the $880$
+(block, day) units are split $616/132/132$ into train/val/test.
 (b)~The shared U-Net trunk (black boxes; two $3{\times}3$ convolutions per
 box, GroupNorm, ReLU) with the edges specific to each model: the
 deterministic two-head edges (blue; rain and wet/dry heads, OLR-FiLM
@@ -462,15 +462,12 @@ the trade it is rather than hiding it in an aggregate score.
 (a)\\
 \includegraphics[width=\textwidth]{figures/fig_pairs_graphcast_belt.png}\\[1mm]
 \includegraphics[width=0.7\textwidth]{figures/fig_pairs_graphcast_zoom.png}\\[2mm]
-(b)\\
-\includegraphics[width=0.85\textwidth]{figures/fig_gencast_12h.png}\\[2mm]
-(c)\\
-\includegraphics[width=\textwidth]{figures/fig_wb2_scatter_12h.png}
+\includegraphics[width=\textwidth]{figures/fig6bc_wb2.pdf}
 \caption{\textbf{The same instrument on operational AI forecasts} (ERA5
 truth, tropical belt, threshold $2.4$~mm/6~h --- the rate equivalent of the
 km-scale $0.1$~mm/15~min). (a)~Matched pairs for GraphCast at $+6$~h, full
 belt and a $128$-pixel zoom: the found systems, the missed small ones.
-(b)~POD by scale at $+12$~h (August 2020, $62$ initializations): a single
+(b)~POD by scale at $+12$~h (2020-08-15, two initializations): a single
 GenCast member is the best forecast from ${\approx}240$~km up
 ($0.78$--$0.82$) at a FAR cost ($0.32$ vs GraphCast's $0.17$); the ensemble
 mean falls back into the deterministic pack; below $60$~km every model is at
