@@ -107,7 +107,7 @@ def main():
 
     # ---- layout: two belts (aspect ny/nx at textwidth) + zoom pair --------
     belt_h = W2 * ny / nx
-    zoom_w = 0.485 * W2
+    zoom_w = 0.40 * W2
     LAB, GAP, LEG = 0.55 * CM, 0.35 * CM, 0.8 * CM
     FH = 2 * (belt_h + LAB) + zoom_w + LAB + LEG + 2 * GAP
     fig = plt.figure(figsize=(W2, FH))
@@ -137,11 +137,11 @@ def main():
 
     # zoom pair, centered, equal squares
     y_cursor -= LAB + zoom_w
-    x_left = (W2 - 2 * zoom_w - 0.3 * CM) / 2 / W2
+    x_left = (W2 - 2 * zoom_w - 1.4 * CM) / 2 / W2
     zoom_labels = [f"C. truth — 128-px block ({lon0:.0f}–{lon1:.0f}°E)",
                    "D. GraphCast +6 h — same block"]
     for k, (f, ov) in enumerate([(truth, ov_t), (fc, ov_p)]):
-        ax = fig.add_axes([x_left + k * (zoom_w + 0.3 * CM) / W2,
+        ax = fig.add_axes([x_left + k * (zoom_w + 1.4 * CM) / W2,
                            y_cursor / FH, zoom_w / W2, zoom_w / FH])
         ax.imshow(f[zoom], origin="lower", norm=norm, cmap=cmap,
                   interpolation="nearest", aspect="auto")
