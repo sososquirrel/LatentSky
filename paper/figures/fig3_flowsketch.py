@@ -1,10 +1,10 @@
-"""Paper Fig 3 — the flow-matching schematic with real fields (Sophie's
-sketch, 2026-09-08): U-Net forecast -> [flow matching] -> two draws | truth;
-the box expands below into the transport equation and the unrolled
-integration loop  x_t -> [FM] -> v_t -> (x dt) -> (+) -> x_t.
+"""Paper Fig 3 — flow-matching schematic (Sophie's sketch, pro version).
 
-Fields are the +3 h standard example (compute() of fig2_flowmethod).
-CPU ~2 min (two 32-step draws).
+Pipeline row: U-Net forecast -> [flow matching] -> draw A / draw B (stacked,
+aligned, same frame size) | truth. The box expands, via a dashed zoom inset,
+into a detail panel enclosing the transport equation and a block-diagram
+integrator: x_t -> v_theta -> [x Delta t] -> (+) -> x_{t+Dt}, bypass into the
+sum, dashed return arc "repeat x32". Real +3 h fields. CPU ~2 min.
 """
 from __future__ import annotations
 
@@ -27,7 +27,9 @@ matplotlib.rcParams["savefig.bbox"] = "tight"
 OUT = REPO / "paper" / "figures"
 CM = 1 / 2.54
 ORANGE = "#c55a11"
+ORANGE_BG = "#fdf0e6"
 GRAY = "#666666"
+INK = "0.2"
 
 
 def to_rain(z):
@@ -45,107 +47,120 @@ def main():
     cmap = plt.get_cmap("Blues").copy()
     cmap.set_under("#ffffff")
 
-    fig, ax = plt.subplots(figsize=(17.5 * CM, 9.6 * CM))
+    fig, ax = plt.subplots(figsize=(17.5 * CM, 10.9 * CM))
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 55)
-    ax.set_aspect("auto")
+    ax.set_ylim(0, 62)
     ax.axis("off")
 
-    def show(f, x0, x1, y0, y1, label=None, below=True):
+    def show(f, x0, y0, label=None, side=None):
+        MS = 15.0
         ax.imshow(f, origin="lower", norm=norm, cmap=cmap,
-                  extent=(x0, x1, y0, y1), interpolation="nearest",
-                  aspect="auto", zorder=2)
-        ax.add_patch(plt.Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False,
-                                   ec="0.25", lw=0.9, zorder=3))
-        if label:
-            ax.text((x0 + x1) / 2, y0 - 1.4 if below else y1 + 1.2, label,
-                    ha="center", va="top" if below else "bottom",
+                  extent=(x0, x0 + MS, y0, y0 + MS),
+                  interpolation="nearest", aspect="auto", zorder=2)
+        ax.add_patch(plt.Rectangle((x0, y0), MS, MS, fill=False, ec="0.25",
+                                   lw=0.9, zorder=3))
+        if label and side == "below":
+            ax.text(x0 + MS / 2, y0 - 1.5, label, ha="center", va="top",
                     fontsize=7.5)
+        elif label and side == "right":
+            ax.text(x0 + MS + 1.2, y0 + MS / 2, label, ha="left",
+                    va="center", fontsize=7.5)
+        return x0, x0 + MS, y0, y0 + MS
 
-    def arrow(p0, p1, color="0.2", lw=1.1, ls="-", ms=9):
+    def arrow(p0, p1, color=INK, lw=1.1, ls="-", ms=9, rad=0.0, z=4):
         ax.add_patch(FancyArrowPatch(p0, p1, arrowstyle="-|>",
                                      mutation_scale=ms, color=color, lw=lw,
-                                     ls=ls, zorder=4))
+                                     ls=ls, zorder=z,
+                                     connectionstyle=f"arc3,rad={rad}"))
 
-    # --- top row -----------------------------------------------------------
-    MS = 13.5                       # map size
-    y_mid = 33                      # vertical center of the row
-    show(fc, 2, 2 + MS, y_mid - MS / 2, y_mid + MS / 2,
-         "U-Net forecast (+3 h)")
-    # flow matching box
-    bx0, bx1, by0, by1 = 22.5, 36.5, y_mid - 4.2, y_mid + 4.2
+    # ---------------- pipeline row -----------------------------------------
+    y_mid = 40.0
+    f0, f1, fy0, fy1 = show(fc, 4, y_mid - 7.5, "U-Net forecast (+3 h)",
+                            "below")
+    # flow matching module
+    bx0, bx1 = 23.5, 36.5
+    by0, by1 = y_mid - 4.5, y_mid + 4.5
     ax.add_patch(FancyBboxPatch((bx0, by0), bx1 - bx0, by1 - by0,
                                 boxstyle="round,pad=0.6,rounding_size=1.5",
-                                fc="#fdf0e6", ec=ORANGE, lw=1.5, zorder=3))
+                                fc=ORANGE_BG, ec=ORANGE, lw=1.5, zorder=3))
     ax.text((bx0 + bx1) / 2, y_mid, "flow\nmatching", ha="center",
-            va="center", fontsize=8, color=ORANGE, zorder=4)
-    arrow((2 + MS + 0.6, y_mid), (bx0 - 0.8, y_mid))
-    ax.text(18.3, y_mid + 1.3,
-            r"$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$", ha="center",
-            va="bottom", fontsize=6, color=GRAY)
-    # conditioning arrow from above
-    arrow(((bx0 + bx1) / 2, 53.5), ((bx0 + bx1) / 2, by1 + 0.9))
-    ax.text((bx0 + bx1) / 2 + 1.2, 51.5, "10 channels $c$", ha="left",
+            va="center", fontsize=8.5, color=ORANGE, zorder=4)
+    arrow((f1 + 0.6, y_mid), (bx0 - 0.9, y_mid))
+    ax.text((f1 + bx0 - 0.3) / 2, y_mid + 1.2,
+            r"$x_0$", ha="center", va="bottom", fontsize=7.5, color=INK)
+    # conditioning
+    arrow(((bx0 + bx1) / 2, 60.5), ((bx0 + bx1) / 2, by1 + 0.9))
+    ax.text((bx0 + bx1) / 2 + 1.3, 58.5, "10 channels $c$", ha="left",
             va="center", fontsize=7)
-    # two draws, stacked
-    dx0 = 48
-    show(dA, dx0, dx0 + MS, y_mid + 1.2, y_mid + 1.2 + MS, None)
-    ax.text(dx0 + MS + 1.0, y_mid + 1.2 + MS / 2, "draw A", ha="left",
-            va="center", fontsize=7.5)
-    show(dB, dx0 + 2.5, dx0 + 2.5 + MS, y_mid - 1.2 - MS, y_mid - 1.2, None)
-    ax.text(dx0 + 2.5 + MS + 1.0, y_mid - 1.2 - MS / 2, "draw B", ha="left",
-            va="center", fontsize=7.5)
-    arrow((bx1 + 0.9, y_mid + 1.5), (dx0 - 0.8, y_mid + 5.5))
-    arrow((bx1 + 0.9, y_mid - 1.5), (dx0 + 1.7, y_mid - 5.5))
+    # draws, stacked and aligned
+    dx = 44.5
+    a0, a1, ay0, ay1 = show(dA, dx, y_mid + 1.5, "draw A", "right")
+    b0, b1, bby0, bby1 = show(dB, dx, y_mid - 16.5, "draw B", "right")
+    arrow((bx1 + 0.9, y_mid + 1.8), (dx - 0.9, ay0 + 5.5))
+    arrow((bx1 + 0.9, y_mid - 1.8), (dx - 0.9, bby1 - 5.5))
     # separator + truth
-    ax.plot([74.5, 74.5], [y_mid - MS / 2 - 2, y_mid + MS / 2 + 2],
-            color="0.6", lw=0.8)
-    show(truth, 78, 78 + MS, y_mid - MS / 2, y_mid + MS / 2, "truth (+3 h)")
+    ax.plot([70.5, 70.5], [bby0, ay1], color="0.6", lw=0.8)
+    show(truth, 76, y_mid - 7.5, "truth (+3 h)", "below")
 
-    # --- expansion: equation ----------------------------------------------
-    arrow((bx0 + 1.5, by0 - 0.8), (22, 22.5), color=GRAY, lw=0.8,
-          ls=(0, (3, 3)), ms=0.1)
-    arrow((bx1 - 1.5, by0 - 0.8), (44, 22.5), color=GRAY, lw=0.8,
-          ls=(0, (3, 3)), ms=0.1)
-    ax.text(32, 19.5,
-            r"$x_1 \;=\; x_0 \,+\, \int_0^1 \hat{v}\,(x_t,\, t,\, c)"
-            r"\;\mathrm{d}t$",
+    # ---------------- zoom inset: detail panel -----------------------------
+    px0, px1, py0, py1 = 4, 96, 1.0, 21.5
+    ax.add_patch(FancyBboxPatch((px0, py0), px1 - px0, py1 - py0,
+                                boxstyle="round,pad=0.6,rounding_size=1.5",
+                                fc="#fafafa", ec="0.55", lw=1.0,
+                                ls=(0, (5, 3)), zorder=1))
+    # trapezoid guides from box bottom corners to the panel top
+    for xa, xb in [(bx0 + 1.0, 20), (bx1 - 1.0, 40)]:
+        ax.plot([xa, xb], [by0 - 0.8, py1 + 0.6], color="0.55", lw=0.9,
+                ls=(0, (5, 3)), zorder=1)
+
+    # equation, left half of the panel
+    ax.text(19, 12.5,
+            r"$x_1 \;=\; x_0 \,+\, \int_0^1"
+            r" \hat{v}_\theta\,(x_t,\, t,\, c)\;\mathrm{d}t$",
             ha="center", va="center", fontsize=9.5)
 
-    # --- unrolled integration loop ----------------------------------------
-    ly = 9.5                        # box row center
-    lh = 5.6
+    # block-diagram integrator, right half
+    ly = 11.5
+    bh = 5.6
 
-    def lbox(xc, w, text, ec="0.25", fc="white", tc="0.15"):
-        ax.add_patch(FancyBboxPatch((xc - w / 2, ly - lh / 2), w, lh,
-                                    boxstyle="round,pad=0.5,rounding_size=1.2",
-                                    fc=fc, ec=ec, lw=1.2, zorder=3))
-        ax.text(xc, ly, text, ha="center", va="center", fontsize=7.5,
+    def node(xc, w, text, ec=INK, fc="white", tc="0.15", fs=7.5):
+        ax.add_patch(FancyBboxPatch((xc - w / 2, ly - bh / 2), w, bh,
+                                    boxstyle="round,pad=0.45,rounding_size=1.1",
+                                    fc=fc, ec=ec, lw=1.1, zorder=3))
+        ax.text(xc, ly, text, ha="center", va="center", fontsize=fs,
                 color=tc, zorder=4)
 
-    lbox(20, 8, r"$x_t$")
-    lbox(36.5, 10, "FM", ec=ORANGE, fc="#fdf0e6", tc=ORANGE)
-    lbox(53, 8, r"$\hat{v}_t$")
-    arrow((24.2, ly), (31.3, ly))
-    arrow((41.7, ly), (48.8, ly))
-    # times dt circle under v_t
-    cy = 2.6
-    ax.add_patch(Circle((53, cy), 1.7, fc="white", ec="0.25", lw=1.1,
+    x_xt, x_fm, x_dt, x_sum, x_out = 42.5, 55.5, 68, 77.5, 88.5
+    node(x_xt, 7, r"$x_t$")
+    node(x_fm, 9, r"$\hat{v}_\theta$", ec=ORANGE, fc=ORANGE_BG, tc=ORANGE,
+         fs=8)
+    node(x_dt, 7.5, r"$\times\,\Delta t$", fs=7)
+    node(x_out, 9, r"$x_{t+\Delta t}$")
+    # summation node: circle with a crisp plus
+    R = 1.7
+    ax.add_patch(Circle((x_sum, ly), R, fc="white", ec=INK, lw=1.1,
                         zorder=3))
-    ax.text(53, cy, r"$\times\,\mathrm{d}t$", ha="center", va="center",
-            fontsize=6, zorder=4)
-    arrow((53, ly - lh / 2 - 0.2), (53, cy + 1.9))
-    # plus circle under x_t, feedback line
-    ax.add_patch(Circle((20, cy), 1.7, fc="white", ec="0.25", lw=1.1,
-                        zorder=3))
-    ax.text(20, cy, "+", ha="center", va="center", fontsize=8, zorder=4)
-    ax.plot([51.3, 21.7], [cy, cy], color="0.2", lw=1.1, zorder=2)
-    arrow((20, cy + 1.9), (20, ly - lh / 2 - 0.2))
-    ax.text(63, ly - 1.0,
-            r"$x_{t+\mathrm{d}t} = x_t + \hat{v}_t\,\mathrm{d}t$",
-            ha="left", va="center", fontsize=7.5)
-    ax.text(63, ly - 4.6, r"32 Heun steps, $t: 0 \rightarrow 1$",
-            ha="left", va="center", fontsize=6.5, color=GRAY)
+    ax.plot([x_sum - 0.9, x_sum + 0.9], [ly, ly], color=INK, lw=1.0,
+            zorder=4)
+    ax.plot([x_sum, x_sum], [ly - 0.9, ly + 0.9], color=INK, lw=1.0,
+            zorder=4)
+    # main path
+    arrow((x_xt + 4.1, ly), (x_fm - 5.1, ly))
+    arrow((x_fm + 5.1, ly), (x_dt - 4.4, ly))
+    arrow((x_dt + 4.4, ly), (x_sum - R - 0.3, ly))
+    arrow((x_sum + R + 0.3, ly), (x_out - 5.1, ly))
+    # bypass: x_t branches under the row into the sum
+    xb = x_xt + 5.6
+    ax.plot([xb], [ly], marker="o", ms=2.6, color=INK, zorder=5)
+    ax.plot([xb, xb, x_sum], [ly, 4.6, 4.6], color=INK, lw=1.1, zorder=2,
+            solid_capstyle="round")
+    arrow((x_sum, 4.6), (x_sum, ly - R - 0.3))
+    # return arc: repeat x32
+    arrow((x_out - 1.5, ly + bh / 2 + 0.6), (x_xt + 1.5, ly + bh / 2 + 0.6),
+          ls=(0, (4, 3)), lw=0.9, rad=0.28, ms=7, color=GRAY)
+    ax.text((x_xt + x_out) / 2, 17.6,
+            r"repeat $\times 32$ (Heun),  $t: 0 \rightarrow 1$",
+            ha="center", va="center", fontsize=6.5, color=GRAY)
 
     fig.savefig(OUT / "fig3_flowsketch.pdf", dpi=300)
     print("saved fig3_flowsketch.pdf")
