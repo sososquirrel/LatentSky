@@ -103,7 +103,9 @@ def main():
         ax.contour(lab == lid, levels=[0.5], colors=[color], linewidths=lw,
                    linestyles=ls)
 
-    fig, axes = plt.subplots(1, 3, figsize=(W2, W2 * 0.40))
+    fig, axes = plt.subplots(1, 3, figsize=(W2, W2 * 0.48))
+    fig.subplots_adjust(left=0.002, right=0.998, top=0.92, bottom=0.24,
+                        wspace=0.03)
     panels = [("A. truth", truth, None),
               ("B. two-head", det, "two-head"),
               ("C. flow draw", flow, "flow draw")]
@@ -151,10 +153,9 @@ def main():
                label="false alarm"),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
-               frameon=False, bbox_to_anchor=(0.5, -0.12))
-    fig.subplots_adjust(wspace=0.04)
-    cb = fig.colorbar(im, ax=list(axes), orientation="horizontal",
-                      shrink=0.8, pad=0.16, aspect=110)
+               frameon=False, bbox_to_anchor=(0.5, -0.01))
+    cax = fig.add_axes([0.12, 0.155, 0.76, 0.022])
+    cb = fig.colorbar(im, cax=cax, orientation="horizontal")
     cb.set_label("rain (mm)", fontsize=8)
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
