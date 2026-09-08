@@ -54,7 +54,7 @@ def pod_decay():
 
 
 def main():
-    fig, axs = plt.subplots(2, 2, figsize=(W2, W2 * 0.82))
+    fig, axs = plt.subplots(2, 2, figsize=(W2, W2 * 0.98))
     ax_pod, ax_far, ax_dec, ax_tau = axs.ravel()
 
     # --- (a)/(b) POD and FAR by scale at +3 h -------------------------------
@@ -121,9 +121,10 @@ def main():
     panel_label(ax_tau, "D.")
     # colorbar below panel D, without shrinking the panel itself: give it an
     # explicit axis so D stays the same size as the POD panel
-    fig.subplots_adjust(hspace=0.34, wspace=0.26)
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.99,
+                        bottom=0.055, hspace=0.26, wspace=0.22)
     pos = ax_tau.get_position()
-    cax = fig.add_axes([pos.x0 + 0.08 * pos.width, pos.y0 - 0.135,
+    cax = fig.add_axes([pos.x0 + 0.08 * pos.width, pos.y0 - 0.105,
                         0.84 * pos.width, 0.016])
     cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
     cb.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)

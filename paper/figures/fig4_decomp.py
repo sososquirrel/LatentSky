@@ -23,7 +23,11 @@ OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 LIM = 3.2
 BANDS = [(0, 65, "small < 65 km"), (65, 200, "65–200 km"),
          (200, 1e9, "large > 200 km")]
-BARY_C = ["#40004b", "#1b7837", "#c51b7d"]
+# barycenter crosses colored by the colorbar's own scale (viridis, LogNorm):
+# representative L per band = 40 / 115 / 450 km
+_norm = LogNorm(28, 1500)
+_cmap = __import__("matplotlib.pyplot", fromlist=["get_cmap"]).get_cmap("viridis")
+BARY_C = [_cmap(_norm(L)) for L in (40, 115, 450)]
 
 
 def cloud(ax, df, label):
@@ -56,6 +60,8 @@ def cloud(ax, df, label):
 
 def main():
     fig, axs = plt.subplots(1, 2, figsize=(W2, W2 * 0.52), sharey=True)
+    fig.subplots_adjust(left=0.065, right=0.99, top=0.97, bottom=0.26,
+                        wspace=0.08)
     df_th = pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz")
     df_fl = pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz")
     sc = cloud(axs[0], df_th, "two-head")
@@ -65,8 +71,8 @@ def main():
                   title="precip-weighted barycenter", title_fontsize=7)
     panel_label(axs[0], "A.")
     panel_label(axs[1], "B.")
-    cb = fig.colorbar(sc, ax=axs, orientation="horizontal", fraction=0.04,
-                      pad=0.16, aspect=55)
+    cax = fig.add_axes([0.14, 0.10, 0.72, 0.022])
+    cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
     cb.set_label("system scale L = √A (km)", fontsize=8)
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
