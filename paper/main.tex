@@ -480,27 +480,47 @@ the trade it is rather than hiding it in an aggregate score.
 
 \begin{figure}
 \centering
-(a)\\
-\includegraphics[width=\textwidth]{figures/fig_pairs_graphcast_belt.png}\\[1mm]
-\includegraphics[width=0.7\textwidth]{figures/fig_pairs_graphcast_zoom.png}\\[2mm]
-\includegraphics[width=\textwidth]{figures/fig6bc_wb2.pdf}
-\caption{\textbf{The same instrument on operational AI forecasts} (ERA5
-truth, tropical belt, threshold $2.4$~mm/6~h --- the rate equivalent of the
-km-scale $0.1$~mm/15~min). A.~Matched pairs for GraphCast at $+6$~h, full
-belt and a $128$-pixel zoom: the found systems, the missed small ones.
-B.~POD by scale at $+12$~h (2020-08-15, two initializations): a single
-GenCast member is the best forecast from ${\approx}240$~km up
-($0.78$--$0.82$) at a FAR cost ($0.32$ vs GraphCast's $0.17$); the ensemble
-mean falls back into the deterministic pack; below $60$~km every model is at
-$\mathrm{POD} \le 0.13$. C.~Month-pooled decomposition
-(${\sim}8{,}000$ matched pairs per model): the deterministic too-weak bias
-($\mathrm{d}\ln\rho$ barycenters $-0.24/-0.17/-0.06$ small to large) is
-erased by the diffusion member ($-0.06/-0.03/+0.01$).}
-\label{fig:wb2}
+\includegraphics[width=\textwidth]{figures/fig7a_wb2maps.pdf}
+\caption{\textbf{Pair recognition on an operational forecast} (GraphCast
+$+6$~h, ERA5 truth, valid 2020-08-15 06 UTC; threshold $2.4$~mm/6~h --- the
+rate equivalent of the km-scale $0.1$~mm/15~min; $\mathrm{IoU} \ge 0.1$).
+A.--B.~The full tropical belt: matched pairs share a color across the two
+maps ($145$), missed truth systems are black ($313$), false alarms red
+($90$); the dashed box marks the zoom block. C.--D.~The $128$-pixel zoom
+(the LatentSky patch size, Maritime Continent): the large systems are found,
+the small ones --- the black outlines --- are not.}
+\label{fig:wb2maps}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.62\textwidth]{figures/fig7b_pod.pdf}
+\caption{\textbf{Detection by scale for the WB2 models} at $+12$~h
+(2020-08-15, two initializations; same threshold and matching as
+Figure~\ref{fig:wb2maps}). A single GenCast member is the best forecast from
+${\approx}240$~km up ($0.78$--$0.82$) at a FAR cost ($0.32$ vs GraphCast's
+$0.17$); the ensemble mean falls back into the deterministic pack; below
+$60$~km every model is at $\mathrm{POD} \le 0.13$.}
+\label{fig:wb2pod}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.72\textwidth]{figures/fig7c_clouds.pdf}
+\caption{\textbf{The error decomposition on the WB2 models} ($+12$~h, August
+2020 month-pooled, ${\sim}8{,}000$ matched pairs per model; axes and
+conventions as in Figure~\ref{fig:decomp}, crosses are the precip-weighted
+barycenters of the $<100$~km, $100$--$400$~km, and $>400$~km bands in the
+colorbar's colors). The deterministic too-weak bias ($\mathrm{d}\ln\rho$
+barycenters $-0.24/-0.17/-0.06$ small to large) is erased by the diffusion
+member ($-0.06/-0.03/+0.01$). The clouds are wide in $\mathrm{d}\ln A$ and
+narrow in $\mathrm{d}\ln\rho$ --- the reverse of the km-scale clouds: at
+$0.25^{\circ}$ the rate is recoverable, the boundaries are not.}
+\label{fig:wb2clouds}
 \end{figure}
 
 The evaluation transfers unchanged to WeatherBench~2
-(Figure~\ref{fig:wb2}): GraphCast, FuXi, GenCast,
+(Figures~\ref{fig:wb2maps}--\ref{fig:wb2clouds}): GraphCast, FuXi, GenCast,
 and FGN against ERA5 over the same tropical belt, at rate-equivalent thresholds
 ($2.4$~mm per $6$~h $=$ the km-scale $0.1$~mm per $15$~min). This part is an
 outlook, not a ranking against LatentSky --- different data, resolution, and
