@@ -82,9 +82,6 @@ def main():
         ax_dec.plot(LEADS, decay["flow"][i], "-", color=c, marker="D", ms=3,
                     lw=1.5)
         ax_dec.plot(LEADS, decay["two-head"][i], ":", color=c, lw=1.2)
-        yend = decay["flow"][i, -1]
-        ax_dec.text(5.85, yend + 0.035, f"{lo}–{hi} km", color=c,
-                    fontsize=7.5, ha="right", va="bottom")
     ax_dec.set_xlim(0, 6.2)
     ax_dec.set_ylim(0, 1.02)
     ax_dec.set_xlabel("lead time (h)")
@@ -130,6 +127,25 @@ def main():
     cb.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
+
+    # discrete band colorbar below panel C, symmetric with D's
+    from matplotlib import cm
+    from matplotlib.colors import BoundaryNorm, ListedColormap
+    bounds = [25, 50, 100, 200, 400, 800]
+    band_colors = [BAND_CMAP(0.88 * i / (len(BANDS) - 1))
+                   for i in range(len(BANDS))]
+    dmap = ListedColormap(band_colors)
+    dnorm = BoundaryNorm(range(len(BANDS) + 1), len(BANDS))
+    posc = ax_dec.get_position()
+    caxc = fig.add_axes([posc.x0 + 0.08 * posc.width, posc.y0 - 0.105,
+                         0.84 * posc.width, 0.016])
+    cbc = fig.colorbar(cm.ScalarMappable(norm=dnorm, cmap=dmap), cax=caxc,
+                       orientation="horizontal", spacing="uniform")
+    cbc.set_ticks(range(len(BANDS) + 1))
+    cbc.set_ticklabels([str(b) for b in bounds])
+    cbc.set_label("scale band L (km)", fontsize=8)
+    cbc.ax.tick_params(labelsize=7, length=2, width=0.6)
+    cbc.outline.set_linewidth(0.5)
     fig.savefig(OUT / "fig5_horizon.pdf")
     print("saved fig5_horizon.pdf")
 
