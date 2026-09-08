@@ -307,7 +307,10 @@ and regresses a velocity network $\hat{v}(x_t, t, c)$ --- the same U-Net trunk,
 conditioned on the ten input channels $c$ and on $t$ --- onto the constant
 displacement $v = x_1 - x_0$. Sampling integrates
 $\mathrm{d}x/\mathrm{d}t = \hat{v}$ from a fresh draw of $x_0$ to $t=1$ with
-$32$ Heun steps. The noise scale is the entire source of stochasticity:
+$32$ steps of Heun's method --- the second-order Runge--Kutta
+predictor--corrector: a trial Euler step with the velocity at the current
+state, then an update with the average of the velocities at the current and
+trial states ($\Delta t = 1/32$, two network evaluations per step). The noise scale is the entire source of stochasticity:
 $\sigma \to 0$ collapses the flow to a deterministic regression, and each new
 $\varepsilon$ yields a different sharp realization consistent with the same
 smooth forecast. Figure~\ref{fig:flowmethod} shows the method on one example:

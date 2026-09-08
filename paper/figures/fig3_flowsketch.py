@@ -47,13 +47,13 @@ def main():
     cmap = plt.get_cmap("Blues").copy()
     cmap.set_under("#ffffff")
 
-    fig, ax = plt.subplots(figsize=(17.5 * CM, 10.9 * CM))
+    fig, ax = plt.subplots(figsize=(17.5 * CM, 11.6 * CM))
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 62)
+    ax.set_ylim(0, 66)
     ax.axis("off")
 
     def show(f, x0, y0, label=None, side=None):
-        MS = 15.0
+        MS = 17.0
         ax.imshow(f, origin="lower", norm=norm, cmap=cmap,
                   extent=(x0, x0 + MS, y0, y0 + MS),
                   interpolation="nearest", aspect="auto", zorder=2)
@@ -74,33 +74,35 @@ def main():
                                      connectionstyle=f"arc3,rad={rad}"))
 
     # ---------------- pipeline row -----------------------------------------
-    y_mid = 40.0
-    f0, f1, fy0, fy1 = show(fc, 4, y_mid - 7.5, "U-Net forecast (+3 h)",
+    y_mid = 42.0
+    f0, f1, fy0, fy1 = show(fc, 1.5, y_mid - 8.5, "U-Net forecast (+3 h)",
                             "below")
-    # flow matching module
-    bx0, bx1 = 23.5, 36.5
-    by0, by1 = y_mid - 4.5, y_mid + 4.5
+    # flow matching module (extended)
+    bx0, bx1 = 23.5, 39.0
+    by0, by1 = y_mid - 5.5, y_mid + 5.5
     ax.add_patch(FancyBboxPatch((bx0, by0), bx1 - bx0, by1 - by0,
                                 boxstyle="round,pad=0.6,rounding_size=1.5",
                                 fc=ORANGE_BG, ec=ORANGE, lw=1.5, zorder=3))
-    ax.text((bx0 + bx1) / 2, y_mid, "flow\nmatching", ha="center",
+    ax.text((bx0 + bx1) / 2, y_mid - 0.8, "flow\nmatching", ha="center",
             va="center", fontsize=8.5, color=ORANGE, zorder=4)
+    ax.text((bx0 + bx1) / 2, by1 - 1.1, r"$c$", ha="center", va="top",
+            fontsize=7, color=GRAY, zorder=4)
     arrow((f1 + 0.6, y_mid), (bx0 - 0.9, y_mid))
     ax.text((f1 + bx0 - 0.3) / 2, y_mid + 1.2,
             r"$x_0$", ha="center", va="bottom", fontsize=7.5, color=INK)
     # conditioning
-    arrow(((bx0 + bx1) / 2, 60.5), ((bx0 + bx1) / 2, by1 + 0.9))
-    ax.text((bx0 + bx1) / 2 + 1.3, 58.5, "10 channels $c$", ha="left",
+    arrow(((bx0 + bx1) / 2, 65.0), ((bx0 + bx1) / 2, by1 + 0.9))
+    ax.text((bx0 + bx1) / 2 + 1.3, 63.0, "10 channels $c$", ha="left",
             va="center", fontsize=7)
     # draws, stacked and aligned
-    dx = 44.5
+    dx = 46.5
     a0, a1, ay0, ay1 = show(dA, dx, y_mid + 1.5, "draw A", "right")
-    b0, b1, bby0, bby1 = show(dB, dx, y_mid - 16.5, "draw B", "right")
-    arrow((bx1 + 0.9, y_mid + 1.8), (dx - 0.9, ay0 + 5.5))
-    arrow((bx1 + 0.9, y_mid - 1.8), (dx - 0.9, bby1 - 5.5))
+    b0, b1, bby0, bby1 = show(dB, dx, y_mid - 18.5, "draw B", "right")
+    arrow((bx1 + 0.9, y_mid + 2.0), (dx - 0.9, ay0 + 6.5))
+    arrow((bx1 + 0.9, y_mid - 2.0), (dx - 0.9, bby1 - 6.5))
     # separator + truth
-    ax.plot([70.5, 70.5], [bby0, ay1], color="0.6", lw=0.8)
-    show(truth, 76, y_mid - 7.5, "truth (+3 h)", "below")
+    ax.plot([72.5, 72.5], [bby0, ay1], color="0.6", lw=0.8)
+    show(truth, 77, y_mid - 8.5, "truth (+3 h)", "below")
 
     # ---------------- zoom inset: detail panel -----------------------------
     px0, px1, py0, py1 = 4, 96, 1.0, 21.5
@@ -109,7 +111,7 @@ def main():
                                 fc="#fafafa", ec="0.55", lw=1.0,
                                 ls=(0, (5, 3)), zorder=1))
     # trapezoid guides from box bottom corners to the panel top
-    for xa, xb in [(bx0 + 1.0, 20), (bx1 - 1.0, 40)]:
+    for xa, xb in [(bx0 + 1.0, 20), (bx1 - 1.0, 42)]:
         ax.plot([xa, xb], [by0 - 0.8, py1 + 0.6], color="0.55", lw=0.9,
                 ls=(0, (5, 3)), zorder=1)
 
@@ -135,6 +137,8 @@ def main():
     node(x_fm, 9, r"$\hat{v}_\theta$", ec=ORANGE, fc=ORANGE_BG, tc=ORANGE,
          fs=8)
     node(x_dt, 7.5, r"$\times\,\Delta t$", fs=7)
+    ax.text(x_dt, ly - bh / 2 - 1.2, r"$\Delta t = 1/32$", ha="center",
+            va="top", fontsize=6, color=GRAY)
     node(x_out, 9, r"$x_{t+\Delta t}$")
     # summation node: circle with a crisp plus
     R = 1.7
