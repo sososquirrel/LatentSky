@@ -211,12 +211,26 @@ split $616/132/132$ into train/val/test (Text~S1).}
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{figures/fig1b_architecture.pdf}
-\caption{\textbf{The two-head U-Net.} Five encoder stages (each two
-$3{\times}3$ convolutions, GroupNorm, ReLU) from $64$ channels at $128^2$
-down to $1024$ at $8^2$, a $2048$-channel bottleneck at $4^2$, a mirrored
-decoder with skip concatenations, and two parallel $1{\times}1$ output heads
---- rain intensity (softplus, mm) and wet/dry logits. The bottleneck is
+A.\\
+\includegraphics[width=\textwidth]{figures/fig2a_inputs.pdf}\\[2mm]
+B.\\
+\includegraphics[width=\textwidth]{figures/fig1b_architecture.pdf}\\[2mm]
+C.\\
+\includegraphics[width=0.42\textwidth]{figures/fig2c_outputs.pdf}
+\caption{\textbf{The two-head U-Net, input to output} (the standard example
+block). A.~The ten input channels, concatenated in this order with the
+current rain last (blue frame --- the persistence forecast handed to the
+model, which nests the null); each map standardized, colormaps by family
+(moisture and moist static energy brown--teal, temperature thermal, OLR
+grayscale with cold convective tops dark, winds red--blue, rain blue on a
+log scale). B.~The trunk: five encoder stages (each two $3{\times}3$
+convolutions, GroupNorm, ReLU) from $64$ channels at $128^2$ down to $1024$
+at $8^2$, a $2048$-channel bottleneck at $4^2$, a mirrored decoder with skip
+concatenations, and two parallel $1{\times}1$ output heads.
+C.~The two outputs for this input at $+3$~h: the rain field (softplus, mm)
+and the wet/dry probability (the sigmoid of the logits; trained against
+$y > 0$ --- any rain at all --- so its baseline sits high and only
+confidently dry regions drop). The bottleneck is
 conditioned by \emph{OLR-FiLM} (FiLM: Feature-wise Linear Modulation): the
 patch's mean and minimum outgoing longwave radiation pass through a small
 MLP that returns per-channel scale and shift $(\gamma, \beta)$ applied to
