@@ -196,26 +196,32 @@ measure.
 
 \begin{figure}
 \centering
-(a)\\
-\includegraphics[width=\textwidth]{figures/fig1a_domain.pdf}\\[2mm]
-(b)\\
-\includegraphics[width=0.9\textwidth]{figures/fig1b_architecture.pdf}
-\caption{\textbf{Data and architecture.} (a)~Precipitable water
+\includegraphics[width=\textwidth]{figures/fig1a_domain.pdf}
+\caption{\textbf{The domain and its tiling.} Precipitable water
 (standardized) over the tropical belt ($40^{\circ}$S--$40^{\circ}$N,
 $0.25^{\circ}$, one 15-min frame of the 40-day DYAMOND MPAS record), tiled
-into the $2 \times 11 = 22$ blocks per day that all training, evaluation, and
-splitting operate on; gray strips never enter the pipeline. Boxes show this
-day's split assignment (amber val, blue test, uncolored train); the red box
-marks the example block used in
-Figures~\ref{fig:flowmethod}--\ref{fig:decomp}. Over the 40 days the $880$
-(block, day) units are split $616/132/132$ into train/val/test.
-(b)~The shared U-Net trunk (black boxes; two $3{\times}3$ convolutions per
-box, GroupNorm, ReLU) with the edges specific to each model: the
-deterministic two-head edges (blue; rain and wet/dry heads, OLR-FiLM
-bottleneck conditioning) and the flow's velocity-network edges (orange; flow
-state appended to the ten channels, FiLM conditioning on $t$, single velocity
-head).}
+into the $2 \times 11 = 22$ blocks per day on which all training,
+evaluation, and splitting operate; gray strips never enter the pipeline.
+The red box marks the example block used in
+Figures~\ref{fig:flowmethod}--\ref{fig:decomp}, over the Maritime Continent /
+West Pacific warm pool. Over the 40 days the $880$ (block, day) units are
+split $616/132/132$ into train/val/test (Text~S1).}
 \label{fig:data}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/fig1b_architecture.pdf}
+\caption{\textbf{The shared U-Net trunk and each model's own edges.} Bar
+height tracks the spatial resolution ($128^2$ down to $4^2$), the label the
+channel count; dashed arcs are the skip connections. Both models use this
+identical trunk (two $3{\times}3$ convolutions, GroupNorm, ReLU per stage).
+Blue marks the deterministic two-head edges --- the parallel rain (softplus)
+and wet/dry (logits) heads and the OLR-FiLM bottleneck conditioning; orange
+marks the flow's velocity-network edges --- the flow state $x_t$ appended to
+the ten input channels, FiLM conditioning on $t$, and the single velocity
+head $\hat{v}$.}
+\label{fig:arch}
 \end{figure}
 
 The dataset is the DYAMOND MPAS-Atmosphere global cloud-resolving simulation
