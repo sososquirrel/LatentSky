@@ -107,7 +107,7 @@ def main():
 
     # ---- layout: two belts (aspect ny/nx at textwidth) + zoom pair --------
     belt_h = W2 * ny / nx
-    zoom_w = 0.40 * W2
+    zoom_w = 0.3255 * W2  # = fig 4 panel width
     LAB, GAP, LEG = 0.55 * CM, 0.35 * CM, 0.8 * CM
     FH = 2 * (belt_h + LAB) + zoom_w + LAB + LEG + 2 * GAP
     fig = plt.figure(figsize=(W2, FH))

@@ -118,6 +118,15 @@ def main():
         ax.text(0.0, 1.02, lab, transform=ax.transAxes, fontsize=8,
                 fontweight="bold", ha="left", va="bottom")
         if model is None:
+            # 500 km scale bar (block rows start at r*P; pixel width by cos(lat))
+            ybar = 8
+            latbar = -40 + 0.25 * (r * P + ybar)
+            px_km = 27.83 * np.cos(np.deg2rad(latbar))
+            nbar = 500.0 / px_km
+            ax.plot([5, 5 + nbar], [ybar, ybar], "-", color="0.1", lw=2.2,
+                    solid_capstyle="butt", zorder=6)
+            ax.text(5 + nbar / 2, ybar + 3, "500 km", fontsize=6.5,
+                    ha="center", color="0.1", zorder=6)
             for tid in truth_match:
                 outline(ax, lt, tid, color_of[tid], lw=1.6)
                 rrow = tt.set_index("label").loc[tid]
