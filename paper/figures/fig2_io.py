@@ -100,7 +100,7 @@ def fig_outputs(x):
     with torch.no_grad():
         rain_t, logit_t = twohead(cond)
     rain = np.clip(rain_t.numpy()[0, 0], 0, None)
-    prob = torch.sigmoid(logit_t).numpy()[0, 0]
+    logit = logit_t.numpy()[0, 0]
 
     fig, axs = plt.subplots(1, 2, figsize=(W2 * 0.42, W2 * 0.27))
     im0 = axs[0].imshow(rain, origin="lower", cmap="Blues",
@@ -108,9 +108,10 @@ def fig_outputs(x):
                         interpolation="nearest")
     axs[0].text(0.5, 1.04, "rain (mm)", transform=axs[0].transAxes,
                 ha="center", va="bottom", fontsize=7)
-    im1 = axs[1].imshow(prob, origin="lower", cmap="Purples", vmin=0,
-                        vmax=1, interpolation="nearest")
-    axs[1].text(0.5, 1.04, "wet/dry probability", transform=axs[1].transAxes,
+    vlim = float(np.percentile(np.abs(logit), 99))
+    im1 = axs[1].imshow(logit, origin="lower", cmap="RdBu_r", vmin=-vlim,
+                        vmax=vlim, interpolation="nearest")
+    axs[1].text(0.5, 1.04, "wet/dry (logits)", transform=axs[1].transAxes,
                 ha="center", va="bottom", fontsize=7)
     for ax, im in zip(axs, (im0, im1)):
         ax.set_xticks([])

@@ -96,20 +96,22 @@ Two distinct barriers stand between a forecast and the rain. The first is
 microphysics, boundary-layer thermals, cold pools --- live below the grid of
 climate and reanalysis products and are parameterized or absent, so small
 systems cannot even be represented, let alone predicted. The second is
-\emph{chaos}: even when convection is explicitly resolved, small convective
-patterns are inherently unstable --- they decorrelate within the hour, and no
-increase in resolution removes this limit. This paper is built to isolate the
-second barrier and measure it. Training and evaluating on kilometer-scale
-data takes the resolution barrier out of the problem as far as currently
-possible; what remains, quantified by the horizon $T(L)$, is the intrinsic
-unpredictability of the systems themselves. The question then becomes what a
-machine-learning model can still do against chaos --- and the answer this
-paper defends is: be probabilistic. A deterministic network, asked for the
-one true field, can only return the average of all plausible outcomes --- the
-blur. A generative model can instead return sharp \emph{samples} of those
-outcomes: the chaos does not disappear, but it moves from an error stamped
-into the field to a spread across draws, where it can be measured, priced,
-and used.
+\emph{stochasticity}: even when convection is explicitly resolved, the
+large-scale state does not determine the rain --- the same environment
+admits many equally plausible convective realizations, which decorrelate
+within the hour, and no increase in resolution removes this limit. This
+paper is built to isolate the second barrier and measure it. Training and
+evaluating on kilometer-scale data takes the resolution barrier out of the
+problem as far as currently possible; what remains, quantified by the
+horizon $T(L)$, is the intrinsic unpredictability of the systems themselves.
+The question then becomes what a machine-learning model can still do against
+an irreducibly stochastic target --- and the answer this paper defends is:
+be probabilistic. A deterministic network, asked for the one true field, can
+only return the average of all plausible outcomes --- the blur. A generative
+model can instead return sharp \emph{samples} of those outcomes: the
+stochasticity does not disappear, but it moves from an error stamped into
+the field to a spread across draws, where it can be measured, priced, and
+used.
 
 A second confusion hides in how precipitation is produced by modern forecast
 systems. Most AI weather models advance the atmospheric \emph{state}
@@ -228,9 +230,9 @@ convolutions, GroupNorm, ReLU) from $64$ channels at $128^2$ down to $1024$
 at $8^2$, a $2048$-channel bottleneck at $4^2$, a mirrored decoder with skip
 concatenations, and two parallel $1{\times}1$ output heads.
 C.~The two outputs for this input at $+3$~h: the rain field (softplus, mm)
-and the wet/dry probability (the sigmoid of the logits; trained against
-$y > 0$ --- any rain at all --- so its baseline sits high and only
-confidently dry regions drop). The bottleneck is
+and the wet/dry logits (red positive, wet-leaning; blue negative, dry;
+trained against $y > 0$ --- any rain at all --- so the field leans wet and
+only confidently dry regions go negative). The bottleneck is
 conditioned by \emph{OLR-FiLM} (FiLM: Feature-wise Linear Modulation): the
 patch's mean and minimum outgoing longwave radiation pass through a small
 MLP that returns per-channel scale and shift $(\gamma, \beta)$ applied to
