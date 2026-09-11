@@ -495,8 +495,13 @@ Detection improves with representation. On the example frame
 none; over the full record (Figure~\ref{fig:horizon}A) the flow's POD exceeds
 the two-head's in every scale band and at every lead ($0.79$ vs $0.72$ at
 $L \approx 190$~km, $+3$~h), and for the smallest band the POD nearly triples
-($0.078$ vs $0.028$). The horizon steepens to $\alpha = 1.63$
-(Figure~\ref{fig:horizon}C) and, most importantly, sits above
+($0.078$ vs $0.028$). Because the gain is largest at small scales, the
+measured exponent \emph{flattens}, from $1.79$ to $1.63$
+(Figure~\ref{fig:horizon}D): $\alpha$ measures how horizon is shared
+between large and small systems, not how much of it there is, and the
+deterministic model's excess slope was the blur taxing small systems ---
+estimator artifact, not atmosphere. The flow's $\tau(L)$, meanwhile, sits
+above
 \emph{both} the deterministic model and persistence at every scale
 ($\tau = 0.83$~h vs $0.53$/$0.55$~h at $L \approx 30$~km): the
 $100$-km crossover disappears, making the flow the first forecast in this study
@@ -620,6 +625,30 @@ profiles, explicit vertical motion) should raise the intercept
 $\mathrm{POD}_0$ but leave $\tau$, and hence $\alpha$, unchanged. If instead
 $\tau$ moves, the horizon is partly informational, not intrinsic --- either
 outcome is instructive.
+
+The exponent itself deserves a careful reading, because the natural
+intuition --- a better model should have a larger $\alpha$ --- is wrong.
+$\alpha = \mathrm{d}\ln\tau / \mathrm{d}\ln L$ measures how horizon is
+\emph{distributed} between large and small systems; skill lives in the level
+of $\tau(L)$, which the flow raises at every scale. The measured values then
+order themselves physically. Detection dies when the position error of a
+system becomes comparable to its own size, so if that error grows as
+$t^{p}$, then $\alpha = 1/p$. Persistence ($\alpha = 1.41$,
+$p \approx 0.7$) is near-ballistic: the storm simply travels away. The
+trained models know the steering flow, remove the coherent part of the
+displacement error, and leave a residual wander between ballistic and
+diffusive ($\alpha = 1.63$, $p \approx 0.6$; pure diffusion would give
+$\alpha = 2$). The deterministic model's steeper $1.79$ is this intrinsic
+slope plus a blur tax that falls hardest on small systems; the flow removes
+the tax and recovers ${\approx}1.6$, our best estimate of the intrinsic
+exponent. Lorenz's dry-cascade value, $\tau \propto \ell^{2/3}$
+\cite{lorenz1969}, sits far below all of these --- detection of intermittent
+precipitation objects dies by displacement against size, not by
+inertial-range error saturation. The reading is falsifiable with the tables
+already in hand: the centroid separations of matched pairs should grow as
+$t^{1/\alpha}$ with each forecast's own exponent, and the flow's extra
+small-system matches should come through size and shape, not through better
+centroids.
 
 Several limitations bound the claims. The record is one 40-day tropical
 summer of a single kilometer-scale model, and MPAS overestimates deep
