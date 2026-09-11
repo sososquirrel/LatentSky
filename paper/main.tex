@@ -97,7 +97,15 @@ contaminate progressively larger ones, so small features are lost first and
 large ones endure \cite{lorenz1969, hohenegger2007, zhang2003}. The quantity
 to measure is therefore not any single skill score --- which collapses the
 scale dependence into one number --- but the exponent of the law,
-$T(L) \propto L^{\alpha}$.
+$T(L) \propto L^{\alpha}$. Theory supplies two reference values. For dry
+turbulence Lorenz's argument fixes the exponent: with a Kolmogorov
+$k^{-5/3}$ spectrum, error reaches scale $\ell$ after the summed turnover
+times of all smaller eddies, giving $T \propto \ell^{2/3}$
+\cite{lorenz1969, rotunno2008}. And a forecast with no skill at all ---
+each storm simply carried off by the mean wind --- is lost once the storm
+has traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$. Where a
+measured exponent falls relative to these two anchors is itself
+information.
 
 Measuring $\alpha$ imposes two requirements. First, it requires
 kilometer-scale data, coarse-grained. In reanalyses and coarse models, deep
