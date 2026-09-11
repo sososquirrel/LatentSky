@@ -193,7 +193,8 @@ first forecast above the persistence null at every scale, at an explicitly
 priced false-alarm cost. Third, \emph{whether the limits transfer}: applied
 unchanged to four operational AI weather models from WeatherBench~2
 \cite{rasp2024} --- GraphCast \cite{lam2023}, FuXi \cite{chen2023}, GenCast
-\cite{price2025}, and FGN --- the same scale story holds, per-draw sampling of
+\cite{price2025}, and FGN \cite{alet2025} --- the same scale story holds,
+per-draw sampling of
 the generative member restores intensity, and below ${\sim}60$~km no model
 detects anything at $0.25^{\circ}$, the argument that kilometer-scale training
 data is necessary.
@@ -276,9 +277,9 @@ Global cloud-resolving models explicitly resolve deep convection and cloud
 systems, providing dynamically consistent four-dimensional fields essential
 for process understanding and data-driven modeling \cite{satoh2019}, though
 they remain model-dependent: MPAS reproduces mean precipitation and its
-diurnal cycle within the multi-model range \cite{stevens2019} but tends to
-overestimate deep convective clouds and heavy rainfall compared with the IMERG
-product \cite{feng2025}. For this study the fields are regridded to a regular
+diurnal cycle within the multi-model range \cite{stevens2019} but
+overestimates tropical mesoscale-convective-system frequency relative to
+IMERG-based tracking \cite{feng2023, feng2025}. For this study the fields are regridded to a regular
 $0.25^{\circ}$ grid (${\approx}28$~km) over the tropical belt
 $40^{\circ}$S--$40^{\circ}$N: 40 days of $96$ frames on a $320 \times 1440$
 grid. The kilometer-scale origin of the data matters more than the evaluation
