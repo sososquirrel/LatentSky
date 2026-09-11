@@ -37,25 +37,50 @@ restores representation, small-system placement remains unsolved
 
 %% ===================== ABSTRACT ============================================
 \begin{abstract}
-%% TODO (~250 words). Skeleton:
-%% 1. Question: what sets the limit of km-scale precipitation prediction?
-%% 2. Instrument: object-based P = rho*A decomposition; horizon T(L) = POD
-%%    e-folding time per scale band; persistence as nested null.
-%% 3. Law: T(L) ∝ L^alpha, alpha = 1.8 (deterministic), 1.4 (persistence),
-%%    crossover at ~100 km; full held-out record (132 blocks x 40 days).
-%% 4. Diagnosis: the conditional mean's compensating size/intensity bias.
-%% 5. Fix: conditional rectified flow on the forecast's measured error;
-%%    per-draw scoring; first model above the null at every scale, alpha 1.63,
-%%    barycenters collapse, small-L POD triples at FAR 0.92 (priced).
-%% 6. Universality: WB2 models show the same scale story; diffusion member
-%%    adds 150-500 km detection and erases intensity bias; below 60 km nothing
-%%    works at 0.25 degrees -- km-scale truth is necessary.
+%% DRAFT for Sophie's rewrite
+How far ahead precipitation can be predicted depends on the size of the
+precipitating system, yet standard verification collapses this scale
+dependence into a single score. Using a 40-day kilometer-scale DYAMOND MPAS
+integration, we decompose every precipitating system into an area and an
+intensity ($P = \rho A$) and define a scale-dependent detection horizon
+$T(L)$ --- the e-folding time of the probability of detection per size band
+--- with persistence as a nested null. Conditional on a perfectly known
+large-scale state, the horizon follows a power law $T(L) \propto L^{\alpha}$
+with $\alpha = 1.79$ for a deterministic U-Net and $1.41$ for persistence: a
+30-km convective cell is lost within the hour, a 500-km system survives
+beyond a day, and below ${\sim}100$~km the deterministic forecast falls
+behind persistence. The decomposition attributes part of this limit to the
+estimator: mean-square-error training returns the conditional mean ---
+systems too large and too weak. A conditional rectified flow trained to
+transport the forecast to the truth along its own measured error removes
+this bias per draw, triples small-system detection at an explicitly priced
+false-alarm cost, and is the first forecast above the null at every scale
+($\alpha = 1.63$). Applied unchanged to operational AI models (GraphCast,
+FuXi, GenCast, FGN), the same scale-dependent limits hold: sampling a
+diffusion member restores intensity from $150$~km up, while below $60$~km no
+model detects systems --- a limit set jointly by $0.25^{\circ}$ resolution
+and by forecast steps far beyond the small-system horizon.
 \end{abstract}
 
 \section*{Plain Language Summary}
-%% TODO (~200 words, no jargon): "How far ahead can rain be predicted? It
-%% depends on the size of the rain system..." — the crossfade/sprinkle story
-%% of the method in two sentences; the open small-storm problem.
+%% DRAFT for Sophie's rewrite
+How far ahead can rain be predicted? It depends on the rain: a monsoon rain
+shield hundreds of kilometers wide will still be there tomorrow, but a small
+thunderstorm may not survive the next hour. We make this intuition precise
+by treating every rainy patch in a very high resolution simulation as an
+object with a size, and asking how quickly forecasts lose track of objects
+of each size. The answer is a simple law: the survival time of predictions
+grows steeply with storm size. Part of the difficulty, however, comes from
+the forecast models themselves. Models trained to minimize the average error
+respond to uncertainty by blurring --- they draw storms too large and too
+weak. We train a second network that learns to turn the blurred forecast
+into sharp, realistic possibilities, the way one photo can be brought into
+several plausible focuses, and detection of small storms improves
+substantially --- at the price of more false alarms, which we report.
+Today's operational AI weather models show exactly the same behavior: their
+rain systems are also too weak, sampling from the newest generative models
+fixes that, and no current model can place small storms six hours ahead ---
+both sharper training data and more frequent forecasts will be needed.
 
 %% ===================== 1. INTRODUCTION =====================================
 \section{Introduction}
@@ -562,26 +587,91 @@ ${\sim}60$~km.
 
 %% ===================== 5. DISCUSSION =======================================
 \section{Discussion and outlook}\label{sec:discussion}
-%% - time evolution: valid-time matching + persistence-as-no-evolution null;
-%%   Lagrangian tracking as future work (html §7 note)
-%% - limitations: one DYAMOND winter, tropics; alpha fit range caveats
-%%   (top bands barely decay over 6 h -> tau extrapolated)
-%% - trigger vs amplitude, quantitatively (project notes): eps(t) =
-%%   eps_A(t) + eps_T(t); POD decay ~ eps_T, matched dln-rho ~ eps_A; test
-%%   whether eps_T grows faster (theory predicts yes); fit form with floor
-%%   S(t) = (S0 - Sinf) exp(-t/tau) + Sinf as a sensitivity on the B=0 fit
-%% - hypothesis for future work: tau is set by the intrinsic decorrelation of
-%%   the trigger, invariant to input choice (Case 1/2/3 ablation — background
-%%   vs +thermo profiles vs +dynamics — should change S0, not tau)
-%% - tau*(location): land vs ocean, tropics vs extratropics
-%% - implications for training objectives (CRPS-on-marginals vs joint sampling)
+%% DRAFT for Sophie's rewrite — ~750 words, room left for additions
+
+What does the horizon measure, and what does it not? Systems are matched at
+a common valid time, so $T(L)$ does not follow individual storms through
+their life cycles; it asks the operational question --- is the rain where the
+forecast said it would be, when it said it would be there? Time evolution
+enters statistically, through the family of six leads: the decay of
+detection with lead time is precisely the rate at which the evolving
+atmosphere carries systems away from any snapshot-consistent prediction, and
+the persistence null makes this reading exact, because persistence is the
+forecast with \emph{no} evolution at all. The margin over persistence is
+therefore the evolution the model captured. A Lagrangian companion ---
+tracking matched systems through consecutive frames to separate displacement
+error from genuine dissipation and initiation --- is the natural next
+instrument, and the matched-pair tables built here already contain the
+centroids it needs.
+
+The trigger--amplitude decomposition can be made quantitative. Writing the
+total error schematically as
+$\epsilon(t) = \epsilon_{\mathcal{T}}(t) + \epsilon_A(t)$, the decay of
+detection measures the trigger term and the matched-pair intensity error
+measures the amplitude term, conditional on the trigger being found. Two
+predictions follow from the physical picture. First,
+$\epsilon_{\mathcal{T}}$ should grow faster with lead than $\epsilon_A$ ---
+the environment that controls amplitude carries the longer memory --- and
+our curves are consistent with this ordering: detection collapses within
+$\tau(L)$ while the matched $\mathrm{d}\ln\rho$ barycenters drift only
+slowly with lead. Second, and testable with the input ablations this
+framework invites, the decay timescale $\tau$ should be a property of the
+atmosphere rather than of the input set: enriching the inputs (thermodynamic
+profiles, explicit vertical motion) should raise the intercept
+$\mathrm{POD}_0$ but leave $\tau$, and hence $\alpha$, unchanged. If instead
+$\tau$ moves, the horizon is partly informational, not intrinsic --- either
+outcome is instructive.
+
+Several limitations bound the claims. The record is one 40-day tropical
+winter of a single kilometer-scale model, and MPAS overestimates deep
+convection relative to observations; the exponents deserve re-measurement on
+other DYAMOND members and on observations (IMERG at its native scales) before
+they are treated as universal. The two largest scale bands barely decay
+within the trained $6$~h, so their $\tau$ is an extrapolation of the fit,
+not a measurement. The matching itself has known sensitivities --- loose IoU
+flatters persistence, the rain threshold changes the object population ---
+quantified in Text~S4; none changes the ordering of the three forecasts. And
+our generative claims are per-draw statements about single realizations;
+building and scoring proper ensembles from the flow (spread, calibration,
+CRPS) is a separate study.
+
+The practical implication is a recipe rather than a model. The apparent
+predictability limit of km-scale precipitation contains a large,
+recoverable estimator artifact, and the recovery mechanism is cheap: a
+generative correction trained on the forecast's own error budget, sampled
+per draw, with the false-alarm price stated by the same instrument that
+measures the gain. The WB2 results suggest the recipe transfers: GenCast's
+members --- but not their mean --- already behave like the flow, which
+argues that joint sampling of the precipitation field, rather than
+per-pixel-optimal objectives, is the property to preserve as operational
+models evolve. For the smallest systems the recipe alone is not enough:
+their horizon is shorter than any operational forecast step, so progress
+below ${\sim}60$~km requires kilometer-scale training data \emph{and}
+sub-hour forecast cadence together. Where the horizon itself varies --- land
+versus ocean, tropics versus midlatitudes --- is open, and the instrument
+travels: any forecast that produces a rain field, numerical or neural,
+deterministic or generative, can be placed on the same $\tau(L)$ axes.
 
 \section{Open Research}
-%% Data availability: DYAMOND pieces, WB2 public zarrs; code: repo + scripts;
-%% full-record system tables.
+The DYAMOND MPAS output is available through the DYAMOND initiative
+\cite{stevens2019}; the regridded $0.25^{\circ}$ tropical-belt fields, the
+trained model checkpoints, and the full matched-system tables that underlie
+every figure will be archived with a DOI upon acceptance
+%% TODO: mint the archive (Zenodo or NCAR GDEX) before submission
+. The WeatherBench~2 forecasts (GraphCast, FuXi, GenCast, FGN) and the ERA5
+verification fields are publicly available from the WeatherBench~2 cloud
+archive \cite{rasp2024}. All analysis and figure code --- the object
+detection, matching, and $\rho A$ decomposition, the training and sampling
+code for both models, and one script per figure --- is available at
+%% TODO: public repository URL
+the project repository.
 
 \acknowledgments
-%% NCAR CISL Casper/Derecho allocation UCLB0066; DYAMOND; WeatherBench2.
+Computing resources were provided by the NSF National Center for
+Atmospheric Research (CISL), on the Casper and Derecho systems under
+allocation UCLB0066. We thank the DYAMOND initiative and the MPAS group at
+NCAR for the storm-resolving simulation, the WeatherBench~2 team for the
+open forecast archive, and ECMWF for ERA5.
 
 \bibliography{refs}
 

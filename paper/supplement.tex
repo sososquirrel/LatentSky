@@ -1,0 +1,98 @@
+%% Supporting Information for "The Size of the Storm Sets the Horizon"
+%% Compiled standalone (article class); port into the AGU SI template
+%% (agutexSI2019.cls from Overleaf) at submission.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{lineno}
+\linenumbers
+
+\title{Supporting Information for\\
+``The Size of the Storm Sets the Horizon: a Scale-Aware Evaluation of AI
+Precipitation Forecasts''}
+\author{Sophie Abramian, Tim Zhou, Sara Shamekh}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Text S1. The leakage-safe patch split}
+Training samples are $128 \times 128$ non-overlapping patches tiled from
+each $320 \times 1440$ frame: a $2 \times 11$ grid of 22 blocks per frame,
+with the remainder (the last 64 latitude rows and 32 longitude columns)
+excluded throughout. The split unit is a \emph{block-day}, the pair (day,
+block location), kept together across all 96 frames of its day. The
+$40 \times 22 = 880$ block-days are shuffled with a fixed seed and cut
+$70/15/15$ into $616$ train, $132$ validation, and $132$ test units. Two
+properties make this leakage-safe: blocks never overlap (stride equals
+patch size), so no pixel appears in two splits; and all frames of one
+block-day stay in one split, so the strong 15-minute temporal
+autocorrelation cannot leak across splits at a fixed location. The accepted
+residual risk is a storm straddling the border of two adjacent blocks
+assigned to different splits; evaluation therefore restricts object
+statistics to systems whose centroid falls in a held-out test block. Both
+model families --- deterministic and flow --- are trained on the identical
+split. An earlier day-level split leaked through temporal autocorrelation
+and was discarded; no result in the paper uses it.
+
+\section*{Text S2. Architecture and training details}
+The shared trunk is a five-stage encoder--decoder: each stage two
+$3{\times}3$ convolutions with GroupNorm (8 groups) and ReLU and 0.05
+Dropout2d, channels $64 \rightarrow 1024$ with $2\times$ max pooling, a
+$2048$-channel bottleneck at $4^2$, transpose-convolution upsampling with
+skip concatenations ($124.6$~M parameters for the two-head model). The
+two-head loss is $\mathrm{total} = \mathrm{MSE}_{\mathrm{wet}} +
+1.0\,\mathrm{BCE} + 0.25\,\mathrm{FSS}$: a masked intensity MSE on wet
+pixels (in mm), binary cross-entropy on the wet/dry logits over the full
+field, and a differentiable fractions-skill-score term at kernel sizes
+$[1, 3, 5, 11, 19, 33]$ pixels --- chosen to coincide with the paper's
+$L$ bins at $27.8$~km per pixel --- with wet threshold $0.1$~mm and sigmoid
+sharpness 20. Training: AdamW ($10^{-3}$, weight decay $10^{-5}$), StepLR
+(halving every 8 epochs), batches of 64 patches, early stopping after 10
+epochs without validation improvement (51--82 epochs per lead), a single
+A100 per run, fixed seed. One model per lead
+($0.25, 0.5, 1, 2, 3, 6$~h). The flow's velocity network reuses the trunk
+with an eleventh input channel ($x_t$), FiLM conditioning on $t$, and a
+single unactivated velocity head; the per-lead noise scale $\sigma$ is the
+measured wet-masked forecast error rms in log-rain space
+($0.102, 0.119, 0.146, 0.171, 0.188, 0.204$ for the six leads).
+
+\section*{Text S3. The warm-started diffusion model as a sampling sensitivity}
+Before the rectified flow, the generative representative was a conditional
+denoising diffusion model trained to denoise noised \emph{truth}, sampled by
+warm-starting from the noised deterministic \emph{forecast} (SDEdit-style)
+with a lead-dependent noise budget calibrated per lead. This retrofit
+carries a train/test mismatch --- the network never saw noised forecasts
+during training --- and it shows: across noise budgets the small-scale
+spectral power saturates at $0.80$--$0.85$ of the truth's and the wet area
+falls ${\sim}20\%$ short at $6$~h. The flow, trained natively on the
+forecast$\to$truth transport, clears this ceiling (band ratio $1.115$, wet
+area $+1.5\%$ at $6$~h). We therefore report the diffusion model as a
+sampling-protocol sensitivity: its failure localizes the DDPM's limit in
+the sampler's mismatch, not in an informational limit of the inputs.
+
+\section*{Text S4. Sensitivities of the matching}
+\textbf{IoU threshold.} Storms are long-lived, so at $\mathrm{IoU} \ge 0.1$
+an old storm often still overlaps its past self; loose matching therefore
+flatters persistence at short leads. Tightening the acceptance threshold
+lowers persistence detection faster than either model's and does not change
+the ordering of the three forecasts or the sign of the flow's margin.
+\textbf{Rain threshold.} At the km scale the object population is stable
+around the $0.1$~mm threshold. On the $0.25^{\circ}$ WB2 grid the
+rate-equivalent threshold ($2.4$~mm per $6$~h $= 0.1$~mm per $15$~min)
+is required: at $0.1$~mm per $6$~h the drizzle field percolates into a
+single belt-spanning system. The POD-by-scale shape is robust across
+thresholds $0.1$--$2.4$~mm per $6$~h (FAR $0.71 \rightarrow 0.39$).
+\textbf{One-to-one matching.} Greedy one-to-one assignment penalizes a
+model that splits one true system into several (each fragment beyond the
+first counts as a false alarm and the area error reads low). This affects
+the sharp GenCast member on the coarse grid, which over-segments (804
+forecast objects against 444 in ERA5 truth on a reference day, with wet
+coverage correct at $8.6\%$ for all models), so the member's negative
+$\mathrm{d}\ln A$ is in part a matching artifact; the smooth deterministic
+models under-segment instead ($\approx 200$ objects). A many-to-one variant
+is the appropriate sensitivity and does not change the intensity-bias
+conclusions.
+
+\end{document}
