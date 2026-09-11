@@ -85,20 +85,40 @@ both sharper training data and more frequent forecasts will be needed.
 %% ===================== 1. INTRODUCTION =====================================
 \section{Introduction}
 
-How far ahead can precipitation be predicted? The honest answer depends on the
-rain: a 500-km monsoon rain shield will still be found eight hours from now; a
-30-km convective cell may not survive the next one. That predictability grows
-with spatial scale is one of the oldest results of predictability theory
-\cite{lorenz1969}, and its convective-scale limit has been studied extensively
-in idealized and case settings \cite{hohenegger2007, zhang2003}. Yet the way
-precipitation forecasts are routinely evaluated --- pixel-wise scores averaged
-over a domain --- collapses this scale dependence into a single number and, worse,
-biases the comparison itself: a model trained and scored on mean squared error
-returns the conditional mean of an increasingly wide predictive distribution,
-a smooth field whose systems are too large and too weak. Pixel scores reward
-exactly this blur (the double-penalty problem \cite{ravuri2021}), so the
-apparent predictability limit mixes two things of very different nature: what
-the atmosphere forbids, and what the estimator destroys.
+How far ahead can precipitation be predicted? The answer depends on the size
+of the precipitating system --- a 500-km monsoon rain shield will still be
+found eight hours from now; a 30-km convective cell may not survive the next
+one --- and the goal of this paper is to make that dependence quantitative:
+a scale-aware time horizon $T(L)$ for precipitation prediction, the time
+over which a forecast keeps track of raining systems of size $L$. That such
+a horizon must take the form of a scaling law is one of the oldest results
+of predictability theory: errors originate at the smallest scales and
+contaminate progressively larger ones, so small features are lost first and
+large ones endure \cite{lorenz1969, hohenegger2007, zhang2003}. The quantity
+to measure is therefore not any single skill score --- which collapses the
+scale dependence into one number --- but the exponent of the law,
+$T(L) \propto L^{\alpha}$.
+
+Measuring $\alpha$ imposes two requirements. First, it requires
+kilometer-scale data, coarse-grained. In reanalyses and coarse models, deep
+convection lives below the grid and its rain is drawn by parameterizations;
+a horizon measured against such a product is a property of the product, not
+of the atmosphere. We want the limit rooted in processes that are actually
+resolved, and therefore use a global storm-resolving DYAMOND MPAS
+integration, coarse-grained to $0.25^{\circ}$ for evaluation. Second, it
+requires forecast models able to produce \emph{realistic} precipitation
+maps. Even when convection is resolved, the large-scale state does not
+determine the rain: the same environment admits many equally plausible
+convective realizations, and a model trained on mean-square error responds
+to this stochasticity by returning their average --- a blurred envelope
+whose systems are too large and too weak, which pixel scores reward (the
+double-penalty problem \cite{ravuri2021}). A horizon measured with such a
+model mixes what the atmosphere forbids with what the estimator destroys.
+We therefore measure the horizon twice: with a deterministic network, and
+with a generative flow-matching model that returns sharp \emph{samples} of
+the possible outcomes --- the stochasticity does not disappear, it moves
+from an error stamped into the field to a spread across draws, where it can
+be measured and priced. Persistence, evaluated identically, is the null.
 
 The systems in question matter well beyond forecast verification. Deep
 convection organizes into mesoscale convective systems spanning
@@ -115,28 +135,6 @@ datasets of this kind call for analytical frameworks posed at the scale of the
 systems themselves, and the scale-decomposed horizon of this paper is one such
 framework --- it asks the predictability question system by system, size by
 size.
-
-Two distinct barriers stand between a forecast and the rain. The first is
-\emph{resolution}: the processes that decide whether convection fires ---
-microphysics, boundary-layer thermals, cold pools --- live below the grid of
-climate and reanalysis products and are parameterized or absent, so small
-systems cannot even be represented, let alone predicted. The second is
-\emph{stochasticity}: even when convection is explicitly resolved, the
-large-scale state does not determine the rain --- the same environment
-admits many equally plausible convective realizations, which decorrelate
-within the hour, and no increase in resolution removes this limit. This
-paper is built to isolate the second barrier and measure it. Training and
-evaluating on kilometer-scale data takes the resolution barrier out of the
-problem as far as currently possible; what remains, quantified by the
-horizon $T(L)$, is the intrinsic unpredictability of the systems themselves.
-The question then becomes what a machine-learning model can still do against
-an irreducibly stochastic target --- and the answer this paper defends is:
-be probabilistic. A deterministic network, asked for the one true field, can
-only return the average of all plausible outcomes --- the blur. A generative
-model can instead return sharp \emph{samples} of those outcomes: the
-stochasticity does not disappear, but it moves from an error stamped into
-the field to a spread across draws, where it can be measured, priced, and
-used.
 
 A second confusion hides in how precipitation is produced by modern forecast
 systems. Most AI weather models advance the atmospheric \emph{state}
