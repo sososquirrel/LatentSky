@@ -152,50 +152,55 @@ autoregressive system that derives rain from these state variables can exceed
 it, because it reflects the stochasticity of the state-to-rain map, not
 errors in state prediction.
 
-This paper separates the two, at kilometer scale, with an instrument simple
-enough to state in one identity. Every precipitating system --- a connected
-rainy object --- carries a total precipitation $P$ that factors exactly into an
-area and an area-weighted intensity, $P = \rho A$, so that for a matched
-truth--forecast pair the logarithmic error splits with no cross term:
-$\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho$. Object-based
-verification has a long tradition \cite{davis2006, wernli2008}; what we add is
-to use it to \emph{define a horizon}. Binning systems by their size
-$L = \sqrt{A}$ and fitting the decay of the probability of detection with lead
-time yields an e-folding time $T(L)$ per scale band --- the detection horizon
---- measured identically for every forecast, including the persistence null,
-which each of our models receives as an input so that the null is nested by
-construction. The decomposition maps onto the two physically distinct
-challenges of precipitation prediction: the \emph{trigger} --- whether and
-where convection initiates, governed by boundary-layer thermals, cold-pool
-collisions, and mesoscale convergence that are effectively stochastic at the
-resolved scale --- and the \emph{amplitude} --- how intense it is, largely
-controlled by the thermodynamic environment and inheriting its longer memory.
-Detection (POD, and hence the horizon $T(L)$) measures the trigger;
-the matched-pair errors $\mathrm{d}\ln A$ and $\mathrm{d}\ln\rho$ measure the
-amplitude and its spatial organization, conditional on the trigger being
-found. At zero lead the inputs read the trigger directly --- outgoing longwave
-radiation is a near-direct observation of where deep convection is active ---
-so the decay of detection with lead is precisely the timescale over which
-trigger information is lost.
+The instrument behind these measurements builds on the long tradition of
+object-based verification \cite{davis2006, wernli2008}; what we add is to
+use it to \emph{define a horizon}, and the decomposition it provides maps
+onto the two physically distinct challenges of precipitation prediction:
+the \emph{trigger} --- whether and where convection initiates, governed by
+boundary-layer thermals, cold-pool collisions, and mesoscale convergence
+that are effectively stochastic at the resolved scale --- and the
+\emph{amplitude} --- how intense it is, largely controlled by the
+thermodynamic environment and inheriting its longer memory. Detection, and
+hence the horizon $T(L)$, measures the trigger; the matched-pair errors
+$\mathrm{d}\ln A$ and $\mathrm{d}\ln\rho$ measure the amplitude,
+conditional on the trigger being found. At zero lead the inputs read the
+trigger directly --- outgoing longwave radiation is a near-direct
+observation of where deep convection is active --- so the decay of
+detection with lead is precisely the timescale over which trigger
+information is lost.
 
-Three questions organize the paper. First, \emph{what sets the limit}: measured
-on a storm-resolving DYAMOND integration \cite{stevens2019}, the horizon follows
-a power law of system size, $T(L) \propto L^{\alpha}$ with $\alpha = 1.79$ for
-the deterministic model and $1.41$ for persistence. Second, \emph{how much of
-the limit is the estimator}: the decomposition shows the deterministic model's
-compensating pathology --- systems too large ($\mathrm{d}\ln A > 0$) and too
-weak ($\mathrm{d}\ln\rho < 0$), invisible to aggregate scores --- and a
-conditional rectified flow \cite{lipman2023, liu2023} trained to transport the
-forecast to the truth along its own measured error removes it, becoming the
-first forecast above the persistence null at every scale, at an explicitly
-priced false-alarm cost. Third, \emph{whether the limits transfer}: applied
-unchanged to four operational AI weather models from WeatherBench~2
-\cite{rasp2024} --- GraphCast \cite{lam2023}, FuXi \cite{chen2023}, GenCast
-\cite{price2025}, and FGN \cite{alet2025} --- the same scale story holds,
-per-draw sampling of
-the generative member restores intensity, and below ${\sim}60$~km no model
-detects anything at $0.25^{\circ}$, the argument that kilometer-scale training
-data is necessary.
+The paper answers three questions.
+
+\begin{enumerate}
+\item \emph{How can a scale-aware predictability horizon be measured?}
+This is the methods question, and the answer is the paper's instrument:
+every precipitating system is an object whose total rain factors exactly
+into an area and an intensity, $P = \rho A$; objects are matched between
+forecast and truth at a common valid time; and the horizon $T(L)$ is the
+e-folding time of the probability of detection per size band, fitted across
+six forecast leads, with persistence evaluated under the identical matching
+as the null (Section~\ref{sec:methods}).
+
+\item \emph{What limits precipitation prediction --- the atmosphere or the
+estimator?} Both, and the instrument separates them. The horizon follows a
+power law, $T(L) \propto L^{\alpha}$, with $\alpha = 1.79$ for a
+deterministic network and $1.41$ for persistence; but part of that law is
+the estimator's blur --- systems too large and too weak, invisible to
+aggregate scores. A flow-matching correction --- in a couple of words: a
+network trained to continuously deform the blurred forecast into a sharp,
+realistic field, so that each random draw is a different plausible truth
+\cite{lipman2023, liu2023} --- removes the blur, becomes the first forecast
+above the null at every scale, and flattens the exponent to
+${\approx}1.6$, our estimate of the intrinsic law
+(Sections~\ref{sec:res-det}--\ref{sec:res-flow}).
+
+\item \emph{Do these limits apply to today's operational AI forecasts?}
+Yes: applied unchanged to GraphCast \cite{lam2023}, FuXi \cite{chen2023},
+GenCast \cite{price2025}, and FGN \cite{alet2025} from WeatherBench~2
+\cite{rasp2024}, the same scale story holds --- sampling a generative member
+restores intensity, and below ${\sim}60$~km no model detects systems at
+$0.25^{\circ}$ (Section~\ref{sec:res-wb2}).
+\end{enumerate}
 
 A word on ambition. The models trained here are deliberately modest --- a
 $125$~M-parameter U-Net and its flow correction, trained on 40 days of data on
