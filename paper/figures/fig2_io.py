@@ -102,7 +102,7 @@ def fig_outputs(x):
     rain = np.clip(rain_t.numpy()[0, 0], 0, None)
     logit = logit_t.numpy()[0, 0]
 
-    fig, axs = plt.subplots(1, 2, figsize=(W2 * 0.42, W2 * 0.27))
+    fig, axs = plt.subplots(1, 3, figsize=(W2 * 0.63, W2 * 0.27))
     im0 = axs[0].imshow(rain, origin="lower", cmap="Blues",
                         norm=LogNorm(0.1, max(rain.max(), 1.0)),
                         interpolation="nearest")
@@ -113,13 +113,23 @@ def fig_outputs(x):
                         vmax=vlim, interpolation="nearest")
     axs[1].text(0.5, 1.04, "wet/dry (logits)", transform=axs[1].transAxes,
                 ha="center", va="bottom", fontsize=7)
-    for ax, im in zip(axs, (im0, im1)):
+    from matplotlib.colors import ListedColormap
+    mask = (logit > 0).astype(float)
+    im2 = axs[2].imshow(mask, origin="lower",
+                        cmap=ListedColormap(["#ffffff", DET]), vmin=0,
+                        vmax=1, interpolation="nearest")
+    axs[2].text(0.5, 1.04, "precip mask (logit > 0)",
+                transform=axs[2].transAxes, ha="center", va="bottom",
+                fontsize=7)
+    for ax, im in zip(axs, (im0, im1, im2)):
         ax.set_xticks([])
         ax.set_yticks([])
         cb = fig.colorbar(im, ax=ax, orientation="horizontal",
                           fraction=0.055, pad=0.05, aspect=22)
         cb.ax.tick_params(labelsize=5.5, length=1.5, width=0.5)
         cb.outline.set_linewidth(0.4)
+    cb.set_ticks([0.25, 0.75])
+    cb.set_ticklabels(["dry", "wet"])
     fig.subplots_adjust(wspace=0.1)
     fig.savefig(OUT / "fig2c_outputs.pdf", dpi=300)
     print("saved fig2c_outputs.pdf")

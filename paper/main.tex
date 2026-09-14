@@ -266,10 +266,11 @@ log scale). B.~The trunk: five encoder stages (each two $3{\times}3$
 convolutions, GroupNorm, ReLU) from $64$ channels at $128^2$ down to $1024$
 at $8^2$, a $2048$-channel bottleneck at $4^2$, a mirrored decoder with skip
 concatenations, and two parallel $1{\times}1$ output heads.
-C.~The two outputs for this input at $+3$~h: the rain field (softplus, mm)
-and the wet/dry logits (red positive, wet-leaning; blue negative, dry;
-trained against $y > 0$ --- any rain at all --- so the field leans wet and
-only confidently dry regions go negative). The bottleneck is
+C.~The outputs for this input at $+3$~h: the rain field (softplus, mm), the
+wet/dry logits (red positive, wet-leaning; blue negative, dry), and the
+resulting precipitation mask (logit $> 0$). The head is trained against
+$y > 0$ --- any rain at all --- so the mask is permissive: it flags where
+some rain is plausible, and only confidently dry regions stay dry. The bottleneck is
 conditioned by \emph{OLR-FiLM} (FiLM: Feature-wise Linear Modulation): the
 patch's mean and minimum outgoing longwave radiation pass through a small
 MLP that returns per-channel scale and shift $(\gamma, \beta)$ applied to
