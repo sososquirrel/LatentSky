@@ -114,11 +114,11 @@ def fig_outputs(x):
     axs[1].text(0.5, 1.04, "wet/dry (logits)", transform=axs[1].transAxes,
                 ha="center", va="bottom", fontsize=7)
     from matplotlib.colors import ListedColormap
-    mask = (logit > 0).astype(float)
+    mask = (rain > 0.1).astype(float)
     im2 = axs[2].imshow(mask, origin="lower",
                         cmap=ListedColormap(["#ffffff", DET]), vmin=0,
                         vmax=1, interpolation="nearest")
-    axs[2].text(0.5, 1.04, "precip mask (logit > 0)",
+    axs[2].text(0.5, 1.04, "precip mask (rain > 0.1 mm)",
                 transform=axs[2].transAxes, ha="center", va="bottom",
                 fontsize=7)
     for ax, im in zip(axs, (im0, im1, im2)):

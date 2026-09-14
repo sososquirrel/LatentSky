@@ -268,9 +268,11 @@ at $8^2$, a $2048$-channel bottleneck at $4^2$, a mirrored decoder with skip
 concatenations, and two parallel $1{\times}1$ output heads.
 C.~The outputs for this input at $+3$~h: the rain field (softplus, mm), the
 wet/dry logits (red positive, wet-leaning; blue negative, dry), and the
-resulting precipitation mask (logit $> 0$). The head is trained against
-$y > 0$ --- any rain at all --- so the mask is permissive: it flags where
-some rain is plausible, and only confidently dry regions stay dry. The bottleneck is
+precipitation mask at the paper's wet threshold (rain $> 0.1$~mm) --- the
+mask the object detection of Section~\ref{sec:evaluation} operates on. The
+logit head itself is permissive --- trained against $y > 0$, any rain at
+all, it flags wet nearly everywhere and only confidently dry regions go
+negative --- so segmentation uses the rain field. The bottleneck is
 conditioned by \emph{OLR-FiLM} (FiLM: Feature-wise Linear Modulation): the
 patch's mean and minimum outgoing longwave radiation pass through a small
 MLP that returns per-channel scale and shift $(\gamma, \beta)$ applied to
@@ -331,7 +333,15 @@ Trained with MSE on intensity, this model returns the conditional mean of the
 predictive distribution. As lead grows the distribution widens and the mean
 blurs: this is not a defect of the architecture but a property of the loss, and
 it is the specific pathology the evaluation of Section~\ref{sec:evaluation}
-isolates and the model of Section~\ref{sec:flow} corrects.
+isolates and the model of Section~\ref{sec:flow} corrects. The wet/dry head
+fails in the same direction for the same reason (Figure~\ref{fig:arch}C):
+under uncertainty the loss-minimizing answer is the hedge, and since some
+rain somewhere is almost always true at kilometer scale, the head flags wet
+nearly everywhere --- it takes no risk. Neither head is broken; both are
+doing risk minimization exactly as trained. Producing a realistic
+precipitation map requires a component willing to take risk --- to commit to
+one sharp realization --- and the false-alarm ratio is, literally, the price
+of that risk.
 
 \subsection{Generative correction: a conditional rectified flow}\label{sec:flow}
 
