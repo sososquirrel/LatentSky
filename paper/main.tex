@@ -169,24 +169,20 @@ where it can be improved. Here we explore that direction. We ask three
 questions: how to produce a realistic precipitation forecast, how its skill
 is distributed across scales, and what time horizon each scale admits.
 
-Our approach is experimental. We use a global storm-resolving DYAMOND
-simulation \cite{stevens2019}, which resolves the mesoscale convective
-systems responsible for tropical extremes. We train two models that differ
-only in their training objective: a deterministic network, which returns
-the mean, and a generative flow-matching model, which returns sharp samples
-of the possible outcomes. The models are small, a $125$~M-parameter U-Net
-and its flow correction trained on 40 days of data on a single GPU. They
-are not meant to compete with operational systems; they form a controlled
-experiment. Rain is the target, predicted from the \emph{simultaneous}
-large-scale state. The horizon we measure is therefore conditional on
-perfect knowledge of the state: it is an upper bound for any system that
-derives rain from these state variables. Persistence, evaluated
-identically, is the null. The evaluation is object-based, following
-\citeA{davis2006} and \citeA{wernli2008}. Detection, and hence $T(L)$,
-measures the \emph{trigger}: whether and where convection occurs. The area
-and intensity errors of the detected systems measure the \emph{amplitude},
-which is set by the thermodynamic environment. The evaluation does not
-depend on the model: it applies to any forecast that produces a rain field.
+We use a 40-day global storm-resolving simulation \cite{stevens2019},
+coarse-grained to $0.25^{\circ}$ over the tropical belt, and train two
+forecast models that differ only in their training objective: a
+deterministic U-Net and a generative flow-matching model started from its
+output. Both predict rain at leads of $15$~min to $6$~h from the
+large-scale state and the current rain, so that persistence is a nested
+null. Rain systems are identified as objects in the forecast and in the
+reference and matched. This gives the probability of detection per size
+band, which measures whether and where convection is \emph{triggered}, and,
+for matched systems, the errors in area and intensity, which measure its
+\emph{amplitude}. The models are small and are not meant to compete with
+operational systems; they form a controlled experiment, and the evaluation
+applies to any forecast that produces a rain field
+(Section~\ref{sec:methods}).
 
 We show that a deterministic U-Net returns a blurred mean, and that a
 flow-matching model started from it returns sharp draws with the
