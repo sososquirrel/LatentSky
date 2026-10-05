@@ -225,7 +225,7 @@ $0.25^{\circ}$, one 15-min frame of the 40-day DYAMOND MPAS record), tiled
 into the $2 \times 11 = 22$ blocks per day on which all training,
 evaluation, and splitting operate; gray strips never enter the pipeline.
 The red box marks the example block used in
-Figures~\ref{fig:flowmethod}--\ref{fig:decomp}, over the Maritime Continent /
+Figures~\ref{fig:arch}--\ref{fig:decomp}, over the Maritime Continent /
 West Pacific warm pool. Over the 40 days the $880$ (block, day) units are
 split $616/132/132$ into train/val/test (Text~S1).}
 \label{fig:data}
@@ -233,34 +233,24 @@ split $616/132/132$ into train/val/test (Text~S1).}
 
 \begin{figure}
 \centering
-A.\\
-\includegraphics[width=\textwidth]{figures/fig2a_inputs.pdf}\\[2mm]
-B.\\
-\includegraphics[width=\textwidth]{figures/fig1b_architecture.pdf}\\[2mm]
-C.\\
-\includegraphics[width=0.42\textwidth]{figures/fig2c_outputs.pdf}
-\caption{\textbf{The two-head U-Net, input to output} (the standard example
-block). A.~The ten input channels, concatenated in this order with the
-current rain last (blue frame --- the persistence forecast handed to the
-model, which nests the null); each map standardized, colormaps by family
-(moisture and moist static energy brown--teal, temperature thermal, OLR
-grayscale with cold convective tops dark, winds red--blue, rain blue on a
-log scale). B.~The trunk: five encoder stages (each two $3{\times}3$
-convolutions, GroupNorm, ReLU) from $64$ channels at $128^2$ down to $1024$
-at $8^2$, a $2048$-channel bottleneck at $4^2$, a mirrored decoder with skip
-concatenations, and two parallel $1{\times}1$ output heads.
-C.~The outputs for this input at $+3$~h: the rain field (softplus, mm), the
-wet/dry logits (red positive, wet-leaning; blue negative, dry), and the
-precipitation mask at the paper's wet threshold (rain $> 0.1$~mm) --- the
-mask the object detection of Section~\ref{sec:evaluation} operates on. The
-logit head itself is permissive --- trained against $y > 0$, any rain at
-all, it flags wet nearly everywhere and only confidently dry regions go
-negative --- so segmentation uses the rain field. The bottleneck is
-conditioned by \emph{OLR-FiLM} (FiLM: Feature-wise Linear Modulation): the
-patch's mean and minimum outgoing longwave radiation pass through a small
-MLP that returns per-channel scale and shift $(\gamma, \beta)$ applied to
-the bottleneck features --- a convective-regime gate (cold, deep tops vs
-warm, shallow ones).}
+\makebox[\textwidth][c]{\includegraphics{figures/fig2_pipeline.pdf}}
+\caption{\textbf{From the large-scale state to rain draws} (the standard
+example block at $+3$~h; all rain maps are model fields on one log color
+scale). A.~The inputs at time $t$: nine fields of the large-scale state,
+stacked, and the current rain. B.~The U-Net maps these ten fields to the
+rain at $t + \Delta t$: an encoder of five stages from $128^2$ to $8^2$, a
+bottleneck at $4^2$, a mirrored decoder, and skip connections (dashed).
+C.~Flow matching. The U-Net forecast plus noise,
+$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is the starting state. A
+second U-Net, the velocity network, returns the velocity $\hat{v}$ at the
+current state $x_t$, and the state is advanced by $\hat{v}\,\delta$; this
+step is repeated $32$ times and gives one draw $x_1$. The velocity network
+also receives the ten input fields and the flow time (not drawn). Three
+noise realizations give draws A, B, and C. Bottom: a two-dimensional sketch
+of the idea, not of the actual distributions: one uncertain starting point
+is carried to definite outcomes, here one draw to one peak and two draws to
+another. The ten input maps, the full architecture, and the two outputs of
+the U-Net are shown in Figure~S1.}
 \label{fig:arch}
 \end{figure}
 
@@ -317,7 +307,7 @@ predictive distribution. As lead grows the distribution widens and the mean
 blurs: this is not a defect of the architecture but a property of the loss, and
 it is the specific pathology the evaluation of Section~\ref{sec:evaluation}
 isolates and the model of Section~\ref{sec:flow} corrects. The wet/dry head
-fails in the same direction for the same reason (Figure~\ref{fig:arch}C):
+fails in the same direction for the same reason (Figure~S1C):
 under uncertainty the loss-minimizing answer is the hedge, and since some
 rain somewhere is almost always true at kilometer scale, the head flags wet
 nearly everywhere --- it takes no risk. Neither head is broken; both are
@@ -349,28 +339,8 @@ lands exactly on $t = 1$; the final step is a plain Euler step, sparing the
 evaluation at $t = 1$ itself. The noise scale is the entire source of stochasticity:
 $\sigma \to 0$ collapses the flow to a deterministic regression, and each new
 $\varepsilon$ yields a different sharp realization consistent with the same
-smooth forecast. Figure~\ref{fig:flowmethod} shows the method on one example:
-the smooth two-head forecast, two sharp flow draws consistent with it, and the
-truth they are distributed around.
-
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{figures/fig3_flowsketch.pdf}
-\caption{\textbf{Flow matching, forecast to draws} ($+3$~h, the standard
-example block; all rain maps share one log color scale). The smooth two-head
-forecast, perturbed by its own measured error
-($x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$), enters the flow-matching
-module conditioned on the ten input channels $c$; each noise draw
-$\varepsilon$ yields a different sharp realization (draw A, draw B) of the
-same truth --- the draws differ from each other exactly where the outcome is
-uncertain. Below, the module unpacked: the transport equation
-$x_1 = x_0 + \int_0^1 \hat{v}(x_t, t, c)\,\mathrm{d}t$, integrated by the
-unrolled loop at the bottom --- the velocity network FM reads the current
-state $x_t$ (and $t$, $c$), returns $\hat{v}_t$, and the state advances by
-$\hat{v}_t\,\mathrm{d}t$, repeated for $32$ Heun steps from $t = 0$ to
-$1$.}
-\label{fig:flowmethod}
-\end{figure}
+smooth forecast. Figure~\ref{fig:arch}C shows the method on one example:
+the smooth two-head forecast and three sharp flow draws consistent with it.
 
 One scoring rule governs every generative result in this paper: metrics are
 computed per draw and then averaged over draws, never on the draw-averaged
@@ -416,7 +386,7 @@ matching) is reported in Text~S4.
 \label{sec:res-model}
 
 The two-head forecast has the right pattern and the wrong texture. On the
-example block at $+3$~h (Figure~\ref{fig:flowmethod}) it places rain where
+example block at $+3$~h (Figures~\ref{fig:arch} and~\ref{fig:pairs}) it places rain where
 the truth has rain, but as a smooth envelope: it draws $22$ systems where
 the truth holds $120$, and its peaks are under-drawn. This is the
 conditional mean at work, and it ages: the forecast's wet-masked error in
@@ -428,7 +398,7 @@ The flow draws do not age that way. Started from the same forecast plus
 noise of amplitude $\sigma$, each draw is a sharp field with the cells and
 the intensities of the truth, at every lead. Two draws agree where the
 forecast is certain and differ where it is not
-(Figure~\ref{fig:flowmethod}, draws A and B): the uncertainty that the
+(Figure~\ref{fig:arch}C, draws A to C): the uncertainty that the
 U-Net stamps into the field as blur appears in the flow as displaced
 systems. A sharp field can be sharply wrong, so realism is not yet skill.
 Whether it is skill, and at which scales, is the next question.
