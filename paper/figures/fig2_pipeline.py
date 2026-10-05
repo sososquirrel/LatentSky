@@ -118,9 +118,9 @@ def draw():
     plt.rcParams.update({"font.family": "sans-serif",
                          "font.sans-serif": ["Helvetica", "Arial", "Nimbus Sans", "DejaVu Sans"],
                          "mathtext.fontset": "dejavusans"})
-    fig, ax = plt.subplots(figsize=(W2, W2 * 0.555))
+    fig, ax = plt.subplots(figsize=(W2, W2 * 0.52))
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 55.5)
+    ax.set_ylim(3.5, 55.5)
     ax.axis("off")
 
     def arrow(p0, p1, color=INK, lw=0.9, ls="-", ms=7, rad=0.0, style="-|>"):
@@ -178,16 +178,16 @@ def draw():
     ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
 
     # ---------------- the U-Net ----------------------------------------------
-    frame(17.0, 4.5, 43.5, 47.0, "0.55", "none")
+    frame(17.0, 4.5, 39.6, 47.0, "0.55", "none")
     panel(17.0, "b", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
     panel(0.4, "a", "Inputs")
-    W, DX, DY = 2.3, 3.5, 5.0
+    W, DX, DY = 2.3, 3.1, 5.0
     xe = [19.5 + DX * i for i in range(5)]
-    xd = [55.7 - DX * i for i in range(5)]
+    xd = [52.3 - DX * i for i in range(5)]
     yc = [YC - DY * i for i in range(5)]
     hh = [15.0, 11.5, 8.6, 6.2, 4.2]
     res = ["128²", "64²", "32²", "16²", "8²"]
-    xbm, ybm, wb, hb = 38.75, YC - DY * 5, 3.6, 2.8      # bottleneck, on the same staircase
+    xbm, ybm, wb, hb = 37.05, YC - DY * 5, 3.4, 2.8      # bottleneck, on the same staircase
     for i in range(5):
         for x in (xe[i], xd[i]):
             ax.add_patch(Rectangle((x, yc[i] - hh[i] / 2), W, hh[i], fc=BLUE_BG, ec=BLUE,
@@ -206,7 +206,7 @@ def draw():
             color=GRAY)
     arrow((xe[4] + W, yc[4]), (xbm - wb / 2, ybm), ms=5, lw=0.7)
     arrow((xbm + wb / 2, ybm), (xd[4], yc[4]), ms=5, lw=0.7)
-    ax.text(38.75, yc[0] + hh[0] / 2 + 0.2, "skip connections", ha="center", va="bottom",
+    ax.text(37.05, yc[0] + hh[0] / 2 + 0.2, "skip connections", ha="center", va="bottom",
             fontsize=5.5, color="0.5")
     ax.text(xe[1], 17.5, "encoder", ha="center", fontsize=6, color=BLUE)
     ax.text(xd[1] + W, 17.5, "decoder", ha="center", fontsize=6, color=BLUE)
@@ -215,22 +215,44 @@ def draw():
     # ---------------- U-Net forecast, then the flow ---------------------------
     S = 7.6
     y0 = YC - S / 2
-    frame(71.2, 4.5, 28.4, 47.0, ORANGE, "none")
-    panel(71.2, "c", "Flow matching: forecast + noise $\\rightarrow$ draws")
-    xf, x0s, xdr = 62.2, 73.0, 91.2
+    frame(67.2, 4.5, 32.4, 47.0, ORANGE, "none")
+    panel(67.2, "c", "Flow matching: forecast + noise $\\rightarrow$ draws")
+    xf, x0s, xdr = 58.2, 68.6, 91.2
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
     arrow((xd[0] + W, YC), (xf, YC))
     rain(d["path"][0], x0s, y0, S, "$x_0$")
     ax.text(x0s + S / 2, y0 - 0.6, r"forecast $+\,\sigma\varepsilon$", ha="center",
             va="top", fontsize=5.5, color=ORANGE)
     arrow((xf + S, YC), (x0s, YC), color=ORANGE)
+    # the velocity network: one block, applied 32 times
+    bx0, bx1, bh = 79.2, 86.4, 6.4
+    by0, by1 = YC - bh / 2, YC + bh / 2
+    ax.add_patch(FancyBboxPatch((bx0, by0), bx1 - bx0, bh, boxstyle="round,pad=0,rounding_size=0.5",
+                                fc="white", ec=ORANGE, lw=0.9, zorder=3))
+    for k, (hk, dyk) in enumerate([(3.6, 0.7), (2.6, 0.1), (1.6, -0.5), (2.6, 0.1), (3.6, 0.7)]):
+        xk = bx0 + 1.0 + k * 1.12      # a small U-Net glyph: the same trunk as in b
+        ax.add_patch(Rectangle((xk, YC + dyk - hk / 2), 0.7, hk, fc=ORANGE_BG, ec=ORANGE,
+                               lw=0.6, zorder=4))
+    arrow((x0s + S, YC), (bx0, YC), color=ORANGE)
+    ax.text((x0s + S + bx0) / 2, YC + 0.7, "$x_t$", ha="center", va="bottom", fontsize=6)
+    ax.text((bx0 + bx1) / 2, by0 - 0.6, r"velocity network $\hat{v}$", ha="center", va="top",
+            fontsize=6, color=ORANGE)
+    # the loop: the updated state goes back in
+    arrow((bx1 - 0.9, by1 + 0.2), (bx0 + 0.9, by1 + 0.2), color=ORANGE, lw=0.8, ms=6, rad=0.9)
+    ax.text((bx0 + bx1) / 2, by1 + 4.3, r"$x_t \leftarrow x_t + \hat{v}\,\delta$", ha="center",
+            va="bottom", fontsize=6)
+    ax.text((bx0 + bx1) / 2, by1 + 6.3, "repeated 32 times", ha="center", va="bottom",
+            fontsize=5.5, color=ORANGE)
+    # conditioning enters the network
+    arrow(((bx0 + bx1) / 2, by0 - 5.6), ((bx0 + bx1) / 2, by0 - 2.6), color="0.45", lw=0.6,
+          ls=(0, (3, 2)), ms=5)
+    ax.text((bx0 + bx1) / 2, by0 - 5.9, "$c$: the ten input fields", ha="center", va="top",
+            fontsize=5.5, color=GRAY)
     # three draws, three noise seeds
     ys = [YC + S + 0.9 - S / 2, YC - S / 2, YC - S - 0.9 - S / 2]
     for y, seed, tag in zip(ys, SEEDS, "ABC"):
         rain(d[f"draw{seed}"], xdr, y, S, tag=f"draw {tag}, $x_1$")
-        arrow((x0s + S, YC), (xdr, y + S / 2), color=ORANGE, lw=0.8, ms=6)
-    ax.text((x0s + S + xdr) / 2 - 0.3, YC + 4.6, r"$\hat{v}(x_t, t, c)$" + "\n32 steps",
-            ha="center", va="bottom", fontsize=5.5, color=ORANGE, linespacing=1.2)
+        arrow((bx1, YC), (xdr, y + S / 2), color=ORANGE, lw=0.8, ms=6)
 
     # what the flow does to the distribution: three broad modes -> three sharp ones
     g = np.linspace(-2.2, 2.2, 160)
@@ -241,7 +263,7 @@ def draw():
         return sum(np.exp(-((X - mx) ** 2 + (Y - my) ** 2) / (2 * sig ** 2)) for mx, my in mus)
 
     SD, yd = 8.6, 10.6
-    xa, xb = 73.0, 90.2
+    xa, xb = 69.4, 90.2
     def to_ax(xq, u, v):   # sketch coordinates (-2.2..2.2) -> axis coordinates
         return xq + (u + 2.2) / 4.4 * SD, yd + (v + 2.2) / 4.4 * SD
 
@@ -262,18 +284,10 @@ def draw():
         arrow(src, e, color=INK, lw=0.6, ms=5, rad=rad)
         ax.plot(*e, "o", ms=2.4, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
-    ax.text(85.4, yd + SD + 3.4, "distribution of the possible outcomes", ha="center",
+    ax.text(83.4, yd + SD + 2.6, "distribution of the possible outcomes", ha="center",
             va="bottom", fontsize=6, color=GRAY)
     ax.text((xa + SD + xb) / 2, yd - 0.5, "one forecast, three draws", ha="center", va="top",
             fontsize=5.5, color=GRAY)
-    # conditioning: the same ten fields
-    yl = 2.2
-    xc_ = (xa + SD + xb) / 2
-    ax.plot([xj, xj, xc_], [yr + S_IN / 2, yl, yl], color="0.45", lw=0.6,
-            ls=(0, (4, 3)), zorder=6)
-    arrow((xc_, yl), (xc_, yd - 2.0), color="0.45", lw=0.6, ls=(0, (4, 3)), ms=5)
-    ax.text(42, yl + 0.5, "conditioning $c$: the same ten fields", ha="center", va="bottom",
-            fontsize=6, color=GRAY)
     fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
     fig.savefig(OUT / "fig2_pipeline.pdf")
     print("saved fig2_pipeline.pdf")
