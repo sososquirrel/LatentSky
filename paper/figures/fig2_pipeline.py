@@ -121,7 +121,7 @@ def draw():
                          "mathtext.fontset": "cm", "axes.unicode_minus": False,
                          "axes.formatter.use_mathtext": True})
     fig, ax = plt.subplots(figsize=(W2, W2 * 0.45))
-    ax.set_xlim(0, 100)
+    ax.set_xlim(-1.6, 100)
     ax.set_ylim(10.5, 55.5)
     ax.axis("off")
 
@@ -183,22 +183,22 @@ def draw():
     for j, k in enumerate(state):
         f = d["inputs"][k]
         lo, hi = np.percentile(f, [2, 98])
-        x0, y0 = 0.6 + 0.5 * j, 50.6 - 0.8 * j - S_IN
+        x0, y0 = 0.6 + 0.5 * j, 49.6 - 0.8 * j - S_IN
         ax.imshow(f, origin="lower", cmap=CMAPS[names[k]], vmin=lo, vmax=hi, aspect="auto",
                   extent=(x0, x0 + S_IN, y0, y0 + S_IN), interpolation="nearest",
                   zorder=3 + 0.01 * j)
         ax.add_patch(Rectangle((x0, y0), S_IN, S_IN, fill=False, ec="0.35", lw=0.5,
                                zorder=3.005 + 0.01 * j))
-    ax.text(7.2, 39.0 - 0.8 * 8 - 0.2, "state at time $t$", ha="center", va="top", fontsize=6.5)
+    ax.text(7.2, 38.0 - 0.8 * 8 - 0.2, "state at time $t$", ha="center", va="top", fontsize=6.5)
     xr, yr = 2.6, 16.0
     f = d["inputs"][names.index("rain_log1p")]
     ax.imshow(f, origin="lower", cmap="Blues", vmin=0, vmax=np.percentile(f, 99.5), aspect="auto",
               extent=(xr, xr + S_IN, yr, yr + S_IN), interpolation="nearest", zorder=3)
     ax.add_patch(Rectangle((xr, yr), S_IN, S_IN, fill=False, ec=BLUE, lw=1.2, zorder=4))
     ax.text(xr + S_IN / 2, yr - 0.6, "rain at time $t$", ha="center", va="top", fontsize=6.5)
-    panel(0.4, "A.", "Inputs")
+    panel(-1.2, "A.", "Inputs")
     # the two inputs join and enter the U-Net
-    xj, y_st = 15.6, 38.0
+    xj, y_st = 15.6, 37.0
     st_right = 0.6 + 0.5 * (len(state) - 1) + S_IN
     ax.plot([st_right, xj, xj, xr + S_IN], [y_st, y_st, yr + S_IN / 2, yr + S_IN / 2], color=INK,
             lw=0.9, zorder=6)
@@ -213,6 +213,7 @@ def draw():
     xf = xu1 + 3.0
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
     arrow((xu1, YM), (xf, YM))
+    frame(-1.2, 11.5, xf + S + 2.2, 40.0, "0.55", "none")   # A and B together, as tall as C
 
     # ---------------- flow matching -------------------------------------------
     xc0 = xf + S + 2.5
@@ -253,7 +254,8 @@ def draw():
         return sum(np.exp(-((X - mx) ** 2 + (Y - my) ** 2) / (2 * sig ** 2)) for mx, my in mus)
 
     SD, yd = 7.0, 13.2
-    xa, xb = x0s + 0.3, xv + 9.5
+    mid = (x0s + xv1) / 2 - 0.6      # the pair centred under x_0 and the velocity network
+    xa, xb = mid - 6.5 - SD, mid + 6.5
 
     def to_ax(xq, u, v):   # sketch coordinates (-2.2..2.2) -> axis coordinates
         return xq + (u + 2.2) / 4.4 * SD, yd + (v + 2.2) / 4.4 * SD
