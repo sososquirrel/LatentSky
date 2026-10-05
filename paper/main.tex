@@ -91,34 +91,27 @@ sharper training data and more frequent forecasts will be needed.
 %% ===================== 1. INTRODUCTION =====================================
 \section{Introduction}
 
-One snapshot of tropical rain holds a typhoon a thousand kilometers across, a
-squall line, and a field of scattered convective cells a few tens of
-kilometers wide. Rain carries the scale of the process that made it. It is
-also intermittent and heavy-tailed: in a half-hourly satellite estimate of
-the tropical belt, $92\%$ of pixels are dry and the wettest $1\%$ of rainy
-pixels carry $12\%$ of the rain.
-%% TODO cite: GPM IMERG V07, 12 Sep 2018 06:00 UTC, 30S-30N (deck/fig_obs.py)
-And it is produced by the fastest processes in the atmosphere, which makes it
-one of the hardest variables to predict.
-
-Should we expect an AI weather model to predict precipitation at every scale
-over the same time horizon? No. A 500-km monsoon rain shield will still be
+How far ahead can precipitation be predicted? The answer depends on the size
+of the precipitating system --- a 500-km monsoon rain shield will still be
 found eight hours from now; a 30-km convective cell may not survive the next
-one. The questions are then how far ahead each scale can be predicted, and
-what sets that limit. We define the time horizon $T(L)$ of a scale as the
-lead time beyond which a forecast has lost the rain systems of size $L$.
-
-Predictability theory says what form the answer takes. Errors originate at
-the smallest scales and contaminate progressively larger ones, so small
-features are lost first and large ones endure
-\cite{lorenz1969, hohenegger2007, zhang2003}: the horizon is a scaling law,
-$T(L) \propto L^{\alpha}$, and the quantity to measure is its exponent.
-Theory supplies two reference values. For dry turbulence with a Kolmogorov
+one --- and the goal of this paper is to make that dependence quantitative:
+a scale-aware time horizon $T(L)$ for precipitation prediction, the time
+over which a forecast keeps track of raining systems of size $L$. That such
+a horizon must take the form of a scaling law is one of the oldest results
+of predictability theory: errors originate at the smallest scales and
+contaminate progressively larger ones, so small features are lost first and
+large ones endure \cite{lorenz1969, hohenegger2007, zhang2003}. The quantity
+to measure is therefore not any single skill score --- which collapses the
+scale dependence into one number --- but the exponent of the law,
+$T(L) \propto L^{\alpha}$. Theory supplies two reference values. For dry
+turbulence Lorenz's argument fixes the exponent: with a Kolmogorov
 $k^{-5/3}$ spectrum, error reaches scale $\ell$ after the summed turnover
-times of all smaller eddies, giving $\alpha = 2/3$
-\cite{lorenz1969, rotunno2008}. A forecast with no skill at all --- each
-storm simply carried off by the mean wind --- is lost once the storm has
-traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$.
+times of all smaller eddies, giving $T \propto \ell^{2/3}$
+\cite{lorenz1969, rotunno2008}. And a forecast with no skill at all ---
+each storm simply carried off by the mean wind --- is lost once the storm
+has traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$. Where a
+measured exponent falls relative to these two anchors is itself
+information.
 
 Current AI forecasts cannot give this exponent, because their skill is
 scale-integrated by construction, for three reasons. First, the training
