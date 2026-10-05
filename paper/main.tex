@@ -91,97 +91,67 @@ sharper training data and more frequent forecasts will be needed.
 %% ===================== 1. INTRODUCTION =====================================
 \section{Introduction}
 
-How far ahead can precipitation be predicted? The answer depends on the size
-of the precipitating system --- a 500-km monsoon rain shield will still be
+One snapshot of tropical rain holds a typhoon a thousand kilometers across, a
+squall line, and a field of scattered convective cells a few tens of
+kilometers wide. Rain carries the scale of the process that made it. It is
+also intermittent and heavy-tailed: in a half-hourly satellite estimate of
+the tropical belt, $92\%$ of pixels are dry and the wettest $1\%$ of rainy
+pixels carry $12\%$ of the rain.
+%% TODO cite: GPM IMERG V07, 12 Sep 2018 06:00 UTC, 30S-30N (deck/fig_obs.py)
+And it is produced by the fastest processes in the atmosphere, which makes it
+one of the hardest variables to predict.
+
+Should we expect an AI weather model to predict precipitation at every scale
+over the same time horizon? No. A 500-km monsoon rain shield will still be
 found eight hours from now; a 30-km convective cell may not survive the next
-one --- and the goal of this paper is to make that dependence quantitative:
-a scale-aware time horizon $T(L)$ for precipitation prediction, the time
-over which a forecast keeps track of raining systems of size $L$. That such
-a horizon must take the form of a scaling law is one of the oldest results
-of predictability theory: errors originate at the smallest scales and
-contaminate progressively larger ones, so small features are lost first and
-large ones endure \cite{lorenz1969, hohenegger2007, zhang2003}. The quantity
-to measure is therefore not any single skill score --- which collapses the
-scale dependence into one number --- but the exponent of the law,
-$T(L) \propto L^{\alpha}$. Theory supplies two reference values. For dry
-turbulence Lorenz's argument fixes the exponent: with a Kolmogorov
+one. The questions are then how far ahead each scale can be predicted, and
+what sets that limit. We define the time horizon $T(L)$ of a scale as the
+lead time beyond which a forecast has lost the rain systems of size $L$.
+
+Predictability theory says what form the answer takes. Errors originate at
+the smallest scales and contaminate progressively larger ones, so small
+features are lost first and large ones endure
+\cite{lorenz1969, hohenegger2007, zhang2003}: the horizon is a scaling law,
+$T(L) \propto L^{\alpha}$, and the quantity to measure is its exponent.
+Theory supplies two reference values. For dry turbulence with a Kolmogorov
 $k^{-5/3}$ spectrum, error reaches scale $\ell$ after the summed turnover
-times of all smaller eddies, giving $T \propto \ell^{2/3}$
-\cite{lorenz1969, rotunno2008}. And a forecast with no skill at all ---
-each storm simply carried off by the mean wind --- is lost once the storm
-has traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$. Where a
-measured exponent falls relative to these two anchors is itself
-information.
+times of all smaller eddies, giving $\alpha = 2/3$
+\cite{lorenz1969, rotunno2008}. A forecast with no skill at all --- each
+storm simply carried off by the mean wind --- is lost once the storm has
+traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$.
 
-Measuring $\alpha$ imposes two requirements. First, it requires
-kilometer-scale data, coarse-grained. In reanalyses and coarse models, deep
-convection lives below the grid and its rain is drawn by parameterizations;
-a horizon measured against such a product is a property of the product, not
-of the atmosphere. We want the limit rooted in processes that are actually
-resolved, and therefore use a global storm-resolving DYAMOND MPAS
-integration, coarse-grained to $0.25^{\circ}$ for evaluation. Second, it
-requires forecast models able to produce \emph{realistic} precipitation
-maps. Even when convection is resolved, the large-scale state does not
-determine the rain: the same environment admits many equally plausible
-convective realizations, and a model trained on mean-square error responds
-to this stochasticity by returning their average --- a blurred envelope
-whose systems are too large and too weak, which pixel scores reward (the
-double-penalty problem \cite{ravuri2021}). A horizon measured with such a
-model mixes what the atmosphere forbids with what the estimator destroys.
-We therefore measure the horizon twice: with a deterministic network, and
-with a generative flow-matching model that returns sharp \emph{samples} of
-the possible outcomes --- the stochasticity does not disappear, it moves
-from an error stamped into the field to a spread across draws, where it can
-be measured and priced. Persistence, evaluated identically, is the null.
+Current AI forecasts cannot give this exponent, because their skill is
+scale-integrated by construction, for three reasons. First, the training
+data miss the small scales: a reanalysis at $0.25^{\circ}$ parameterizes
+convection rather than resolving it, and what the data do not show, the
+model cannot learn. Second, the loss is a mean-square error. Its optimum is
+the conditional mean, and averaged over every possible future the field is
+a blur --- area over-spread, intensity under-drawn --- which pixel scores
+reward (the double-penalty problem \cite{ravuri2021}). Third, rain is a
+by-product: it is diagnosed from the predicted state by a separate network
+\cite{bi2023} or predicted jointly with the other targets
+\cite{price2025}, at 3--6~h steps, so its error compounds the error in the
+state with the uncertainty of the map from state to rain.
 
-The systems in question matter well beyond forecast verification. Deep
-convection organizes into mesoscale convective systems spanning
-${\sim}100$~km --- key contributors to tropical extreme weather, from intense
-gust fronts to heavy rainfall and flash flooding, and a major term in the
-global water cycle. Their typical scale falls below the grid of global climate
-models, which represent deep convection through parameterizations, so their
-initiation, development, and response to climate change remain highly
-uncertain. Global storm-resolving simulations now resolve these systems
-explicitly: the DYAMOND protocol \cite{stevens2019} collects kilometer-scale
-integrations from more than nine models, producing petabytes of data at
-${\sim}4$~km resolution. But realism alone does not guarantee understanding;
-datasets of this kind call for analytical frameworks posed at the scale of the
-systems themselves, and the scale-decomposed horizon of this paper is one such
-framework --- it asks the predictability question system by system, size by
-size.
+This work removes the three obstacles in turn. The data are a global
+storm-resolving DYAMOND integration \cite{stevens2019}, in which the
+mesoscale convective systems that dominate tropical extremes are resolved
+rather than parameterized. The forecast is generative: a flow-matching
+model returns sharp \emph{samples} of the possible outcomes instead of
+their mean, so the stochasticity moves from an error stamped into the field
+to a spread across draws, where it is measured and priced. And rain is the
+target itself, predicted from the \emph{simultaneous} large-scale state:
+the horizon we measure is conditional on perfect state knowledge, an upper
+bound that no system deriving rain from these state variables can exceed.
+Persistence, evaluated identically, is the null.
 
-A second confusion hides in how precipitation is produced by modern forecast
-systems. Most AI weather models advance the atmospheric \emph{state}
-autoregressively and obtain precipitation either by diagnosing it from the
-predicted state with a separate network \cite{bi2023} or by predicting it
-jointly with the other targets \cite{price2025}, typically at 3--6~h steps.
-Their precipitation error therefore compounds two sources: error in the state,
-and the irreducible uncertainty of mapping state to rain. This paper isolates
-the second. Every model we train receives the \emph{simultaneous},
-kilometer-scale-resolved large-scale state as input --- the question it
-answers is: even if the state variables were known perfectly, how far into
-the future is precipitation itself predictable? The horizon we measure is
-conditional on perfect state knowledge and is therefore an upper bound: no
-autoregressive system that derives rain from these state variables can exceed
-it, because it reflects the stochasticity of the state-to-rain map, not
-errors in state prediction.
-
-The instrument behind these measurements builds on the long tradition of
-object-based verification \cite{davis2006, wernli2008}; what we add is to
-use it to \emph{define a horizon}, and the decomposition it provides maps
-onto the two physically distinct challenges of precipitation prediction:
-the \emph{trigger} --- whether and where convection initiates, governed by
-boundary-layer thermals, cold-pool collisions, and mesoscale convergence
-that are effectively stochastic at the resolved scale --- and the
-\emph{amplitude} --- how intense it is, largely controlled by the
-thermodynamic environment and inheriting its longer memory. Detection, and
-hence the horizon $T(L)$, measures the trigger; the matched-pair errors
-$\mathrm{d}\ln A$ and $\mathrm{d}\ln\rho$ measure the amplitude,
-conditional on the trigger being found. At zero lead the inputs read the
-trigger directly --- outgoing longwave radiation is a near-direct
-observation of where deep convection is active --- so the decay of
-detection with lead is precisely the timescale over which trigger
-information is lost.
+The measurement is object-based, in the tradition of
+\citeA{davis2006} and \citeA{wernli2008}, and it separates the two
+challenges of precipitation prediction. Detection, and hence $T(L)$,
+measures the \emph{trigger}: whether and where convection initiates. The
+area and intensity errors of the detected systems measure the
+\emph{amplitude}, set by the thermodynamic environment and its longer
+memory.
 
 The paper answers three questions.
 
@@ -225,18 +195,12 @@ story --- sampling a generative member restores intensity, and below
 ${\sim}60$~km no model detects systems at $0.25^{\circ}$
 (Section~\ref{sec:res-wb2}).
 
-A word on ambition. The models trained here are deliberately modest --- a
-$125$~M-parameter U-Net and its flow correction, trained on 40 days of data on
-a single GPU --- and we make no claim to compete with operational systems
-trained on decades of reanalysis at vastly larger compute. They are the
-instrument's controlled experiment, not its product: small enough that every
-design choice is inspectable, matched to each other so that the only
-difference between the deterministic and generative forecast is the training
-objective. The contribution is the measurement --- a scaling law
-$T(L) \propto L^{\alpha}$ and its decomposition into what the atmosphere
-forbids and what the estimator destroys --- and the framework that produces
-it, which applies unchanged to any forecast, as Section~\ref{sec:res-wb2}
-demonstrates on the operational models themselves.
+The models are deliberately modest --- a $125$~M-parameter U-Net and its
+flow correction, trained on 40 days of data on a single GPU --- and do not
+compete with operational systems. They are a controlled experiment: the only
+difference between the deterministic and the generative forecast is the
+training objective. The contribution is the measurement, and it applies
+unchanged to any forecast that produces a rain field.
 
 Section~\ref{sec:methods} describes the data, the two models, and the
 evaluation; Section~\ref{sec:results} answers the three questions in that
