@@ -135,7 +135,8 @@ of the forecast model behind the reanalysis and is not observed.
 The models differ in how they learn that field. GraphCast and FuXi learn it
 jointly with the rest of the state, by minimizing a grid-point error.
 FourCastNet diagnoses it from the predicted state with a separate network
-\cite{pathak2022} (Pangu-Weather predicts no rain at all \cite{bi2023}).
+\cite{pathak2022}. We note in passing that Pangu-Weather predicts no rain
+at all \cite{bi2023}.
 The most recent models are ensemble systems. GenCast is a diffusion model:
 it generates the next state of each member by progressively refining a
 field of noise into a forecast, given the previous states, and a different
@@ -161,7 +162,7 @@ do, escapes the blur. Third, rain is a by-product, accumulated over steps
 of $6$ to $12$~h: its error compounds the error in the state with the
 uncertainty of the map from state to rain.
 
-We note in passing that regional nowcasting models take another route:
+Regional nowcasting models take another route:
 MetNet-3 \cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} map radar
 and satellite images directly to rain-rate probabilities, at kilometer
 resolution over a few hours. That is a different problem, and we do not
