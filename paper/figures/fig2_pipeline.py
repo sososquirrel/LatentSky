@@ -179,7 +179,7 @@ def draw():
     ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
 
     # ---------------- the U-Net ----------------------------------------------
-    frame(17.0, 4.5, 39.6, 47.0, "0.55", "none")
+    frame(17.0, 4.5, 39.6, 47.0, BLUE, "#eef3f9")
     panel(17.0, "b", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
     panel(0.4, "a", "Inputs")
     W, DX, DY = 2.3, 3.1, 5.0
@@ -191,24 +191,19 @@ def draw():
     xbm, ybm, wb, hb = 37.05, YC - DY * 5, 3.4, 2.8      # bottleneck, on the same staircase
     for i in range(5):
         for x in (xe[i], xd[i]):
-            ax.add_patch(Rectangle((x, yc[i] - hh[i] / 2), W, hh[i], fc=BLUE_BG, ec=BLUE,
+            ax.add_patch(Rectangle((x, yc[i] - hh[i] / 2), W, hh[i], fc="white", ec=BLUE,
                                    lw=0.8, zorder=3))
         top = yc[i] + hh[i] / 2
-        arrow((xe[i] + W + 0.3, top - 0.8), (xd[i] - 0.3, top - 0.8), color="0.5",
-              lw=0.7, ls=(0, (4, 3)), ms=6)
+        ax.plot([xe[i] + W + 0.3, xd[i] - 0.3], [top - 0.8] * 2, color=BLUE, lw=0.5,
+                ls=(0, (4, 3)), zorder=4)
         ax.text(xe[i] + W / 2, yc[i] - hh[i] / 2 - 0.5, res[i], ha="center", va="top",
                 fontsize=5, color=GRAY)
-        if i < 4:   # centre to centre, one slope everywhere
-            arrow((xe[i] + W, yc[i]), (xe[i + 1], yc[i + 1]), ms=5, lw=0.7)
-            arrow((xd[i + 1] + W, yc[i + 1]), (xd[i], yc[i]), ms=5, lw=0.7)
-    ax.add_patch(Rectangle((xbm - wb / 2, ybm - hb / 2), wb, hb, fc="#b9cfe6", ec=BLUE,
-                           lw=0.8, zorder=3))
+    ax.add_patch(Rectangle((xbm - wb / 2, ybm - hb / 2), wb, hb, fc=BLUE, ec=BLUE,
+                           lw=0.8, alpha=0.55, zorder=3))
     ax.text(xbm, ybm - hb / 2 - 0.5, "bottleneck $4^2$", ha="center", va="top", fontsize=5,
             color=GRAY)
-    arrow((xe[4] + W, yc[4]), (xbm - wb / 2, ybm), ms=5, lw=0.7)
-    arrow((xbm + wb / 2, ybm), (xd[4], yc[4]), ms=5, lw=0.7)
     ax.text(37.05, yc[0] + hh[0] / 2 + 0.2, "skip connections", ha="center", va="bottom",
-            fontsize=5.5, color="0.5")
+            fontsize=5.5, color=BLUE)
     ax.text(xe[1], 17.5, "encoder", ha="center", fontsize=6, color=BLUE)
     ax.text(xd[1] + W, 17.5, "decoder", ha="center", fontsize=6, color=BLUE)
     arrow((xj, YC), (xe[0], YC))
