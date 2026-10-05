@@ -113,20 +113,36 @@ has traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$. Where a
 measured exponent falls relative to these two anchors is itself
 information.
 
+The large AI weather models share one recipe. A network is trained on four
+decades of the ERA5 reanalysis at $0.25^{\circ}$ to map the global
+atmospheric state --- winds, temperature, humidity, and geopotential on
+pressure levels, plus a few surface fields --- to the state $6$ or $12$~h
+later, and a forecast is that map applied to its own output, out to
+$10$--$15$ days \cite{lam2023, chen2023, price2025}. Rain enters as one more
+output channel: the total precipitation of the reanalysis, accumulated over
+the step, which is itself the product of a convection parameterization and
+not an observation. GraphCast and FuXi fit that channel with a pixel-wise
+regression loss, together with the rest of the state; FourCastNet diagnoses
+it from the predicted state with a separate network \cite{pathak2022};
+Pangu-Weather predicts no rain at all \cite{bi2023}. The generative models
+keep the channel and change the objective: GenCast samples the next state
+with a diffusion model \cite{price2025}, and FGN is trained on a
+per-location probabilistic score \cite{alet2025}. Both leave precipitation
+out of their headline results, for lack of confidence in the reanalysis
+rain.
+
 Global AI forecasts do not yet give this exponent: three features of
 their construction integrate skill over scale. First, the training
 data miss the small scales: a reanalysis at $0.25^{\circ}$ parameterizes
 convection rather than resolving it, and what the data do not show, the
-model cannot learn. Second, the loss of the deterministic models is a mean-square error. Its
-optimum is the conditional mean, and averaged over every possible future
+model cannot learn. Second, the loss of the deterministic models is a pixel-wise regression,
+most often a mean-square error. Its optimum is the conditional mean, and averaged over every possible future
 the field is a blur --- area over-spread, intensity under-drawn --- which
 pixel scores reward (the double-penalty problem \cite{ravuri2021}).
 Sampling escapes the blur \cite{ravuri2021, price2025}.
-Third, rain is a
-by-product: it is diagnosed from the predicted state by a separate network
-\cite{bi2023} or predicted jointly with the other targets
-\cite{price2025}, at 3--6~h steps, so its error compounds the error in the
-state with the uncertainty of the map from state to rain.
+Third, rain is a by-product, accumulated over steps of $6$ to $12$~h: its
+error compounds the error in the state with the uncertainty of the map from
+state to rain.
 
 A second family of models has none of these three features. Nowcasting
 models such as MetNet-3 \cite{andrychowicz2023} and RainPro-8
