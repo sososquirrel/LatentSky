@@ -123,8 +123,7 @@ things of a forecast: its rain field must contain systems of every size,
 and its skill must be judged system by system, size by size. Whether AI
 forecasts obey a scaling law is not known, because neither condition is met
 today. To see why, we recall how AI forecasts produce rain: first the
-deterministic global models, then the probabilistic ones, then the regional
-nowcasting models.
+deterministic global models, then the probabilistic ones.
 
 In a numerical model, rain is the end of a physical chain: resolved ascent,
 a convection scheme where the grid is too coarse, cloud microphysics, and a
@@ -165,16 +164,11 @@ separately at each grid point and for each variable \cite{alet2025}. The
 blur is gone, but the rain is still that of the reanalysis, accumulated
 over steps of $6$ to $12$~h, and both models leave precipitation out of
 their headline results, for lack of confidence in the reanalysis rain.
+Regional nowcasting models such as MetNet-3 \cite{andrychowicz2023} and
+RainPro-8 \cite{sarabia2025} predict rain-rate probabilities from radar at
+kilometer resolution, but report skill per rain threshold, not per scale.
 
-Regional nowcasting models go further. MetNet-3 \cite{andrychowicz2023}
-and RainPro-8 \cite{sarabia2025} predict the probability of rain rates at
-each grid point over the next hours, from radar and satellite observations
-at kilometer resolution: the data resolve convection, rain is the target,
-and the output is a distribution, not a mean. Even so, their skill is
-reported per rain threshold and per lead, and no decomposition of skill by
-the scale of the rain systems is proposed.
-
-What is missing is the same in the three families: a forecast whose rain
+What is missing is the same throughout: a forecast whose rain
 systems can be identified, and a skill resolved by their size. This work
 provides both. The data are a global storm-resolving DYAMOND integration
 \cite{stevens2019}, in which the mesoscale convective systems that dominate
