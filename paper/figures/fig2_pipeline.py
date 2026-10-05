@@ -25,7 +25,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 sys.path.insert(0, str(REPO / "docs"))
 sys.path.insert(0, str(REPO / "paper" / "figures"))
-from paperfig import COLOR, W2  # noqa: E402
+from paperfig import W2  # noqa: E402
 
 OUT = REPO / "paper" / "figures"
 CACHE = REPO / "data" / "paper_figs" / "fig2_pipeline.npz"
@@ -104,8 +104,9 @@ CMAPS = {"precipw": "BrBG", "mse_500hPa": "BrBG", "mse_850hPa": "BrBG",
          "t2m": "plasma", "olrtoa": "gray", "uzonal_500hPa": "RdBu_r",
          "uzonal_850hPa": "RdBu_r", "umeridional_500hPa": "RdBu_r",
          "umeridional_850hPa": "RdBu_r", "rain_log1p": "Blues"}
-BLUE, ORANGE = COLOR["two-head"], COLOR["flow"]
-BLUE_BG, ORANGE_BG, INK, GRAY = "#dfe9f4", "#fdf0e6", "0.2", "0.45"
+# muted versions of the paper's two model colours (blue = U-Net, warm = flow)
+BLUE, ORANGE = "#35526e", "#a8553a"
+BLUE_BG, ORANGE_BG, INK, GRAY = "#eef1f4", "#f7eeea", "0.2", "0.45"
 
 
 def draw():
@@ -179,7 +180,7 @@ def draw():
     ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
 
     # ---------------- the U-Net ----------------------------------------------
-    frame(17.0, 4.5, 39.6, 47.0, BLUE, "#eef3f9")
+    frame(17.0, 4.5, 39.6, 47.0, BLUE, BLUE_BG)
     panel(17.0, "b", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
     panel(0.4, "a", "Inputs")
     W, DX, DY = 2.3, 3.1, 5.0
@@ -256,6 +257,8 @@ def draw():
         arrow((bx1, YC), (xdr, y + S / 2), color=ORANGE, lw=0.8, ms=6)
 
     # what the flow does to the distribution: three broad modes -> three sharp ones
+    from matplotlib.colors import LinearSegmentedColormap
+    DENS = LinearSegmentedColormap.from_list("dens", ["#fbf6f3", "#e3b9a6", ORANGE, "#6e2f1c"])
     g = np.linspace(-2.2, 2.2, 160)
     X, Y = np.meshgrid(g, g)
     mus = [(-0.95, -0.55), (0.95, -0.55), (0.0, 1.05)]
@@ -270,7 +273,7 @@ def draw():
 
     for xq, sig, lab in ((xa, 0.58, "broad"), (xb, 0.2, "sharp")):
         p = mix(sig)
-        ax.imshow(p / p.max(), origin="lower", cmap="Oranges", vmin=0, vmax=1.15, aspect="auto",
+        ax.imshow(p / p.max(), origin="lower", cmap=DENS, vmin=0, vmax=1.15, aspect="auto",
                   extent=(xq, xq + SD, yd, yd + SD), interpolation="bilinear", zorder=3)
         for q in np.linspace(0, SD, 7)[1:-1]:   # grid
             ax.plot([xq + q, xq + q], [yd, yd + SD], color="0.35", lw=0.25, alpha=0.5, zorder=3.5)
