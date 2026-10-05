@@ -149,7 +149,10 @@ scores favor it (the double-penalty problem \cite{ravuri2021}).
 
 Probabilistic models return an ensemble of sharp members. GenCast is a
 diffusion model: each member is obtained by progressively refining a noise
-field into a forecast, given the previous states \cite{price2025}. FGN
+field into a forecast, given the previous states \cite{price2025}. Recent
+work has promoted flow matching as a less expensive alternative to
+diffusion: it learns a more direct path from noise to data, which takes
+fewer steps to generate a member \cite{lipman2023, liu2023}. FGN
 perturbs the network with a random vector and is trained on the continuous
 ranked probability score, computed at each grid point and for each variable
 \cite{alet2025}. These models do not blur. Their rain is still the
