@@ -247,14 +247,9 @@ def draw():
                            lw=0.6, alpha=0.55, zorder=4))
     ax.text((bx0 + bx1) / 2, by1 + 0.5, "velocity network", ha="center", va="bottom",
             fontsize=6.5, color=ORANGE)
-    # in: the state x_t (with the ten fields c) and the time t; out: the velocity
+    # in: the state x_t; out: the velocity
     arrow((x0s + S, YC), (bx0, YC), color=ORANGE)
     ax.text((x0s + S + bx0) / 2, YC + 0.6, "$x_t$", ha="center", va="bottom", fontsize=6.5)
-    for xq, lab in ((bx0 + 2.6, "$c$"), (bx1 - 2.6, "$t$")):
-        arrow((xq, by0 - 3.0), (xq, by0), color="0.4", lw=0.6, ms=5)
-        ax.text(xq, by0 - 3.3, lab, ha="center", va="top", fontsize=6.5, color="0.3")
-    ax.text((bx0 + bx1) / 2, by0 - 5.6, "$c$: the ten fields,  $t$: flow time", ha="center",
-            va="top", fontsize=5.5, color=GRAY)
     # the loop: x_t <- x_t + v delta, 32 times
     arrow((bx1 - 1.6, by1 + 3.3), (bx0 + 1.6, by1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.5)
     ax.text((bx0 + bx1) / 2, by1 + 6.0, r"$x_t \leftarrow x_t + \hat{v}\,\delta$,  32 times",
