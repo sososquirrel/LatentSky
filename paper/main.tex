@@ -132,8 +132,8 @@ A second family of models has none of these three features. Nowcasting
 models such as MetNet-3 \cite{andrychowicz2023} and RainPro-8
 \cite{sarabia2025} are regional and driven by observations: they map radar
 and satellite images directly to rain, at kilometer and minute resolution,
-over a few hours. Rain is their target, not a by-product, and they do not
-blur: RainPro-8 returns the probability of $20$ rain-rate classes at $2$~km
+over a few hours. Rain is their target, not a by-product, and their output
+is a distribution, not a mean: RainPro-8 returns the probability of $20$ rain-rate classes at $2$~km
 over Europe, out to $8$~h. The global models of WeatherBench~2
 \cite{rasp2024} are the opposite case: trained on reanalysis at
 $0.25^{\circ}$, they step the atmospheric state forward by hours, out to
