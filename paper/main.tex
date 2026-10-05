@@ -238,11 +238,11 @@ split $616/132/132$ into train/val/test (Text~S1).}
 example block at $+3$~h; all rain maps are model fields on one log color
 scale). A.~The inputs at time $t$: nine fields of the large-scale state,
 stacked, and the current rain. B.~The U-Net maps these ten fields to the
-rain at $t + \Delta t$: an encoder of five stages from $128^2$ to $8^2$, a
-bottleneck at $4^2$, a mirrored decoder, and skip connections (dashed).
+rain at $t + \Delta t$: an encoder of five stages, a bottleneck, a mirrored
+decoder, and skip connections (dashed).
 C.~Flow matching. The U-Net forecast plus noise,
 $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is the starting state. A
-second U-Net, the velocity network, returns the velocity $\hat{v}$ at the
+second U-Net of comparable size, the velocity network, returns the velocity $\hat{v}$ at the
 current state $x_t$, and the state is advanced by $\hat{v}\,\delta$; this
 step is repeated $32$ times and gives one draw $x_1$. The velocity network
 also receives the ten input fields and the flow time (not drawn). Three

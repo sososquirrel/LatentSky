@@ -151,7 +151,30 @@ def draw():
         ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=9, fontfamily="cmb10")
         ax.text(x + 2.6, 52.4, title, ha="left", va="bottom", fontsize=8)
 
-    YC = 38.0   # the level of the U-Net's input and output
+    YM = 31.5   # the level of the main row: inputs join -> U-Net -> forecast -> flow
+
+    def unet(x0, yc, col, bg, title):
+        """One U-Net glyph; the two networks are drawn at the same size (comparable parameters)."""
+        gw, gh = 18.7, 15.0
+        ax.add_patch(FancyBboxPatch((x0, yc - gh / 2), gw, gh, boxstyle="round,pad=0,rounding_size=0.6",
+                                    fc=bg, ec=col, lw=0.8, zorder=3))
+        bw, dx, dy = 1.0, 1.45, 1.75
+        hs = [8.5, 6.6, 5.0, 3.6, 2.5]
+        xe_ = [x0 + 1.2 + dx * i for i in range(5)]
+        xd_ = [x0 + gw - 1.2 - bw - dx * i for i in range(5)]
+        ycs = [yc + 2.6 - dy * i for i in range(5)]
+        for i in range(5):
+            for x in (xe_[i], xd_[i]):
+                ax.add_patch(Rectangle((x, ycs[i] - hs[i] / 2), bw, hs[i], fc="white", ec=col,
+                                       lw=0.7, zorder=4))
+            ax.plot([xe_[i] + bw + 0.2, xd_[i] - 0.2], [ycs[i] + hs[i] / 2 - 0.45] * 2, color=col,
+                    lw=0.4, ls=(0, (3, 2)), zorder=4)
+        xb_ = (xe_[4] + bw + xd_[4]) / 2
+        ax.add_patch(Rectangle((xb_ - 0.65, ycs[4] - dy - 0.65), 1.3, 1.3, fc=col, ec=col, lw=0.6,
+                               alpha=0.55, zorder=4))
+        ax.text(x0 + gw / 2, yc + gh / 2 + 0.5, title, ha="center", va="bottom", fontsize=6.5,
+                color=col)
+        return x0 + gw, yc + gh / 2
 
     # ---------------- inputs: nine state fields stacked, the rain at t below ---
     S_IN = 9.0
@@ -173,88 +196,46 @@ def draw():
               extent=(xr, xr + S_IN, yr, yr + S_IN), interpolation="nearest", zorder=3)
     ax.add_patch(Rectangle((xr, yr), S_IN, S_IN, fill=False, ec=BLUE, lw=1.2, zorder=4))
     ax.text(xr + S_IN / 2, yr - 0.6, "rain at time $t$", ha="center", va="top", fontsize=6.5)
-    # both enter the U-Net at one point
-    xj = 15.6
-    st_right = 0.6 + 0.5 * (len(state) - 1) + S_IN
-    ax.plot([st_right, xj], [YC, YC], color=INK, lw=0.9, zorder=6)
-    ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
-
-    # ---------------- the U-Net ----------------------------------------------
-    frame(18.5, 11.5, 35.0, 40.0, BLUE, BLUE_BG)
-    panel(18.5, "B.", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
     panel(0.4, "A.", "Inputs")
-    W, DX, DY = 2.0, 2.75, 3.7
-    xe = [21.0 + DX * i for i in range(5)]
-    xd = [49.0 - DX * i for i in range(5)]
-    yc = [YC - DY * i for i in range(5)]
-    hh = [12.0, 9.2, 6.9, 5.0, 3.5]
-    res = ["$128^2$", "$64^2$", "$32^2$", "$16^2$", "$8^2$"]
-    xbm, ybm, wb, hb = 36.0, YC - DY * 5, 2.8, 2.2      # bottleneck, on the same staircase
-    for i in range(5):
-        for x in (xe[i], xd[i]):
-            ax.add_patch(Rectangle((x, yc[i] - hh[i] / 2), W, hh[i], fc="white", ec=BLUE,
-                                   lw=0.8, zorder=3))
-        top = yc[i] + hh[i] / 2
-        ax.plot([xe[i] + W + 0.3, xd[i] - 0.3], [top - 0.8] * 2, color=BLUE, lw=0.5,
-                ls=(0, (4, 3)), zorder=4)
-        ax.text(xe[i] + W / 2, yc[i] - hh[i] / 2 - 0.5, res[i], ha="center", va="top",
-                fontsize=5, color=GRAY)
-    ax.add_patch(Rectangle((xbm - wb / 2, ybm - hb / 2), wb, hb, fc=BLUE, ec=BLUE,
-                           lw=0.8, alpha=0.55, zorder=3))
-    ax.text(xbm, ybm - hb / 2 - 0.5, "bottleneck $4^2$", ha="center", va="top", fontsize=5,
-            color=GRAY)
-    ax.text(36.0, yc[0] + hh[0] / 2 + 0.2, "skip connections", ha="center", va="bottom",
-            fontsize=5.5, color=BLUE)
-    ax.text(xe[1], 19.0, "encoder", ha="center", fontsize=6, color=BLUE)
-    ax.text(xd[1] + W, 19.0, "decoder", ha="center", fontsize=6, color=BLUE)
-    arrow((xj, YC), (xe[0], YC))
+    # the two inputs join and enter the U-Net
+    xj, y_st = 15.6, 38.0
+    st_right = 0.6 + 0.5 * (len(state) - 1) + S_IN
+    ax.plot([st_right, xj, xj, xr + S_IN], [y_st, y_st, yr + S_IN / 2, yr + S_IN / 2], color=INK,
+            lw=0.9, zorder=6)
 
-    # ---------------- U-Net forecast, then the flow ---------------------------
+    # ---------------- the U-Net and its forecast ------------------------------
     S = 7.6
-    y0 = YC - S / 2
-    frame(67.2, 11.5, 32.4, 40.0, ORANGE, "none")
-    panel(67.2, "C.", "Flow matching: forecast + noise $\\rightarrow$ draws")
-    xf, x0s, xdr = 58.2, 68.6, 91.2
+    y0 = YM - S / 2
+    xu = 18.6
+    xu1, _ = unet(xu, YM, BLUE, BLUE_BG, "U-Net")
+    panel(xu, "B.", r"U-Net: rain at $t + \Delta t$")
+    arrow((xj, YM), (xu, YM))
+    xf = xu1 + 3.0
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
-    arrow((xd[0] + W, YC), (xf, YC))
+    arrow((xu1, YM), (xf, YM))
+
+    # ---------------- flow matching -------------------------------------------
+    xc0 = xf + S + 2.5
+    frame(xc0, 11.5, 99.6 - xc0, 40.0, ORANGE, "none")
+    panel(xc0, "C.", "Flow matching: forecast + noise $\\rightarrow$ draws")
+    x0s = xc0 + 1.6
     rain(d["path"][0], x0s, y0, S, "$x_0$")
     ax.text(x0s + S / 2, y0 - 0.6, r"forecast $+\,\sigma\varepsilon$", ha="center",
             va="top", fontsize=5.5, color=ORANGE)
-    arrow((xf + S, YC), (x0s, YC), color=ORANGE)
-    # the velocity network: a second U-Net, drawn like the one in b, applied 32 times
-    bx0, bx1, bh = 78.3, 88.1, 8.4
-    by0, by1 = YC - bh / 2, YC + bh / 2
-    ax.add_patch(FancyBboxPatch((bx0, by0), bx1 - bx0, bh, boxstyle="round,pad=0,rounding_size=0.5",
-                                fc=ORANGE_BG, ec=ORANGE, lw=0.7, zorder=3))
-    mw, mdx, mdy = 0.52, 0.80, 0.85
-    mh = [4.2, 3.2, 2.4, 1.7, 1.2]
-    xm0 = bx0 + 0.75
-    xme = [xm0 + mdx * i for i in range(5)]
-    xmd = [bx1 - 0.75 - mw - mdx * i for i in range(5)]
-    ymc = [YC + 1.5 - mdy * i for i in range(5)]
-    for i in range(5):
-        for x in (xme[i], xmd[i]):
-            ax.add_patch(Rectangle((x, ymc[i] - mh[i] / 2), mw, mh[i], fc="white", ec=ORANGE,
-                                   lw=0.6, zorder=4))
-        ax.plot([xme[i] + mw + 0.12, xmd[i] - 0.12], [ymc[i] + mh[i] / 2 - 0.3] * 2, color=ORANGE,
-                lw=0.35, ls=(0, (3, 2)), zorder=4)
-    xmb = (xme[4] + mw + xmd[4]) / 2
-    ax.add_patch(Rectangle((xmb - 0.5, ymc[4] - mdy - 0.45), 1.0, 0.9, fc=ORANGE, ec=ORANGE,
-                           lw=0.6, alpha=0.55, zorder=4))
-    ax.text((bx0 + bx1) / 2, by1 + 0.5, "velocity network", ha="center", va="bottom",
-            fontsize=6.5, color=ORANGE)
-    # in: the state x_t; out: the velocity
-    arrow((x0s + S, YC), (bx0, YC), color=ORANGE)
-    ax.text((x0s + S + bx0) / 2, YC + 0.6, "$x_t$", ha="center", va="bottom", fontsize=6.5)
-    # the loop: x_t <- x_t + v delta, 32 times
-    arrow((bx1 - 1.6, by1 + 3.3), (bx0 + 1.6, by1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.5)
-    ax.text((bx0 + bx1) / 2, by1 + 6.0, r"$x_t \leftarrow x_t + \hat{v}\,\delta$,  32 times",
+    arrow((xf + S, YM), (x0s, YM), color=ORANGE)
+    # the velocity network: a second U-Net of the same size, applied 32 times
+    xv = x0s + S + 3.0
+    xv1, yv1 = unet(xv, YM, ORANGE, ORANGE_BG, "velocity network")
+    arrow((x0s + S, YM), (xv, YM), color=ORANGE)
+    ax.text((x0s + S + xv) / 2, YM + 0.6, "$x_t$", ha="center", va="bottom", fontsize=6.5)
+    arrow((xv1 - 3.5, yv1 + 3.3), (xv + 3.5, yv1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.4)
+    ax.text((xv + xv1) / 2, yv1 + 6.6, r"$x_t \leftarrow x_t + \hat{v}\,\delta$,  32 times",
             ha="center", va="bottom", fontsize=6.5)
-    # three draws, three noise seeds
-    ys = [YC + S + 0.9 - S / 2, YC - S / 2, YC - S - 0.9 - S / 2]
-    # one line out of the network, split at right angles into the three draws
-    xbus = (bx1 + xdr) / 2 - 0.1
-    ax.plot([bx1, xbus], [YC, YC], color=ORANGE, lw=0.8, zorder=6, solid_capstyle="butt")
+    # three draws, three noise seeds: one line out of the network, split at right angles
+    xdr = 91.2
+    ys = [YM + S + 0.9 - S / 2, YM - S / 2, YM - S - 0.9 - S / 2]
+    xbus = (xv1 + xdr) / 2
+    ax.plot([xv1, xbus], [YM, YM], color=ORANGE, lw=0.8, zorder=6, solid_capstyle="butt")
     ax.plot([xbus, xbus], [ys[2] + S / 2, ys[0] + S / 2], color=ORANGE, lw=0.8, zorder=6,
             solid_capstyle="projecting")
     for y, seed, tag in zip(ys, SEEDS, "ABC"):
@@ -271,8 +252,9 @@ def draw():
     def mix(sig):
         return sum(np.exp(-((X - mx) ** 2 + (Y - my) ** 2) / (2 * sig ** 2)) for mx, my in mus)
 
-    SD, yd = 7.6, 14.4
-    xa, xb = 68.6, 91.2
+    SD, yd = 7.0, 13.2
+    xa, xb = x0s + 0.3, xv + 9.5
+
     def to_ax(xq, u, v):   # sketch coordinates (-2.2..2.2) -> axis coordinates
         return xq + (u + 2.2) / 4.4 * SD, yd + (v + 2.2) / 4.4 * SD
 
@@ -284,7 +266,7 @@ def draw():
             ax.plot([xq + q, xq + q], [yd, yd + SD], color="0.35", lw=0.25, alpha=0.5, zorder=3.5)
             ax.plot([xq, xq + SD], [yd + q, yd + q], color="0.35", lw=0.25, alpha=0.5, zorder=3.5)
         ax.add_patch(Rectangle((xq, yd), SD, SD, fill=False, ec="0.25", lw=0.5, zorder=5))
-        ax.text(xq + SD / 2, yd + SD + 0.6, lab, ha="center", va="bottom", fontsize=6.5)
+        ax.text(xq + SD / 2, yd + SD + 0.5, lab, ha="center", va="bottom", fontsize=6.5)
     src = to_ax(xa, 0.45, 0.25)                                 # one point of the broad cloud
     # three draws: one falls near one peak, the two others near another
     ends = [to_ax(xb, mus[2][0] + 0.02, mus[2][1] - 0.14),
@@ -294,8 +276,8 @@ def draw():
         arrow(src, e, color=INK, lw=0.6, ms=5, rad=rad)
         ax.plot(*e, "o", ms=2.4, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
-    ax.text((xa + SD + xb) / 2, yd - 0.5, "one forecast, three draws", ha="center", va="top",
-            fontsize=5.5, color=GRAY)
+    ax.text(xb + SD + 1.0, yd + SD / 2, "one forecast,\nthree draws", ha="left", va="center",
+            fontsize=5.5, color=GRAY, linespacing=1.2)
     fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
     fig.savefig(OUT / "fig2_pipeline.pdf")
     print("saved fig2_pipeline.pdf")
