@@ -159,8 +159,10 @@ Regional nowcasting models such as MetNet-3 \cite{andrychowicz2023} and
 RainPro-8 \cite{sarabia2025} predict rain-rate probabilities from radar at
 kilometer resolution, but report skill per rain threshold, not per scale.
 
-None of these models provides both a forecast in which rain systems can be
-identified and a skill resolved by system size. Here we provide both. We
+We believe that these obstacles, taken together, explain why the
+precipitation of AI forecasts is not yet evaluated scale by scale. Here we
+explore that direction with a model built for the purpose, and then examine
+how the evaluation applies to operational forecasts. We
 use a global storm-resolving DYAMOND simulation \cite{stevens2019}, which
 resolves the mesoscale convective systems responsible for tropical
 extremes. We train two models that differ only in their training
