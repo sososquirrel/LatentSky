@@ -511,17 +511,19 @@ past at $\mathrm{IoU} \ge 0.1$ (Text~S4).
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig4_decomp.pdf}}
-\caption{\textbf{The error decomposition on matched pairs} ($+3$~h, full
-held-out record; axes, point size, and transparency identical between
-panels). Each point is one matched truth--forecast pair in the
-$(\mathrm{d}\ln A, \mathrm{d}\ln\rho)$ plane, colored by system scale;
-crosses are the precipitation-weighted barycenters of the small ($<65$~km),
-mid ($65$--$200$~km), and large ($>200$~km) bands; the dotted diagonal is
-$\mathrm{d}\ln P = 0$, where area and intensity errors cancel exactly.
-A.~The two-head model ($83{,}960$ pairs): the conditional-mean quadrant ---
-too large, too weak --- worst for small systems $(+0.53, -1.05)$.
-B.~The flow, per draw ($125{,}159$ pairs): the barycenters collapse toward
-the origin at every scale (small $(+0.21, -0.24)$, mid $(-0.15, -0.15)$,
+\caption{\textbf{Area and intensity errors of the matched systems}
+($+3$~h, full held-out record; identical axes in the two panels). Each
+matched truth--forecast pair has an area error $\mathrm{d}\ln A$ and an
+intensity error $\mathrm{d}\ln\rho$. For each of three size bands, small
+($<65$~km), medium ($65$--$200$~km), and large ($>200$~km), the shaded
+region holds half of the pairs and the dashed line $90\%$ of them. The dot
+is the precipitation-weighted mean error of the band, joined to the origin.
+Along the dotted diagonal, $\mathrm{d}\ln P = 0$, area and intensity errors
+cancel exactly.
+A.~The two-head U-Net ($83{,}960$ pairs): systems are too large and too
+weak, most of all the small ones, $(+0.53, -1.05)$.
+B.~The flow, per draw ($125{,}159$ pairs): the mean errors move toward the
+origin at every scale (small $(+0.21, -0.24)$, medium $(-0.15, -0.15)$,
 large $(-0.14, -0.04)$).}
 \label{fig:decomp}
 \end{figure}
