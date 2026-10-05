@@ -235,6 +235,12 @@ def draw():
     xv1, yv1 = unet(xv, YM, ORANGE, ORANGE_BG, "velocity network", 11, 1)
     arrow((x0s + S, YM), (xv, YM), color=ORANGE)
     ax.text((x0s + S + xv) / 2, YM + 0.6, "$x_t$", ha="center", va="bottom", fontsize=6.5)
+    # the ten input fields are the other ten channels of the velocity network's input
+    yt, xin, yin = 49.4, xv - 1.3, YM + 3.6
+    ax.plot([xj, xj, xin, xin], [y_st, yt, yt, yin], color="0.4", lw=0.7, ls=(0, (4, 3)), zorder=6)
+    arrow((xin, yin), (xv, yin), color="0.4", lw=0.7, ms=5)
+    ax.text(xc0 + 1.2, yt - 0.5, "the ten input fields", ha="left", va="top", fontsize=5.5,
+            color=GRAY)
     arrow((xv1 - 3.5, yv1 + 3.3), (xv + 3.5, yv1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.4)
     ax.text((xv + xv1) / 2, yv1 + 6.6, r"$x_t \leftarrow x_t + \hat{v}\,\delta$,  32 times",
             ha="center", va="bottom", fontsize=6.5)
