@@ -257,7 +257,7 @@ def draw():
     src = to_ax(xa, 0.15, -0.1)                                  # one point of the broad cloud
     ends = [to_ax(xb, mx + ox, my + oy) for (mx, my), (ox, oy) in
             zip(mus, [(0.22, 0.2), (-0.24, 0.16), (0.2, -0.24)])]   # one draw near each peak
-    for e, rad in zip(ends, (0.25, -0.38, -0.04)):
+    for e, rad in zip(ends, (0.10, 0.34, -0.25)):
         arrow(src, e, color=INK, lw=0.6, ms=5, rad=rad)
         ax.plot(*e, "o", ms=2.6, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
