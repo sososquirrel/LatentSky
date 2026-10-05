@@ -188,31 +188,34 @@ environment.
 
 We address three questions.
 
-\begin{enumerate}
-\item \emph{How do we design a model that produces a realistic precipitation
-forecast?} A deterministic two-head U-Net trained on mean-square error
-returns the conditional mean: the pattern is right but blurred. A
-flow-matching model \cite{lipman2023, liu2023} is a network trained to
-deform the blurred forecast continuously into a sharp field. Started from
-the U-Net forecast plus noise, it returns sharp draws with the intensities
-and the small scales of the truth
+\emph{First, how do we design a model that produces a realistic
+precipitation forecast?}
+
+A deterministic two-head U-Net trained on mean-square error returns the
+conditional mean: the pattern is right but blurred. A flow-matching model
+\cite{lipman2023, liu2023} is a network trained to deform the blurred
+forecast continuously into a sharp field. Started from the U-Net forecast
+plus noise, it returns sharp draws with the intensities and the small
+scales of the truth
 (Sections~\ref{sec:unet}--\ref{sec:flow} and~\ref{sec:res-model}).
 
-\item \emph{How is the forecast skill distributed across scales?} Each
-precipitating system is an object whose total rain is the product of an
-area and an intensity, $P = \rho A$. Objects are matched between forecast
-and truth at a common valid time. Detection and false alarms are counted
-per size band, and the error of each matched pair is split into an area
-part and an intensity part. At $+3$~h detection increases from $0.04$ at
-$30$~km to $0.98$ at $480$~km. The flow detects more systems than the
+\emph{Second, how is the forecast skill distributed across scales?}
+
+Each precipitating system is an object whose total rain is the product of
+an area and an intensity, $P = \rho A$. Objects are matched between
+forecast and truth at a common valid time. Detection and false alarms are
+counted per size band, and the error of each matched pair is split into an
+area part and an intensity part. At $+3$~h detection increases from $0.04$
+at $30$~km to $0.98$ at $480$~km. The flow detects more systems than the
 U-Net in every band, produces more false alarms below $65$~km, and removes
 the area and intensity bias of the conditional mean
 (Sections~\ref{sec:evaluation} and~\ref{sec:res-scales}).
 
-\item \emph{What time horizon does each scale admit?} The horizon $T(L)$ is
-the e-folding time of the probability of detection in each size band,
-fitted across six forecast leads. Persistence is evaluated with the same
-matching and is the null. The horizon follows a power law,
+\emph{Third, what time horizon does each scale admit?}
+
+The horizon $T(L)$ is the e-folding time of the probability of detection in
+each size band, fitted across six forecast leads. Persistence is evaluated
+with the same matching and is the null. The horizon follows a power law,
 $T(L) \propto L^{\alpha}$, fitted for the three forecasts on the same
 bands, from $60$ to $340$~km. For persistence $\alpha = 0.97$, the
 advection value: $T = L/U$ with $U \approx 8$~m\,s$^{-1}$. The U-Net and
@@ -220,7 +223,6 @@ the flow have the same steeper exponent, $\alpha \approx 1.8$. The horizon
 of the flow is $1.3$ to $1.5$ times that of the U-Net in every band
 ($2.1$~h at $60$~km, $10$~h at $170$~km): the flow increases the horizon
 but does not change the exponent (Section~\ref{sec:res-horizon}).
-\end{enumerate}
 
 Finally, we apply the same evaluation to GraphCast \cite{lam2023}, FuXi
 \cite{chen2023}, GenCast \cite{price2025}, and FGN \cite{alet2025} from
