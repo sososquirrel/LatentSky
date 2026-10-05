@@ -165,33 +165,31 @@ kilometer resolution, but report skill per rain threshold, not per scale.
 We believe that these obstacles, taken together, explain why the
 precipitation of AI forecasts is not yet evaluated scale by scale. Knowing
 at which scales a forecast loses its rain systems, and how early, shows
-where it can be improved. Here we
-explore that direction with a model built for the purpose. The evaluation
-method we develop does not depend on the model: it applies to any forecast
-that produces a rain field, and we also use it to evaluate four operational
-AI models. We
-use a global storm-resolving DYAMOND simulation \cite{stevens2019}, which
-resolves the mesoscale convective systems responsible for tropical
-extremes. We train two models that differ only in their training
-objective: a deterministic network, which returns the mean, and a
-generative flow-matching model, which returns sharp samples of the possible
-outcomes. Rain is the target, predicted from the \emph{simultaneous}
+where it can be improved. Here we explore that direction. We ask three
+questions: how to produce a realistic precipitation forecast, how its skill
+is distributed across scales, and what time horizon each scale admits.
+
+Our approach is experimental. We use a global storm-resolving DYAMOND
+simulation \cite{stevens2019}, which resolves the mesoscale convective
+systems responsible for tropical extremes. We train two models that differ
+only in their training objective: a deterministic network, which returns
+the mean, and a generative flow-matching model, which returns sharp samples
+of the possible outcomes. The models are small, a $125$~M-parameter U-Net
+and its flow correction trained on 40 days of data on a single GPU. They
+are not meant to compete with operational systems; they form a controlled
+experiment. Rain is the target, predicted from the \emph{simultaneous}
 large-scale state. The horizon we measure is therefore conditional on
 perfect knowledge of the state: it is an upper bound for any system that
 derives rain from these state variables. Persistence, evaluated
-identically, is the null.
+identically, is the null. The evaluation is object-based, following
+\citeA{davis2006} and \citeA{wernli2008}. Detection, and hence $T(L)$,
+measures the \emph{trigger}: whether and where convection occurs. The area
+and intensity errors of the detected systems measure the \emph{amplitude},
+which is set by the thermodynamic environment. The evaluation does not
+depend on the model: it applies to any forecast that produces a rain field.
 
-The evaluation is object-based, following \citeA{davis2006} and
-\citeA{wernli2008}. It separates two aspects of precipitation prediction.
-Detection, and hence $T(L)$, measures the \emph{trigger}: whether and where
-convection occurs. The area and intensity errors of the detected systems
-measure the \emph{amplitude}, which is set by the thermodynamic
-environment.
-
-We ask three questions: how to produce a realistic precipitation forecast,
-how its skill is distributed across scales, and what time horizon each
-scale admits. We show that a deterministic U-Net returns a blurred mean,
-and that a flow-matching model started from it returns sharp draws with the
+We show that a deterministic U-Net returns a blurred mean, and that a
+flow-matching model started from it returns sharp draws with the
 intensities and the small scales of the truth. Describing each rain system
 by its area and its intensity, we find that the flow detects more systems
 than the U-Net at every size and removes its bias, at the cost of more
@@ -206,10 +204,6 @@ from WeatherBench~2
 \cite{lam2023, chen2023, price2025, alet2025, rasp2024}, the same
 evaluation shows that sampling a generative member restores the intensity,
 and that no model detects systems below ${\sim}60$~km at $0.25^{\circ}$.
-
-The models trained here are small: a $125$~M-parameter U-Net and its flow
-correction, trained on 40 days of data on a single GPU. They are not meant
-to compete with operational systems. They form a controlled experiment.
 
 Section~\ref{sec:methods} describes the data, the two models, and the
 evaluation. Section~\ref{sec:results} addresses the three questions in
