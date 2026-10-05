@@ -1,7 +1,8 @@
 """Paper Fig 5 — the predictability horizon and its scaling (full record).
 
 (a) POD(L) at +3 h, three models      (b) FAR(L) at +3 h — the price
-(c) POD(t; L) decay per coarse band   (d) tau(L) with the power-law fits
+(c) POD(t; L) decay per coarse band   (d) tau(L), power law fitted on the
+                                          59-336 km bands for all three forecasts
 
 Caption sentence the figure must make obvious: the detection horizon grows as
 a power law of system size; the flow sits above both the deterministic model
@@ -27,6 +28,7 @@ OUT = REPO / "paper" / "figures"
 LEADS = [0.25, 0.5, 1, 2, 3, 6]
 BANDS = [(25, 50), (50, 100), (100, 200), (200, 400), (400, 800)]
 BAND_CMAP = plt.get_cmap("viridis")
+FIT_WINDOW = (50, 400)   # km; band mids 59 ... 336
 
 
 def table_name(model, lead):
@@ -95,19 +97,29 @@ def main():
     df = pd.read_csv(ASSETS / "tau_fullrecord.csv")
     mids = np.sort(df.L_mid.unique())
     sc = None
-    for model in ("two-head", "persistence", "flow"):
+    # one fit window for the three forecasts: the bands a 6 h record constrains
+    # for persistence, and the same bands for the two models
+    ax_tau.axvspan(*FIT_WINDOW, color="0.93", lw=0, zorder=0)
+    ax_tau.axhline(6, color="0.55", lw=0.7, ls=":", zorder=1)
+    ax_tau.text(27, 6.5, "longest lead, 6 h", fontsize=6.5, color="0.4")
+    inw = (mids > FIT_WINDOW[0]) & (mids < FIT_WINDOW[1])
+    for model in ("persistence", "two-head", "flow"):
         d = df[df.model == model].sort_values("L_mid")
         t, pod0 = d.tau.to_numpy(), d["pod_0.25h"].to_numpy()
-        ok = np.isfinite(t) & (t > 0) & (t < 100)
-        out = fit_powerlaw(mids[ok], t[ok])
+        out = fit_powerlaw(mids[inw], t[inw])
         a = out["beta"]
         c0 = out["tau_ref"] / (out["L_ref"] ** a)
-        Lg = np.geomspace(28, 700, 40)
+        Lg = np.array(FIT_WINDOW, dtype=float)
         ax_tau.plot(Lg, c0 * Lg ** a, "-", color=COLOR[model], lw=1.4,
                     label=f"{model}: α = {a:.2f}")
-        sc = ax_tau.scatter(mids[ok], t[ok], c=pod0[ok], cmap="plasma",
+        sc = ax_tau.scatter(mids[inw], t[inw], c=pod0[inw], cmap="plasma",
                             vmin=0, vmax=1, marker=MARKER[model], s=26,
                             edgecolors=COLOR[model], linewidths=1.0, zorder=4)
+        # bands left out of the fit: hollow
+        left = ~inw & np.isfinite(t) & (t > 0) & (t < 110)
+        ax_tau.scatter(mids[left], t[left], marker=MARKER[model], s=26,
+                       facecolors="white", edgecolors=COLOR[model],
+                       linewidths=1.0, zorder=3)
     ax_tau.set_xscale("log")
     ax_tau.set_yscale("log")
     ax_tau.set_xlim(25, 800)
