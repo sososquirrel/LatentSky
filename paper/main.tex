@@ -40,9 +40,9 @@ every size and removes the too-large, too-weak bias, at a false-alarm cost
 \begin{abstract}
 %% DRAFT for Sophie's rewrite
 How far ahead precipitation can be predicted depends on the size of the
-precipitating system, yet standard verification collapses this scale
-dependence into a single score, and standard training blurs the systems the
-question is about. Using a 40-day kilometer-scale DYAMOND MPAS integration,
+precipitating system, yet the pixel-wise scores by which AI forecasts are
+usually ranked integrate over scale, and mean-square-error training blurs
+the small systems the question is about. Using a 40-day kilometer-scale DYAMOND MPAS integration,
 we first build a forecast that is realistic at every scale. A deterministic
 U-Net trained on mean-square error returns the conditional mean --- the right
 pattern, blurred. A conditional rectified flow, trained to transport that
@@ -113,14 +113,21 @@ has traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$. Where a
 measured exponent falls relative to these two anchors is itself
 information.
 
-Current AI forecasts cannot give this exponent, because their skill is
-scale-integrated by construction, for three reasons. First, the training
+Global AI forecasts do not yet give this exponent: three features of
+their construction integrate skill over scale. First, the training
 data miss the small scales: a reanalysis at $0.25^{\circ}$ parameterizes
 convection rather than resolving it, and what the data do not show, the
-model cannot learn. Second, the loss is a mean-square error. Its optimum is
-the conditional mean, and averaged over every possible future the field is
-a blur --- area over-spread, intensity under-drawn --- which pixel scores
-reward (the double-penalty problem \cite{ravuri2021}). Third, rain is a
+model cannot learn. Second, the loss of the deterministic models is a mean-square error. Its
+optimum is the conditional mean, and averaged over every possible future
+the field is a blur --- area over-spread, intensity under-drawn --- which
+pixel scores reward (the double-penalty problem \cite{ravuri2021}).
+Probabilistic models escape the blur, by sampling \cite{ravuri2021,
+price2025} or by predicting a rain-rate distribution at each pixel, as
+MetNet-3 and RainPro-8 do
+%% TODO cite: Andrychowicz et al. 2023 (MetNet-3); RainPro-8, arXiv:2505.10271 (ICLR 2026)
+; but a per-pixel distribution contains no rain systems to detect, and
+these models are still ranked by scores at fixed rain thresholds, not by
+system size. Third, rain is a
 by-product: it is diagnosed from the predicted state by a separate network
 \cite{bi2023} or predicted jointly with the other targets
 \cite{price2025}, at 3--6~h steps, so its error compounds the error in the
