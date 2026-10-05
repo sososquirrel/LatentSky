@@ -247,11 +247,11 @@ here and a wet/dry field (Figure~S1).
 C.~Flow matching. The U-Net forecast plus noise,
 $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is the starting state. A
 second U-Net of comparable size, the velocity network, returns the velocity $\hat{v}$ at the
-current state $x_t$, and the state is advanced by $\hat{v}\,\delta$; this
+current state $x_s$, and the state is advanced by $\hat{v}\,\delta$; this
 step is repeated $32$ times and gives one draw $x_1$. Its input has
-eleven channels, $x_t$ and the ten input fields (dashed arrow), and its
+eleven channels, $x_s$ and the ten input fields (dashed arrow), and its
 output one, the
-velocity; it also receives the flow time (not drawn). Three
+velocity; it also receives the flow time $s$ (not drawn). Three
 noise realizations give draws A, B, and C. Bottom: a two-dimensional sketch
 of the idea, not of the actual distributions: one uncertain starting point
 is carried to definite outcomes, here one draw to one peak and two draws to
@@ -322,40 +322,83 @@ precipitation map requires a component willing to take risk --- to commit to
 one sharp realization --- and the false-alarm ratio is, literally, the price
 of that risk.
 
-\subsection{Generative correction: a conditional rectified flow}\label{sec:flow}
+\subsection{Generative model: flow matching}\label{sec:flow}
 
-The rectified flow learns the transport from the deterministic forecast to the
-truth, and returns sharp samples of the conditional distribution instead of its
-mean. In log-rain space, the source is the forecast perturbed by its own error,
-$x_0 = z_{\mathrm{fc}} + \sigma \varepsilon$ with
-$\varepsilon \sim \mathcal{N}(0, I)$, where $\sigma$ is not a tuning knob but
-the measured wet-masked forecast error (rms) at that lead ($0.10$ at $+15$~min
-to $0.20$ at $+6$~h). Training draws $t \sim \mathcal{U}(0,1)$, forms the
-straight-line interpolant $x_t = (1-t)\,x_0 + t\,x_1$ toward the truth $x_1$,
-and regresses a velocity network $\hat{v}(x_t, t, c)$ --- the same U-Net trunk,
-conditioned on the ten input channels $c$ and on $t$ --- onto the constant
-displacement $v = x_1 - x_0$. Sampling integrates
-$\mathrm{d}x/\mathrm{d}t = \hat{v}$ from a fresh draw of $x_0$ to $t=1$ with
-$32$ steps of Heun's method --- the second-order Runge--Kutta
-predictor--corrector: a trial Euler step with the velocity at the current
-state, then an update with the average of the velocities at the current and
-trial states ($\Delta t = 1/32$, two network evaluations per step). The
-network is queried on the grid $t = 0, 1/32, \ldots, 31/32$ and the state
-lands exactly on $t = 1$; the final step is a plain Euler step, sparing the
-evaluation at $t = 1$ itself. The noise scale is the entire source of stochasticity:
-$\sigma \to 0$ collapses the flow to a deterministic regression, and each new
-$\varepsilon$ yields a different sharp realization consistent with the same
-smooth forecast. Figure~\ref{fig:arch}C shows the method on one example:
-the smooth two-head forecast and three sharp flow draws consistent with it.
+The deterministic U-Net returns one field, the mean. To obtain realistic
+fields we add a second model, trained by flow matching
+\cite{lipman2023, liu2023} (Figure~\ref{fig:arch}C). Flow matching is a
+method, not an architecture. It moves a field continuously from a starting
+point to an end point. Here the starting point is the U-Net forecast plus
+noise, and the end point is a realistic rain field. The move takes place
+in a fictitious time $s$, from $s = 0$ to $s = 1$, which is not the
+physical time $t$.
 
-One scoring rule governs every generative result in this paper: metrics are
-computed per draw and then averaged over draws, never on the draw-averaged
-field. The mean field is again a conditional-mean estimate; scoring it would
-turn the generative model back into the regression and erase exactly the
-difference we measure. (A denoising diffusion model warm-started from the same
-forecast was evaluated as a sampling-protocol sensitivity; it reaches a
-small-scale power ceiling of $0.80$--$0.85$ attributable to its train/test
-mismatch and is reported in Text~S3.)
+\textit{The two end points.} Fields are handled in log space,
+$z = \ln(1 + R)/2$, with $R$ the rain in mm per $15$~min. The starting
+point is
+\begin{equation}
+x_0 = z_{\mathrm{fc}} + \sigma\,\varepsilon, \qquad
+\varepsilon \sim \mathcal{N}(0, I),
+\end{equation}
+where $z_{\mathrm{fc}}$ is the U-Net forecast. The amplitude $\sigma$ is not
+tuned: it is the measured root-mean-square error of the forecast on wet
+pixels at that lead, from $0.10$ at $+15$~min to $0.20$ at $+6$~h. The end
+point $x_1$ is the true rain field at the same valid time.
+
+\textit{The velocity network.} At each time $s$, the method needs to know
+in which direction each pixel of the field must change. This is a velocity
+field, with the same shape as the rain field. Computing it is an
+image-to-image problem, and we use a second U-Net for it, the velocity
+network $\hat{v}(x_s, s, c)$. It has the same trunk as the deterministic
+U-Net and a comparable size. Its input has eleven channels: the current
+field $x_s$ and the ten input fields $c$. The time $s$ modulates the
+features at every stage of the network. Its output is one field, the
+velocity, which can be positive or negative. The velocity network plays the
+role of the tendency term in a numerical model: it returns
+$\mathrm{d}x/\mathrm{d}s$ from the current state. It is learned from data
+instead of derived from equations.
+
+\textit{Training.} For each training example we draw a noise field
+$\varepsilon$ and a time $s$ uniformly between $0$ and $1$, and take the
+point on the straight line between the two end points,
+\begin{equation}
+x_s = (1 - s)\,x_0 + s\,x_1 .
+\end{equation}
+Along this line the velocity is constant and equal to $x_1 - x_0$. The
+network is trained to return it, by minimizing the mean-square difference
+\begin{equation}
+\mathcal{L} = \big\langle\, \| \hat{v}(x_s, s, c) - (x_1 - x_0) \|^2
+\,\big\rangle .
+\end{equation}
+Each forecast is paired with its own truth, so the lines are short: the
+network learns a correction to the forecast, not a rain field from pure
+noise.
+
+\textit{Sampling.} To produce one draw we draw a noise field, form $x_0$,
+and integrate
+\begin{equation}
+\frac{\mathrm{d}x}{\mathrm{d}s} = \hat{v}(x_s, s, c)
+\end{equation}
+from $s = 0$ to $s = 1$. Nothing is learned at this stage. We use $32$ steps
+of Heun's method, the second-order Runge--Kutta predictor--corrector: a
+trial Euler step with the velocity at the current state, then an update with
+the average of the velocities at the current and trial states. The network
+is queried at $s = 0, 1/32, \ldots, 31/32$, and the final step is a plain
+Euler step, so one draw costs $63$ evaluations of the network. The field
+reached at $s = 1$ is the draw.
+
+\textit{The role of the noise.} The noise is the only source of randomness.
+With $\sigma = 0$ the flow reduces to a deterministic correction of the
+forecast. Each new $\varepsilon$ gives a different sharp field consistent
+with the same smooth forecast (Figure~\ref{fig:arch}C, draws A to C).
+
+\textit{Scoring.} All metrics of the generative model are computed for each
+draw and then averaged over draws. They are never computed on the average
+of the draws: that average is again an estimate of the mean, and scoring it
+would remove the difference we measure. A denoising diffusion model started
+from the same forecast was also tested as a sensitivity. Its small-scale
+power saturates at $0.80$--$0.85$ of the truth, because it is trained on
+noised truth and applied to noised forecasts; it is reported in Text~S3.
 
 \subsection{Evaluation: the $\rho A$ decomposition on matched pairs}
 \label{sec:evaluation}
