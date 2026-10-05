@@ -186,38 +186,24 @@ convection occurs. The area and intensity errors of the detected systems
 measure the \emph{amplitude}, which is set by the thermodynamic
 environment.
 
-We address three questions. We first ask how to design a model that
-produces a realistic precipitation forecast. We find that a deterministic
-U-Net trained on mean-square error returns the conditional mean: the
-pattern is right but blurred. A flow-matching model
-\cite{lipman2023, liu2023}, trained to deform this blurred forecast
-continuously into a sharp field, returns draws with the intensities and
-the small scales of the truth.
-
-We then ask how the forecast skill is distributed across scales. We
-describe each precipitating system by its area and its intensity,
-$P = \rho A$, match systems between forecast and truth, and count
-detections and false alarms per size band. We find that detection
-increases with system size, from $0.04$ at $30$~km to $0.98$ at $480$~km
-at $+3$~h. The flow detects more systems than the U-Net at every size and
-removes its area and intensity bias, at the cost of more false alarms
-below $65$~km.
-
-Finally, we ask what time horizon each scale admits. We define $T(L)$ as
-the e-folding time of detection in each size band, with persistence as the
-null. We show that the horizon follows a power law,
-$T(L) \propto L^{\alpha}$, between $60$ and $340$~km. For persistence
-$\alpha = 0.97$, the advection value: $T = L/U$ with
-$U \approx 8$~m\,s$^{-1}$. The U-Net and the flow share a steeper exponent,
-$\alpha \approx 1.8$. The horizon of the flow is $1.3$ to $1.5$ times that
-of the U-Net at every size ($2.1$~h at $60$~km, $10$~h at $170$~km): the
-flow increases the horizon but does not change the exponent.
-
-We also apply the same evaluation to GraphCast \cite{lam2023}, FuXi
-\cite{chen2023}, GenCast \cite{price2025}, and FGN \cite{alet2025} from
-WeatherBench~2 \cite{rasp2024}. Sampling a generative member restores the
-intensity, and below ${\sim}60$~km no model detects systems at
-$0.25^{\circ}$.
+We ask three questions: how to produce a realistic precipitation forecast,
+how its skill is distributed across scales, and what time horizon each
+scale admits. We show that the detection horizon of precipitation follows a
+power law of system size, and that a generative forecast lengthens it at
+every scale without changing its exponent. A deterministic U-Net returns a
+blurred mean; a flow-matching model started from it returns sharp draws
+with the intensities and the small scales of the truth. Describing each
+rain system by its area and its intensity, we find that the flow detects
+more systems than the U-Net at every size and removes its bias, at the cost
+of more false alarms below $65$~km. Between $60$ and $340$~km the horizon
+of persistence grows linearly with size, $T = L/U$ with
+$U \approx 8$~m\,s$^{-1}$, as expected from advection. The two trained
+models share a steeper exponent, $\alpha \approx 1.8$, and the horizon of
+the flow is $1.3$ to $1.5$ times that of the U-Net. Applied to four
+operational AI models from WeatherBench~2
+\cite{lam2023, chen2023, price2025, alet2025, rasp2024}, the same
+evaluation shows that sampling a generative member restores the intensity,
+and that no model detects systems below ${\sim}60$~km at $0.25^{\circ}$.
 
 The models trained here are small: a $125$~M-parameter U-Net and its flow
 correction, trained on 40 days of data on a single GPU. They are not meant
@@ -225,7 +211,7 @@ to compete with operational systems. They form a controlled experiment.
 
 Section~\ref{sec:methods} describes the data, the two models, and the
 evaluation. Section~\ref{sec:results} addresses the three questions in
-order, followed by the operational models. Section~\ref{sec:discussion}
+order, then the operational models. Section~\ref{sec:discussion}
 discusses what the horizon does and does not measure.
 
 %% ===================== 2. DATA AND METHODS =================================
