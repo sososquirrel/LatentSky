@@ -252,9 +252,14 @@ def draw():
             ha="center", va="bottom", fontsize=6.5)
     # three draws, three noise seeds
     ys = [YC + S + 0.9 - S / 2, YC - S / 2, YC - S - 0.9 - S / 2]
+    # one line out of the network, split at right angles into the three draws
+    xbus = (bx1 + xdr) / 2 - 0.1
+    ax.plot([bx1, xbus], [YC, YC], color=ORANGE, lw=0.8, zorder=6, solid_capstyle="butt")
+    ax.plot([xbus, xbus], [ys[2] + S / 2, ys[0] + S / 2], color=ORANGE, lw=0.8, zorder=6,
+            solid_capstyle="projecting")
     for y, seed, tag in zip(ys, SEEDS, "ABC"):
         rain(d[f"draw{seed}"], xdr, y, S, tag=f"draw {tag}, $x_1$")
-        arrow((bx1, YC), (xdr, y + S / 2), color=ORANGE, lw=0.8, ms=6)
+        arrow((xbus, y + S / 2), (xdr, y + S / 2), color=ORANGE, lw=0.8, ms=5)
 
     # what the flow does to the distribution: three broad modes -> three sharp ones
     from matplotlib.colors import LinearSegmentedColormap
