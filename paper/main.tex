@@ -188,19 +188,19 @@ environment.
 
 We ask three questions: how to produce a realistic precipitation forecast,
 how its skill is distributed across scales, and what time horizon each
-scale admits. We show that the detection horizon of precipitation follows a
-power law of system size, and that a generative forecast lengthens it at
-every scale without changing its exponent. A deterministic U-Net returns a
-blurred mean; a flow-matching model started from it returns sharp draws
-with the intensities and the small scales of the truth. Describing each
-rain system by its area and its intensity, we find that the flow detects
-more systems than the U-Net at every size and removes its bias, at the cost
-of more false alarms below $65$~km. Between $60$ and $340$~km the horizon
-of persistence grows linearly with size, $T = L/U$ with
-$U \approx 8$~m\,s$^{-1}$, as expected from advection. The two trained
-models share a steeper exponent, $\alpha \approx 1.8$, and the horizon of
-the flow is $1.3$ to $1.5$ times that of the U-Net. Applied to four
-operational AI models from WeatherBench~2
+scale admits. We show that a deterministic U-Net returns a blurred mean,
+and that a flow-matching model started from it returns sharp draws with the
+intensities and the small scales of the truth. Describing each rain system
+by its area and its intensity, we find that the flow detects more systems
+than the U-Net at every size and removes its bias, at the cost of more
+false alarms below $65$~km. The detection horizon then follows a power law
+of system size. Between $60$ and $340$~km the horizon of persistence grows
+linearly with size, $T = L/U$ with $U \approx 8$~m\,s$^{-1}$, as expected
+from advection. The two trained models share a steeper exponent,
+$\alpha \approx 1.8$, and the horizon of the flow is $1.3$ to $1.5$ times
+that of the U-Net: the generative forecast lengthens the horizon at every
+scale without changing its exponent. Applied to four operational AI models
+from WeatherBench~2
 \cite{lam2023, chen2023, price2025, alet2025, rasp2024}, the same
 evaluation shows that sampling a generative member restores the intensity,
 and that no model detects systems below ${\sim}60$~km at $0.25^{\circ}$.
