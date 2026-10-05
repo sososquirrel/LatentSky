@@ -149,7 +149,7 @@ def draw():
 
     def panel(x, letter, title):
         ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=9, fontfamily="cmb10")
-        ax.text(x + 2.0, 52.4, title, ha="left", va="bottom", fontsize=8)
+        ax.text(x + 2.6, 52.4, title, ha="left", va="bottom", fontsize=8)
 
     YC = 38.0   # the level of the U-Net's input and output
 
@@ -180,16 +180,16 @@ def draw():
     ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
 
     # ---------------- the U-Net ----------------------------------------------
-    frame(17.0, 4.5, 39.6, 47.0, BLUE, BLUE_BG)
-    panel(17.0, "b", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
-    panel(0.4, "a", "Inputs")
-    W, DX, DY = 2.3, 3.1, 5.0
-    xe = [19.5 + DX * i for i in range(5)]
-    xd = [52.3 - DX * i for i in range(5)]
+    frame(18.5, 13.5, 35.0, 38.0, BLUE, BLUE_BG)
+    panel(18.5, "B.", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
+    panel(0.4, "A.", "Inputs")
+    W, DX, DY = 2.0, 2.75, 3.7
+    xe = [21.0 + DX * i for i in range(5)]
+    xd = [49.0 - DX * i for i in range(5)]
     yc = [YC - DY * i for i in range(5)]
-    hh = [15.0, 11.5, 8.6, 6.2, 4.2]
+    hh = [12.0, 9.2, 6.9, 5.0, 3.5]
     res = ["$128^2$", "$64^2$", "$32^2$", "$16^2$", "$8^2$"]
-    xbm, ybm, wb, hb = 37.05, YC - DY * 5, 3.4, 2.8      # bottleneck, on the same staircase
+    xbm, ybm, wb, hb = 36.0, YC - DY * 5, 2.8, 2.2      # bottleneck, on the same staircase
     for i in range(5):
         for x in (xe[i], xd[i]):
             ax.add_patch(Rectangle((x, yc[i] - hh[i] / 2), W, hh[i], fc="white", ec=BLUE,
@@ -203,17 +203,17 @@ def draw():
                            lw=0.8, alpha=0.55, zorder=3))
     ax.text(xbm, ybm - hb / 2 - 0.5, "bottleneck $4^2$", ha="center", va="top", fontsize=5,
             color=GRAY)
-    ax.text(37.05, yc[0] + hh[0] / 2 + 0.2, "skip connections", ha="center", va="bottom",
+    ax.text(36.0, yc[0] + hh[0] / 2 + 0.2, "skip connections", ha="center", va="bottom",
             fontsize=5.5, color=BLUE)
-    ax.text(xe[1], 17.5, "encoder", ha="center", fontsize=6, color=BLUE)
-    ax.text(xd[1] + W, 17.5, "decoder", ha="center", fontsize=6, color=BLUE)
+    ax.text(xe[1], 19.0, "encoder", ha="center", fontsize=6, color=BLUE)
+    ax.text(xd[1] + W, 19.0, "decoder", ha="center", fontsize=6, color=BLUE)
     arrow((xj, YC), (xe[0], YC))
 
     # ---------------- U-Net forecast, then the flow ---------------------------
     S = 7.6
     y0 = YC - S / 2
     frame(67.2, 4.5, 32.4, 47.0, ORANGE, "none")
-    panel(67.2, "c", "Flow matching: forecast + noise $\\rightarrow$ draws")
+    panel(67.2, "C.", "Flow matching: forecast + noise $\\rightarrow$ draws")
     xf, x0s, xdr = 58.2, 68.6, 91.2
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
     arrow((xd[0] + W, YC), (xf, YC))
