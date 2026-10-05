@@ -239,16 +239,18 @@ example block at $+3$~h; all rain maps are model fields on one log color
 scale). A.~The inputs at time $t$: nine fields of the large-scale state,
 stacked, and the current rain. B.~The U-Net maps these ten fields to the
 rain at $t + \Delta t$: an encoder of five stages, a bottleneck, a mirrored
-decoder, and skip connections (dashed). Sizes are resolution $\times$
-channels: from $128^2 \times 64$ at the first stage, the resolution halves
-and the channels double at each stage, down to a latent of
-$4^2 \times 2048$.
+decoder, and skip connections (dashed). Sizes are resolution $\times$ channels. The ten input
+fields ($128^2 \times 10$) are reduced to a latent of $4^2 \times 2048$,
+the resolution halving and the channels doubling from $64$ at each stage,
+and expanded back to two output fields ($128^2 \times 2$): the rain shown
+here and a wet/dry field (Figure~S1).
 C.~Flow matching. The U-Net forecast plus noise,
 $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is the starting state. A
 second U-Net of comparable size, the velocity network, returns the velocity $\hat{v}$ at the
 current state $x_t$, and the state is advanced by $\hat{v}\,\delta$; this
-step is repeated $32$ times and gives one draw $x_1$. The velocity network
-also receives the ten input fields and the flow time (not drawn). Three
+step is repeated $32$ times and gives one draw $x_1$. Its input has
+eleven channels, $x_t$ and the ten input fields, and its output one, the
+velocity; it also receives the flow time (not drawn). Three
 noise realizations give draws A, B, and C. Bottom: a two-dimensional sketch
 of the idea, not of the actual distributions: one uncertain starting point
 is carried to definite outcomes, here one draw to one peak and two draws to

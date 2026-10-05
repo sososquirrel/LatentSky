@@ -153,7 +153,7 @@ def draw():
 
     YM = 31.5   # the level of the main row: inputs join -> U-Net -> forecast -> flow
 
-    def unet(x0, yc, col, bg, title):
+    def unet(x0, yc, col, bg, title, n_in, n_out):
         """One U-Net glyph; the two networks are drawn at the same size (comparable parameters)."""
         gw, gh = 18.7, 18.4
         ax.add_patch(FancyBboxPatch((x0, yc - gh / 2), gw, gh, boxstyle="round,pad=0,rounding_size=0.6",
@@ -172,10 +172,10 @@ def draw():
         xb_ = (xe_[4] + bw + xd_[4]) / 2
         ax.add_patch(Rectangle((xb_ - 0.65, ycs[4] - dy - 0.65), 1.3, 1.3, fc=col, ec=col, lw=0.6,
                                alpha=0.55, zorder=4))
-        # approximate sizes: the first stage and the latent (bottleneck), as resolution x channels
-        for xq in (xe_[0] + bw / 2 + 1.5, xd_[0] + bw / 2 - 1.5):
-            ax.text(xq, ycs[0] + hs[0] / 2 + 0.45, r"$128^2\!\times\!64$", ha="center", va="bottom",
-                    fontsize=5, color=col)
+        # sizes as resolution x channels: what goes in, what comes out, and the latent
+        for xq, nch in ((xe_[0] + bw / 2 + 1.5, n_in), (xd_[0] + bw / 2 - 1.5, n_out)):
+            ax.text(xq, ycs[0] + hs[0] / 2 + 0.45, rf"$128^2\!\times\!{nch}$", ha="center",
+                    va="bottom", fontsize=5, color=col)
         ax.text(xb_, ycs[4] - dy - 1.0, r"latent $4^2\!\times\!2048$", ha="center", va="top",
                 fontsize=5, color=col)
         ax.text(x0 + gw / 2, yc + gh / 2 + 0.5, title, ha="center", va="bottom", fontsize=6.5,
@@ -213,7 +213,7 @@ def draw():
     S = 7.6
     y0 = YM - S / 2
     xu = 18.6
-    xu1, _ = unet(xu, YM, BLUE, BLUE_BG, "U-Net")
+    xu1, _ = unet(xu, YM, BLUE, BLUE_BG, "U-Net", 10, 2)
     panel(xu, "B.", r"U-Net: rain at $t + \Delta t$")
     arrow((xj, YM), (xu, YM))
     xf = xu1 + 3.0
@@ -232,7 +232,7 @@ def draw():
     arrow((xf + S, YM), (x0s, YM), color=ORANGE)
     # the velocity network: a second U-Net of the same size, applied 32 times
     xv = x0s + S + 3.0
-    xv1, yv1 = unet(xv, YM, ORANGE, ORANGE_BG, "velocity network")
+    xv1, yv1 = unet(xv, YM, ORANGE, ORANGE_BG, "velocity network", 11, 1)
     arrow((x0s + S, YM), (xv, YM), color=ORANGE)
     ax.text((x0s + S + xv) / 2, YM + 0.6, "$x_t$", ha="center", va="bottom", fontsize=6.5)
     arrow((xv1 - 3.5, yv1 + 3.3), (xv + 3.5, yv1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.4)
