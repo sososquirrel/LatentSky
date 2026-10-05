@@ -164,8 +164,10 @@ kilometer resolution, but report skill per rain threshold, not per scale.
 
 We believe that these obstacles, taken together, explain why the
 precipitation of AI forecasts is not yet evaluated scale by scale. Here we
-explore that direction with a model built for the purpose, and then examine
-how the evaluation applies to operational forecasts. We
+explore that direction with a model built for the purpose. The evaluation
+method we develop does not depend on the model: it applies to any forecast
+that produces a rain field, and we also use it to evaluate four operational
+AI models. We
 use a global storm-resolving DYAMOND simulation \cite{stevens2019}, which
 resolves the mesoscale convective systems responsible for tropical
 extremes. We train two models that differ only in their training
@@ -228,8 +230,7 @@ $0.25^{\circ}$ (Section~\ref{sec:res-wb2}).
 
 The models trained here are small: a $125$~M-parameter U-Net and its flow
 correction, trained on 40 days of data on a single GPU. They are not meant
-to compete with operational systems. They form a controlled experiment, and
-the evaluation applies to any forecast that produces a rain field.
+to compete with operational systems. They form a controlled experiment.
 
 Section~\ref{sec:methods} describes the data, the two models, and the
 evaluation. Section~\ref{sec:results} addresses the three questions in
