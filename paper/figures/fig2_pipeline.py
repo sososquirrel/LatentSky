@@ -254,12 +254,13 @@ def draw():
             ax.plot([xq, xq + SD], [yd + q, yd + q], color="0.35", lw=0.25, alpha=0.5, zorder=3.5)
         ax.add_patch(Rectangle((xq, yd), SD, SD, fill=False, ec="0.25", lw=0.5, zorder=5))
         ax.text(xq + SD / 2, yd + SD + 0.6, lab, ha="center", va="bottom", fontsize=6.5)
-    src = to_ax(xa, 0.15, -0.1)                                  # one point of the broad cloud
-    ends = [to_ax(xb, mx + ox, my + oy) for (mx, my), (ox, oy) in
-            zip(mus, [(0.22, 0.2), (-0.24, 0.16), (0.2, -0.24)])]   # one draw near each peak
-    for e, rad in zip(ends, (0.10, 0.34, -0.25)):
+    src = to_ax(xa, 0.45, 0.25)                                 # one point of the broad cloud
+    pk = mus[1]                                                  # the sharp peak the draws fall in
+    ends = [to_ax(xb, pk[0] + ox, pk[1] + oy) for ox, oy in
+            [(-0.13, 0.12), (0.14, 0.06), (0.0, -0.16)]]         # three draws, all near that peak
+    for e, rad in zip(ends, (-0.22, -0.34, -0.10)):
         arrow(src, e, color=INK, lw=0.6, ms=5, rad=rad)
-        ax.plot(*e, "o", ms=2.6, mfc=INK, mec="white", mew=0.4, zorder=7)
+        ax.plot(*e, "o", ms=2.4, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.text(85.4, yd + SD + 3.4, "distribution of the possible outcomes", ha="center",
             va="bottom", fontsize=6, color=GRAY)
