@@ -170,10 +170,14 @@ uncertainty of the map from state to rain.
 Other initiatives address regional nowcasting. MetNet-3
 \cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} predict the
 probability of rain rates at each grid point over the next hours, from
-radar and satellite observations at kilometer resolution. In this work we
-focus instead on producing realistic precipitation fields, in which rain
-systems can be identified and followed with lead time, and we target global
-forecasts and their longer leads.
+radar and satellite observations at kilometer resolution. Most of the
+obstacles above are overcome there: the data resolve convection, rain is
+the target, and the output is a distribution, not a mean. Even so, their
+skill is reported per rain threshold and per lead, and no decomposition of
+skill by the scale of the rain systems is proposed. In this work we focus
+on producing realistic precipitation fields, in which rain systems can be
+identified and followed with lead time, and we target global forecasts and
+their longer leads.
 
 This work removes the three obstacles in turn. The data are a global
 storm-resolving DYAMOND integration \cite{stevens2019}, in which the
