@@ -118,136 +118,118 @@ ends, and again $\alpha = 1$. Where a
 measured exponent falls relative to these two anchors is itself
 information.
 
-This paper is about that dependence on scale. Measuring $T(L)$ asks two
-things of a forecast: its rain field must contain systems of every size,
-and its skill must be judged system by system, size by size. Whether AI
-forecasts obey a scaling law is not known, because neither condition is met
-today. To see why, we recall how AI forecasts produce rain: first the
-deterministic global models, then the probabilistic ones.
+This paper is about that dependence on scale. Measuring $T(L)$ requires two
+things. The forecast rain field must contain systems of every size, and
+skill must be evaluated per system size. Current AI forecasts meet neither
+condition. We first recall how they produce rain.
 
-In a numerical model, rain is the end of a physical chain: resolved ascent,
+In a numerical model, rain results from a physical chain: resolved ascent,
 a convection scheme where the grid is too coarse, cloud microphysics, and a
-water budget that ties the rain to the moisture it removes. The large AI
-weather models have no such chain. They are statistical emulators of a
-reanalysis. A neural network is trained on four decades of ERA5 at
-$0.25^{\circ}$ to map the global atmospheric state --- winds, temperature,
-humidity, and geopotential on pressure levels, plus a few surface fields ---
-to the state $6$ or $12$~h later, and a forecast is obtained by applying
-the network repeatedly to its own output, out to $10$--$15$ days
-\cite{lam2023, chen2023, price2025}. Rain is one more field the network
-learns to output: the total precipitation of the reanalysis, accumulated
-over the step, which is itself produced by the convection and cloud schemes
-of the forecast model behind the reanalysis and is not observed.
+water budget. AI weather models have no such chain. A neural network is
+trained on four decades of the ERA5 reanalysis at $0.25^{\circ}$ to map the
+global atmospheric state (winds, temperature, humidity, and geopotential on
+pressure levels, plus a few surface fields) to the state $6$ or $12$~h
+later. A forecast applies the network repeatedly to its own output, out to
+$10$--$15$ days \cite{lam2023, chen2023, price2025}. Rain is one of the
+output fields: the total precipitation of the reanalysis, accumulated over
+the step. It is produced by the convection and cloud schemes of the model
+behind the reanalysis. It is not observed.
 
-The deterministic models return one forecast. GraphCast and FuXi learn the
-rain field jointly with the rest of the state, by minimizing a grid-point
-error, most often the mean-square error; FourCastNet diagnoses it from the
+Deterministic models return a single forecast. GraphCast and FuXi learn
+rain jointly with the rest of the state by minimizing a grid-point error,
+most often the mean-square error. FourCastNet diagnoses rain from the
 predicted state with a separate network \cite{pathak2022}. We note in
-passing that Pangu-Weather predicts no rain at all \cite{bi2023}. Two
-features of this construction erase the small scales. The training data
-miss them: a reanalysis at $0.25^{\circ}$ parameterizes convection rather
-than resolving it, and what the data do not show, the model cannot learn.
-And the forecast that minimizes a mean-square error is the mean of all the
-futures compatible with the initial state. That mean is smooth --- rain
-areas too wide, intensities too weak --- like the mean of an ensemble, and
-grid-point scores reward it (the double-penalty problem
-\cite{ravuri2021}).
+passing that Pangu-Weather predicts no rain \cite{bi2023}. Two features of
+these models remove the small scales. First, the training data do not
+contain them: a reanalysis at $0.25^{\circ}$ parameterizes convection.
+Second, the forecast that minimizes a mean-square error is the mean of all
+futures compatible with the initial state. This mean is smooth, like an
+ensemble mean: rain areas are too wide and intensities too weak. Grid-point
+scores favor it (the double-penalty problem \cite{ravuri2021}).
 
-The probabilistic models return an ensemble, and each member is sharp.
-GenCast is a diffusion model: it generates the next state of each member by
-progressively refining a field of noise into a forecast, given the previous
-states, and a different noise field gives a different member
-\cite{price2025}. FGN obtains its members by perturbing the network itself
-with a random vector, and is trained to minimize the continuous ranked
-probability score, the usual verification score of ensembles, computed
-separately at each grid point and for each variable \cite{alet2025}. The
-blur is gone, but the rain is still that of the reanalysis, accumulated
-over steps of $6$ to $12$~h, and both models leave precipitation out of
-their headline results, for lack of confidence in the reanalysis rain.
+Probabilistic models return an ensemble of sharp members. GenCast is a
+diffusion model: each member is obtained by progressively refining a noise
+field into a forecast, given the previous states \cite{price2025}. FGN
+perturbs the network with a random vector and is trained on the continuous
+ranked probability score, computed at each grid point and for each variable
+\cite{alet2025}. These models do not blur. Their rain is still the
+reanalysis rain accumulated over $6$ to $12$~h, and both exclude
+precipitation from their main results for lack of confidence in it.
 Regional nowcasting models such as MetNet-3 \cite{andrychowicz2023} and
 RainPro-8 \cite{sarabia2025} predict rain-rate probabilities from radar at
 kilometer resolution, but report skill per rain threshold, not per scale.
 
-What is missing is the same throughout: a forecast whose rain
-systems can be identified, and a skill resolved by their size. This work
-provides both. The data are a global storm-resolving DYAMOND integration
-\cite{stevens2019}, in which the mesoscale convective systems that dominate
-tropical extremes are resolved rather than parameterized. The forecasts are
-a matched pair, a deterministic network and a generative flow-matching
-model that differ only in their training objective: the first returns the
-mean, the second sharp \emph{samples} of the possible outcomes, so the
-stochasticity moves from an error stamped into the field to a spread across
-draws, where it is measured and priced. Rain is the target itself,
-predicted from the \emph{simultaneous} large-scale state: the horizon we
-measure is conditional on perfect state knowledge, an upper bound that no
-system deriving rain from these state variables can exceed. Persistence,
-evaluated identically, is the null.
+None of these models provides both a forecast in which rain systems can be
+identified and a skill resolved by system size. Here we provide both. We
+use a global storm-resolving DYAMOND simulation \cite{stevens2019}, which
+resolves the mesoscale convective systems responsible for tropical
+extremes. We train two models that differ only in their training
+objective: a deterministic network, which returns the mean, and a
+generative flow-matching model, which returns sharp samples of the possible
+outcomes. Rain is the target, predicted from the \emph{simultaneous}
+large-scale state. The horizon we measure is therefore conditional on
+perfect knowledge of the state: it is an upper bound for any system that
+derives rain from these state variables. Persistence, evaluated
+identically, is the null.
 
-The measurement is object-based, in the tradition of
-\citeA{davis2006} and \citeA{wernli2008}, and it separates the two
-challenges of precipitation prediction. Detection, and hence $T(L)$,
-measures the \emph{trigger}: whether and where convection initiates. The
-area and intensity errors of the detected systems measure the
-\emph{amplitude}, set by the thermodynamic environment and its longer
-memory.
+The evaluation is object-based, following \citeA{davis2006} and
+\citeA{wernli2008}. It separates two aspects of precipitation prediction.
+Detection, and hence $T(L)$, measures the \emph{trigger}: whether and where
+convection occurs. The area and intensity errors of the detected systems
+measure the \emph{amplitude}, which is set by the thermodynamic
+environment.
 
-The paper answers three questions.
+We address three questions.
 
 \begin{enumerate}
 \item \emph{How do we design a model that produces a realistic precipitation
-forecast?} A deterministic two-head U-Net trained on mean-square error gives
-the conditional mean: the right pattern, blurred. A flow-matching correction
---- in a couple of words: a network trained to continuously deform the
-blurred forecast into a sharp, realistic field, so that each random draw is
-a different plausible truth \cite{lipman2023, liu2023} --- starts from that
-forecast plus noise and returns sharp draws, with the intensities and the
-small scales of the truth
+forecast?} A deterministic two-head U-Net trained on mean-square error
+returns the conditional mean: the pattern is right but blurred. A
+flow-matching model \cite{lipman2023, liu2023} is a network trained to
+deform the blurred forecast continuously into a sharp field. Started from
+the U-Net forecast plus noise, it returns sharp draws with the intensities
+and the small scales of the truth
 (Sections~\ref{sec:unet}--\ref{sec:flow} and~\ref{sec:res-model}).
 
-\item \emph{How is the forecast skill distributed across scales?} The
-instrument is a rain decomposition: every precipitating system is an object
-whose total rain factors exactly into an area and an intensity,
-$P = \rho A$; objects are matched between forecast and truth at a common
-valid time; detection and false alarms are counted per size band, and each
-matched pair splits its error into an area part and an intensity part. At
-$+3$~h detection rises from $0.04$ at $30$~km to $0.98$ at $480$~km. The
-flow detects more than the U-Net in every band, pays in false alarms below
-$65$~km, and removes the area and intensity bias of the conditional mean
+\item \emph{How is the forecast skill distributed across scales?} Each
+precipitating system is an object whose total rain is the product of an
+area and an intensity, $P = \rho A$. Objects are matched between forecast
+and truth at a common valid time. Detection and false alarms are counted
+per size band, and the error of each matched pair is split into an area
+part and an intensity part. At $+3$~h detection increases from $0.04$ at
+$30$~km to $0.98$ at $480$~km. The flow detects more systems than the
+U-Net in every band, produces more false alarms below $65$~km, and removes
+the area and intensity bias of the conditional mean
 (Sections~\ref{sec:evaluation} and~\ref{sec:res-scales}).
 
 \item \emph{What time horizon does each scale admit?} The horizon $T(L)$ is
-the e-folding time of the probability of detection per size band, fitted
-across six forecast leads, with persistence evaluated under the identical
-matching as the null. It follows a power law, $T(L) \propto L^{\alpha}$,
-fitted for the three forecasts on the same bands, from $60$ to $340$~km.
-Persistence has $\alpha = 0.97$: it sits on the advection anchor,
-$T = L/U$ with $U \approx 8$~m\,s$^{-1}$. The U-Net and the flow share a
-steeper exponent, $\alpha \approx 1.8$, and the horizon of the flow is $1.3$
-to $1.5$ times that of the U-Net in every band: $2.1$~h at $60$~km, $10$~h
-at $170$~km. The flow lifts the law; it does not change its slope
-(Section~\ref{sec:res-horizon}).
+the e-folding time of the probability of detection in each size band,
+fitted across six forecast leads. Persistence is evaluated with the same
+matching and is the null. The horizon follows a power law,
+$T(L) \propto L^{\alpha}$, fitted for the three forecasts on the same
+bands, from $60$ to $340$~km. For persistence $\alpha = 0.97$, the
+advection value: $T = L/U$ with $U \approx 8$~m\,s$^{-1}$. The U-Net and
+the flow have the same steeper exponent, $\alpha \approx 1.8$. The horizon
+of the flow is $1.3$ to $1.5$ times that of the U-Net in every band
+($2.1$~h at $60$~km, $10$~h at $170$~km): the flow increases the horizon
+but does not change the exponent (Section~\ref{sec:res-horizon}).
 \end{enumerate}
 
-An outlook closes the paper: applied unchanged to GraphCast \cite{lam2023},
-FuXi \cite{chen2023}, GenCast \cite{price2025}, and FGN \cite{alet2025} from
-WeatherBench~2 \cite{rasp2024}, the same instrument finds the same scale
-story --- sampling a generative member restores intensity, and below
-${\sim}60$~km no model detects systems at $0.25^{\circ}$
-(Section~\ref{sec:res-wb2}).
+Finally, we apply the same evaluation to GraphCast \cite{lam2023}, FuXi
+\cite{chen2023}, GenCast \cite{price2025}, and FGN \cite{alet2025} from
+WeatherBench~2 \cite{rasp2024}. Sampling a generative member restores the
+intensity, and below ${\sim}60$~km no model detects systems at
+$0.25^{\circ}$ (Section~\ref{sec:res-wb2}).
 
-The models are deliberately modest --- a $125$~M-parameter U-Net and its
-flow correction, trained on 40 days of data on a single GPU --- and do not
-compete with operational systems. They are a controlled experiment: the only
-difference between the deterministic and the generative forecast is the
-training objective. The contribution is the measurement, and it applies
-unchanged to any forecast that produces a rain field.
+The models trained here are small: a $125$~M-parameter U-Net and its flow
+correction, trained on 40 days of data on a single GPU. They are not meant
+to compete with operational systems. They form a controlled experiment, and
+the evaluation applies to any forecast that produces a rain field.
 
 Section~\ref{sec:methods} describes the data, the two models, and the
-evaluation; Section~\ref{sec:results} answers the three questions in that
-order --- the forecast, its skill by scale, the horizon --- before the
-operational outlook;
-Section~\ref{sec:discussion} discusses what the horizon does and does not
-measure.
+evaluation. Section~\ref{sec:results} addresses the three questions in
+order, followed by the operational models. Section~\ref{sec:discussion}
+discusses what the horizon does and does not measure.
 
 %% ===================== 2. DATA AND METHODS =================================
 \section{Data and Methods}\label{sec:methods}
