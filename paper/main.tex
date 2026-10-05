@@ -239,7 +239,10 @@ example block at $+3$~h; all rain maps are model fields on one log color
 scale). A.~The inputs at time $t$: nine fields of the large-scale state,
 stacked, and the current rain. B.~The U-Net maps these ten fields to the
 rain at $t + \Delta t$: an encoder of five stages, a bottleneck, a mirrored
-decoder, and skip connections (dashed).
+decoder, and skip connections (dashed). Sizes are resolution $\times$
+channels: from $128^2 \times 64$ at the first stage, the resolution halves
+and the channels double at each stage, down to a latent of
+$4^2 \times 2048$.
 C.~Flow matching. The U-Net forecast plus noise,
 $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is the starting state. A
 second U-Net of comparable size, the velocity network, returns the velocity $\hat{v}$ at the

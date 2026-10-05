@@ -155,7 +155,7 @@ def draw():
 
     def unet(x0, yc, col, bg, title):
         """One U-Net glyph; the two networks are drawn at the same size (comparable parameters)."""
-        gw, gh = 18.7, 15.0
+        gw, gh = 18.7, 18.4
         ax.add_patch(FancyBboxPatch((x0, yc - gh / 2), gw, gh, boxstyle="round,pad=0,rounding_size=0.6",
                                     fc=bg, ec=col, lw=0.8, zorder=3))
         bw, dx, dy = 1.0, 1.45, 1.75
@@ -172,6 +172,12 @@ def draw():
         xb_ = (xe_[4] + bw + xd_[4]) / 2
         ax.add_patch(Rectangle((xb_ - 0.65, ycs[4] - dy - 0.65), 1.3, 1.3, fc=col, ec=col, lw=0.6,
                                alpha=0.55, zorder=4))
+        # approximate sizes: the first stage and the latent (bottleneck), as resolution x channels
+        for xq in (xe_[0] + bw / 2 + 1.5, xd_[0] + bw / 2 - 1.5):
+            ax.text(xq, ycs[0] + hs[0] / 2 + 0.45, r"$128^2\!\times\!64$", ha="center", va="bottom",
+                    fontsize=5, color=col)
+        ax.text(xb_, ycs[4] - dy - 1.0, r"latent $4^2\!\times\!2048$", ha="center", va="top",
+                fontsize=5, color=col)
         ax.text(x0 + gw / 2, yc + gh / 2 + 0.5, title, ha="center", va="bottom", fontsize=6.5,
                 color=col)
         return x0 + gw, yc + gh / 2
@@ -253,7 +259,7 @@ def draw():
     def mix(sig):
         return sum(np.exp(-((X - mx) ** 2 + (Y - my) ** 2) / (2 * sig ** 2)) for mx, my in mus)
 
-    SD, yd = 7.0, 13.2
+    SD, yd = 6.4, 12.9
     mid = (x0s + xv1) / 2 - 0.6      # the pair centred under x_0 and the velocity network
     xa, xb = mid - 6.5 - SD, mid + 6.5
 
