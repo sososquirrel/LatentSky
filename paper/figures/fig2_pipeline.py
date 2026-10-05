@@ -115,9 +115,12 @@ def draw():
     rcmap.set_under("#ffffff")
     rcmap.set_bad("#ffffff")
 
-    fig, ax = plt.subplots(figsize=(W2, W2 * 0.53))
+    plt.rcParams.update({"font.family": "sans-serif",
+                         "font.sans-serif": ["Helvetica", "Arial", "Nimbus Sans", "DejaVu Sans"],
+                         "mathtext.fontset": "dejavusans"})
+    fig, ax = plt.subplots(figsize=(W2, W2 * 0.555))
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 53)
+    ax.set_ylim(0, 55.5)
     ax.axis("off")
 
     def arrow(p0, p1, color=INK, lw=0.9, ls="-", ms=7, rad=0.0, style="-|>"):
@@ -139,8 +142,12 @@ def draw():
                     zorder=5, bbox=dict(fc="white", ec="none", pad=0.6, alpha=0.85))
 
     def frame(x0, y0, w, h, ec, fc):
-        ax.add_patch(FancyBboxPatch((x0, y0), w, h, boxstyle="round,pad=0,rounding_size=1.2",
-                                    fc=fc, ec=ec, lw=0.9, zorder=1))
+        ax.add_patch(FancyBboxPatch((x0, y0), w, h, boxstyle="round,pad=0,rounding_size=0.6",
+                                    fc=fc, ec=ec, lw=0.5, zorder=1))
+
+    def panel(x, letter, title):
+        ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=8, fontweight="bold")
+        ax.text(x + 2.0, 52.4, title, ha="left", va="bottom", fontsize=7)
 
     YC = 38.0   # the level of the U-Net's input and output
 
@@ -151,13 +158,13 @@ def draw():
     for j, k in enumerate(state):
         f = d["inputs"][k]
         lo, hi = np.percentile(f, [2, 98])
-        x0, y0 = 0.6 + 0.5 * j, 49.5 - 0.8 * j - S_IN
+        x0, y0 = 0.6 + 0.5 * j, 50.6 - 0.8 * j - S_IN
         ax.imshow(f, origin="lower", cmap=CMAPS[names[k]], vmin=lo, vmax=hi, aspect="auto",
                   extent=(x0, x0 + S_IN, y0, y0 + S_IN), interpolation="nearest",
                   zorder=3 + 0.01 * j)
         ax.add_patch(Rectangle((x0, y0), S_IN, S_IN, fill=False, ec="0.35", lw=0.5,
                                zorder=3.005 + 0.01 * j))
-    ax.text(7.2, 50.0, "state at time $t$", ha="center", va="bottom", fontsize=6.5)
+    ax.text(7.2, 39.0 - 0.8 * 8 - 0.2, "state at time $t$", ha="center", va="top", fontsize=6.5)
     xr, yr = 2.6, 16.0
     f = d["inputs"][names.index("rain_log1p")]
     ax.imshow(f, origin="lower", cmap="Blues", vmin=0, vmax=np.percentile(f, 99.5), aspect="auto",
@@ -171,9 +178,9 @@ def draw():
     ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
 
     # ---------------- the U-Net ----------------------------------------------
-    frame(17.0, 4.5, 43.5, 47.0, "0.6", "#fafafa")
-    ax.text(38.75, 6.0, r"U-Net:  fields at $t$  $\rightarrow$  rain at $t + \Delta t$",
-            ha="center", va="bottom", fontsize=7.5)
+    frame(17.0, 4.5, 43.5, 47.0, "0.55", "none")
+    panel(17.0, "b", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
+    panel(0.4, "a", "Inputs")
     W, DX, DY = 2.3, 3.5, 5.0
     xe = [19.5 + DX * i for i in range(5)]
     xd = [55.7 - DX * i for i in range(5)]
@@ -208,9 +215,8 @@ def draw():
     # ---------------- U-Net forecast, then the flow ---------------------------
     S = 7.6
     y0 = YC - S / 2
-    frame(71.2, 4.5, 28.4, 47.0, ORANGE, ORANGE_BG)
-    ax.text(85.4, 6.0, "flow matching", ha="center", va="bottom", fontsize=7.5,
-            color=ORANGE)
+    frame(71.2, 4.5, 28.4, 47.0, ORANGE, "none")
+    panel(71.2, "c", "Flow matching: forecast + noise $\\rightarrow$ draws")
     xf, x0s, xdr = 62.2, 73.0, 91.2
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
     arrow((xd[0] + W, YC), (xf, YC))
@@ -236,26 +242,35 @@ def draw():
 
     SD, yd = 8.6, 10.6
     xa, xb = 73.0, 90.2
+    def to_ax(xq, u, v):   # sketch coordinates (-2.2..2.2) -> axis coordinates
+        return xq + (u + 2.2) / 4.4 * SD, yd + (v + 2.2) / 4.4 * SD
+
     for xq, sig, lab in ((xa, 0.58, "broad"), (xb, 0.2, "sharp")):
         p = mix(sig)
-        ax.imshow(p / p.max(), origin="lower", cmap="Oranges", vmin=0, vmax=1.05, aspect="auto",
+        ax.imshow(p / p.max(), origin="lower", cmap="Oranges", vmin=0, vmax=1.15, aspect="auto",
                   extent=(xq, xq + SD, yd, yd + SD), interpolation="bilinear", zorder=3)
-        ax.contour(np.linspace(xq, xq + SD, g.size), np.linspace(yd, yd + SD, g.size),
-                   p / p.max(), levels=[0.25, 0.5, 0.75], colors=[ORANGE], linewidths=0.4,
-                   zorder=4)
-        ax.add_patch(Rectangle((xq, yd), SD, SD, fill=False, ec="0.25", lw=0.8, zorder=5))
+        for q in np.linspace(0, SD, 7)[1:-1]:   # grid
+            ax.plot([xq + q, xq + q], [yd, yd + SD], color="0.35", lw=0.25, alpha=0.5, zorder=3.5)
+            ax.plot([xq, xq + SD], [yd + q, yd + q], color="0.35", lw=0.25, alpha=0.5, zorder=3.5)
+        ax.add_patch(Rectangle((xq, yd), SD, SD, fill=False, ec="0.25", lw=0.5, zorder=5))
         ax.text(xq + SD / 2, yd + SD + 0.6, lab, ha="center", va="bottom", fontsize=6.5)
-    arrow((xa + SD + 0.6, yd + SD / 2), (xb - 0.6, yd + SD / 2), color=ORANGE, lw=1.0)
-    ax.text((xa + SD + xb) / 2, yd + SD / 2 + 0.8, "flow", ha="center", va="bottom",
-            fontsize=6, color=ORANGE)
+    src = to_ax(xa, 0.15, -0.1)                                  # one point of the broad cloud
+    ends = [to_ax(xb, mx + ox, my + oy) for (mx, my), (ox, oy) in
+            zip(mus, [(0.22, 0.2), (-0.24, 0.16), (0.2, -0.24)])]   # one draw near each peak
+    for e, rad in zip(ends, (0.25, -0.38, -0.04)):
+        arrow(src, e, color=INK, lw=0.6, ms=5, rad=rad)
+        ax.plot(*e, "o", ms=2.6, mfc=INK, mec="white", mew=0.4, zorder=7)
+    ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.text(85.4, yd + SD + 3.4, "distribution of the possible outcomes", ha="center",
             va="bottom", fontsize=6, color=GRAY)
+    ax.text((xa + SD + xb) / 2, yd - 0.5, "one forecast, three draws", ha="center", va="top",
+            fontsize=5.5, color=GRAY)
     # conditioning: the same ten fields
     yl = 2.2
     xc_ = (xa + SD + xb) / 2
-    ax.plot([xj, xj, xc_], [yr + S_IN / 2, yl, yl], color="0.45", lw=0.8,
+    ax.plot([xj, xj, xc_], [yr + S_IN / 2, yl, yl], color="0.45", lw=0.6,
             ls=(0, (4, 3)), zorder=6)
-    arrow((xc_, yl), (xc_, yd + SD / 2 - 0.9), color="0.45", lw=0.8, ls=(0, (4, 3)), ms=6)
+    arrow((xc_, yl), (xc_, yd - 2.0), color="0.45", lw=0.6, ls=(0, (4, 3)), ms=5)
     ax.text(42, yl + 0.5, "conditioning $c$: the same ten fields", ha="center", va="bottom",
             fontsize=6, color=GRAY)
     fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
