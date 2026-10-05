@@ -157,19 +157,11 @@ do, escapes the blur. Third, rain is a by-product, accumulated over steps
 of $6$ to $12$~h: its error compounds the error in the state with the
 uncertainty of the map from state to rain.
 
-A second family of AI models, built for nowcasting, has none of these
-three features. Models such as MetNet-3 \cite{andrychowicz2023} and RainPro-8
-\cite{sarabia2025} are regional and driven by observations: they map radar
-and satellite images directly to rain, at kilometer and minute resolution,
-over a few hours. Rain is their target, not a by-product, and their output
-is a distribution, not a mean: RainPro-8 returns the probability of $20$ rain-rate categories at $2$~km
-over Europe, out to $8$~h. The global models of WeatherBench~2
-\cite{rasp2024} are the opposite case: trained on reanalysis at
-$0.25^{\circ}$, they step the atmospheric state forward by hours, out to
-days. Neither family is verified by system size. RainPro-8 reports a
-pixel-wise critical success index per rain threshold, from $0.45$ at
-$0.2$~mm\,h$^{-1}$ to $0.15$ at $10$~mm\,h$^{-1}$; a per-pixel probability
-contains no rain systems to detect.
+Regional nowcasting models take another route: MetNet-3
+\cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} map radar and
+satellite images directly to rain-rate probabilities, at kilometer
+resolution over a few hours. They answer a different problem, extrapolating
+observed rain over one region, and are outside the scope of this paper.
 
 This work removes the three obstacles in turn. The data are a global
 storm-resolving DYAMOND integration \cite{stevens2019}, in which the
