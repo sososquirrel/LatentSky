@@ -120,9 +120,9 @@ def draw():
     plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
                          "mathtext.fontset": "cm", "axes.unicode_minus": False,
                          "axes.formatter.use_mathtext": True})
-    fig, ax = plt.subplots(figsize=(W2, W2 * 0.52))
+    fig, ax = plt.subplots(figsize=(W2, W2 * 0.45))
     ax.set_xlim(0, 100)
-    ax.set_ylim(3.5, 55.5)
+    ax.set_ylim(10.5, 55.5)
     ax.axis("off")
 
     def arrow(p0, p1, color=INK, lw=0.9, ls="-", ms=7, rad=0.0, style="-|>"):
@@ -180,7 +180,7 @@ def draw():
     ax.plot([xr + S_IN, xj, xj], [yr + S_IN / 2, yr + S_IN / 2, YC], color=INK, lw=0.9, zorder=6)
 
     # ---------------- the U-Net ----------------------------------------------
-    frame(18.5, 13.5, 35.0, 38.0, BLUE, BLUE_BG)
+    frame(18.5, 11.5, 35.0, 40.0, BLUE, BLUE_BG)
     panel(18.5, "B.", r"U-Net: fields at $t$ $\rightarrow$ rain at $t + \Delta t$")
     panel(0.4, "A.", "Inputs")
     W, DX, DY = 2.0, 2.75, 3.7
@@ -212,7 +212,7 @@ def draw():
     # ---------------- U-Net forecast, then the flow ---------------------------
     S = 7.6
     y0 = YC - S / 2
-    frame(67.2, 4.5, 32.4, 47.0, ORANGE, "none")
+    frame(67.2, 11.5, 32.4, 40.0, ORANGE, "none")
     panel(67.2, "C.", "Flow matching: forecast + noise $\\rightarrow$ draws")
     xf, x0s, xdr = 58.2, 68.6, 91.2
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
@@ -271,8 +271,8 @@ def draw():
     def mix(sig):
         return sum(np.exp(-((X - mx) ** 2 + (Y - my) ** 2) / (2 * sig ** 2)) for mx, my in mus)
 
-    SD, yd = 8.6, 10.6
-    xa, xb = 69.4, 90.2
+    SD, yd = 7.6, 14.4
+    xa, xb = 68.6, 91.2
     def to_ax(xq, u, v):   # sketch coordinates (-2.2..2.2) -> axis coordinates
         return xq + (u + 2.2) / 4.4 * SD, yd + (v + 2.2) / 4.4 * SD
 
@@ -286,15 +286,14 @@ def draw():
         ax.add_patch(Rectangle((xq, yd), SD, SD, fill=False, ec="0.25", lw=0.5, zorder=5))
         ax.text(xq + SD / 2, yd + SD + 0.6, lab, ha="center", va="bottom", fontsize=6.5)
     src = to_ax(xa, 0.45, 0.25)                                 # one point of the broad cloud
-    pk = mus[1]                                                  # the sharp peak the draws fall in
-    ends = [to_ax(xb, pk[0] + ox, pk[1] + oy) for ox, oy in
-            [(-0.13, 0.12), (0.14, 0.06), (0.0, -0.16)]]         # three draws, all near that peak
-    for e, rad in zip(ends, (-0.22, -0.34, -0.10)):
+    # three draws: one falls near one peak, the two others near another
+    ends = [to_ax(xb, mus[2][0] + 0.02, mus[2][1] - 0.14),
+            to_ax(xb, mus[1][0] - 0.13, mus[1][1] + 0.12),
+            to_ax(xb, mus[1][0] + 0.10, mus[1][1] - 0.12)]
+    for e, rad in zip(ends, (-0.30, -0.16, 0.10)):
         arrow(src, e, color=INK, lw=0.6, ms=5, rad=rad)
         ax.plot(*e, "o", ms=2.4, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
-    ax.text(83.4, yd + SD + 2.6, "distribution of the possible outcomes", ha="center",
-            va="bottom", fontsize=6, color=GRAY)
     ax.text((xa + SD + xb) / 2, yd - 0.5, "one forecast, three draws", ha="center", va="top",
             fontsize=5.5, color=GRAY)
     fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
