@@ -186,49 +186,38 @@ convection occurs. The area and intensity errors of the detected systems
 measure the \emph{amplitude}, which is set by the thermodynamic
 environment.
 
-We address three questions.
+We address three questions. We first ask how to design a model that
+produces a realistic precipitation forecast. We find that a deterministic
+U-Net trained on mean-square error returns the conditional mean: the
+pattern is right but blurred. A flow-matching model
+\cite{lipman2023, liu2023}, trained to deform this blurred forecast
+continuously into a sharp field, returns draws with the intensities and
+the small scales of the truth.
 
-\emph{First, how do we design a model that produces a realistic
-precipitation forecast?}
+We then ask how the forecast skill is distributed across scales. We
+describe each precipitating system by its area and its intensity,
+$P = \rho A$, match systems between forecast and truth, and count
+detections and false alarms per size band. We find that detection
+increases with system size, from $0.04$ at $30$~km to $0.98$ at $480$~km
+at $+3$~h. The flow detects more systems than the U-Net at every size and
+removes its area and intensity bias, at the cost of more false alarms
+below $65$~km.
 
-A deterministic two-head U-Net trained on mean-square error returns the
-conditional mean: the pattern is right but blurred. A flow-matching model
-\cite{lipman2023, liu2023} is a network trained to deform the blurred
-forecast continuously into a sharp field. Started from the U-Net forecast
-plus noise, it returns sharp draws with the intensities and the small
-scales of the truth
-(Sections~\ref{sec:unet}--\ref{sec:flow} and~\ref{sec:res-model}).
+Finally, we ask what time horizon each scale admits. We define $T(L)$ as
+the e-folding time of detection in each size band, with persistence as the
+null. We show that the horizon follows a power law,
+$T(L) \propto L^{\alpha}$, between $60$ and $340$~km. For persistence
+$\alpha = 0.97$, the advection value: $T = L/U$ with
+$U \approx 8$~m\,s$^{-1}$. The U-Net and the flow share a steeper exponent,
+$\alpha \approx 1.8$. The horizon of the flow is $1.3$ to $1.5$ times that
+of the U-Net at every size ($2.1$~h at $60$~km, $10$~h at $170$~km): the
+flow increases the horizon but does not change the exponent.
 
-\emph{Second, how is the forecast skill distributed across scales?}
-
-Each precipitating system is an object whose total rain is the product of
-an area and an intensity, $P = \rho A$. Objects are matched between
-forecast and truth at a common valid time. Detection and false alarms are
-counted per size band, and the error of each matched pair is split into an
-area part and an intensity part. At $+3$~h detection increases from $0.04$
-at $30$~km to $0.98$ at $480$~km. The flow detects more systems than the
-U-Net in every band, produces more false alarms below $65$~km, and removes
-the area and intensity bias of the conditional mean
-(Sections~\ref{sec:evaluation} and~\ref{sec:res-scales}).
-
-\emph{Third, what time horizon does each scale admit?}
-
-The horizon $T(L)$ is the e-folding time of the probability of detection in
-each size band, fitted across six forecast leads. Persistence is evaluated
-with the same matching and is the null. The horizon follows a power law,
-$T(L) \propto L^{\alpha}$, fitted for the three forecasts on the same
-bands, from $60$ to $340$~km. For persistence $\alpha = 0.97$, the
-advection value: $T = L/U$ with $U \approx 8$~m\,s$^{-1}$. The U-Net and
-the flow have the same steeper exponent, $\alpha \approx 1.8$. The horizon
-of the flow is $1.3$ to $1.5$ times that of the U-Net in every band
-($2.1$~h at $60$~km, $10$~h at $170$~km): the flow increases the horizon
-but does not change the exponent (Section~\ref{sec:res-horizon}).
-
-Finally, we apply the same evaluation to GraphCast \cite{lam2023}, FuXi
+We also apply the same evaluation to GraphCast \cite{lam2023}, FuXi
 \cite{chen2023}, GenCast \cite{price2025}, and FGN \cite{alet2025} from
 WeatherBench~2 \cite{rasp2024}. Sampling a generative member restores the
 intensity, and below ${\sim}60$~km no model detects systems at
-$0.25^{\circ}$ (Section~\ref{sec:res-wb2}).
+$0.25^{\circ}$.
 
 The models trained here are small: a $125$~M-parameter U-Net and its flow
 correction, trained on 40 days of data on a single GPU. They are not meant
