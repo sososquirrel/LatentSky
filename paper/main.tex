@@ -161,11 +161,11 @@ do, escapes the blur. Third, rain is a by-product, accumulated over steps
 of $6$ to $12$~h: its error compounds the error in the state with the
 uncertainty of the map from state to rain.
 
-Regional nowcasting models take another route: MetNet-3
-\cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} map radar and
-satellite images directly to rain-rate probabilities, at kilometer
-resolution over a few hours. They answer a different problem, extrapolating
-observed rain over one region, and are outside the scope of this paper.
+We note in passing that regional nowcasting models take another route:
+MetNet-3 \cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} map radar
+and satellite images directly to rain-rate probabilities, at kilometer
+resolution over a few hours. That is a different problem, and we do not
+address it here.
 
 This work removes the three obstacles in turn. The data are a global
 storm-resolving DYAMOND integration \cite{stevens2019}, in which the
