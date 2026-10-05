@@ -118,10 +118,13 @@ ends, and again $\alpha = 1$. Where a
 measured exponent falls relative to these two anchors is itself
 information.
 
-Whether forecasts obey such a law is not known, least of all for the AI
-weather models that now rival numerical weather prediction on the
-large-scale flow. How these models produce rain matters for the question,
-so we recall it first.
+This paper is about that dependence on scale. Measuring $T(L)$ asks two
+things of a forecast: its rain field must contain systems of every size,
+and its skill must be judged system by system, size by size. Whether AI
+forecasts obey a scaling law is not known, because neither condition is met
+today. To see why, we recall how AI forecasts produce rain: first the
+deterministic global models, then the probabilistic ones, then the regional
+nowcasting models.
 
 In a numerical model, rain is the end of a physical chain: resolved ascent,
 a convection scheme where the grid is too coarse, cloud microphysics, and a
@@ -137,59 +140,54 @@ learns to output: the total precipitation of the reanalysis, accumulated
 over the step, which is itself produced by the convection and cloud schemes
 of the forecast model behind the reanalysis and is not observed.
 
-The models differ in how they learn that field. GraphCast and FuXi learn it
-jointly with the rest of the state, by minimizing a grid-point error.
-FourCastNet diagnoses it from the predicted state with a separate network
-\cite{pathak2022}. We note in passing that Pangu-Weather predicts no rain
-at all \cite{bi2023}.
-The most recent models are ensemble systems. GenCast is a diffusion model:
-it generates the next state of each member by progressively refining a
-field of noise into a forecast, given the previous states, and a different
-noise field gives a different member \cite{price2025}. FGN obtains its
-members by perturbing the network itself with a random vector, and is
-trained to minimize the continuous ranked probability score, the usual
-verification score of ensembles, computed separately at each grid point and
-for each variable \cite{alet2025}. Both
-leave precipitation out of their headline results, for lack of confidence
-in the reanalysis rain.
+The deterministic models return one forecast. GraphCast and FuXi learn the
+rain field jointly with the rest of the state, by minimizing a grid-point
+error, most often the mean-square error; FourCastNet diagnoses it from the
+predicted state with a separate network \cite{pathak2022}. We note in
+passing that Pangu-Weather predicts no rain at all \cite{bi2023}. Two
+features of this construction erase the small scales. The training data
+miss them: a reanalysis at $0.25^{\circ}$ parameterizes convection rather
+than resolving it, and what the data do not show, the model cannot learn.
+And the forecast that minimizes a mean-square error is the mean of all the
+futures compatible with the initial state. That mean is smooth --- rain
+areas too wide, intensities too weak --- like the mean of an ensemble, and
+grid-point scores reward it (the double-penalty problem
+\cite{ravuri2021}).
 
-For the question asked here, this construction is precisely what prevents
-an evaluation scale by scale, for three reasons. First, the training data miss the small
-scales: a reanalysis at $0.25^{\circ}$ parameterizes convection rather than
-resolving it, and what the data do not show, the model cannot learn.
-Second, the deterministic models minimize a grid-point error, most often
-the mean-square error. The forecast that minimizes it is the mean of all
-the futures compatible with the initial state, and that mean is smooth ---
-rain areas too wide, intensities too weak --- like the mean of an ensemble.
-Grid-point scores reward it (the double-penalty problem
-\cite{ravuri2021}). Drawing single members, as the probabilistic models
-do, escapes the blur. Third, rain is a by-product, accumulated over steps
-of $6$ to $12$~h: its error compounds the error in the state with the
-uncertainty of the map from state to rain.
+The probabilistic models return an ensemble, and each member is sharp.
+GenCast is a diffusion model: it generates the next state of each member by
+progressively refining a field of noise into a forecast, given the previous
+states, and a different noise field gives a different member
+\cite{price2025}. FGN obtains its members by perturbing the network itself
+with a random vector, and is trained to minimize the continuous ranked
+probability score, the usual verification score of ensembles, computed
+separately at each grid point and for each variable \cite{alet2025}. The
+blur is gone, but the rain is still that of the reanalysis, accumulated
+over steps of $6$ to $12$~h, and both models leave precipitation out of
+their headline results, for lack of confidence in the reanalysis rain.
 
-Other initiatives address regional nowcasting. MetNet-3
-\cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} predict the
-probability of rain rates at each grid point over the next hours, from
-radar and satellite observations at kilometer resolution. Most of the
-obstacles above are overcome there: the data resolve convection, rain is
-the target, and the output is a distribution, not a mean. Even so, their
-skill is reported per rain threshold and per lead, and no decomposition of
-skill by the scale of the rain systems is proposed. In this work we focus
-on producing realistic precipitation fields, in which rain systems can be
-identified and followed with lead time, and we target global forecasts and
-their longer leads.
+Regional nowcasting models go further. MetNet-3 \cite{andrychowicz2023}
+and RainPro-8 \cite{sarabia2025} predict the probability of rain rates at
+each grid point over the next hours, from radar and satellite observations
+at kilometer resolution: the data resolve convection, rain is the target,
+and the output is a distribution, not a mean. Even so, their skill is
+reported per rain threshold and per lead, and no decomposition of skill by
+the scale of the rain systems is proposed.
 
-This work removes the three obstacles in turn. The data are a global
-storm-resolving DYAMOND integration \cite{stevens2019}, in which the
-mesoscale convective systems that dominate tropical extremes are resolved
-rather than parameterized. The forecast is generative: a flow-matching
-model returns sharp \emph{samples} of the possible outcomes instead of
-their mean, so the stochasticity moves from an error stamped into the field
-to a spread across draws, where it is measured and priced. And rain is the
-target itself, predicted from the \emph{simultaneous} large-scale state:
-the horizon we measure is conditional on perfect state knowledge, an upper
-bound that no system deriving rain from these state variables can exceed.
-Persistence, evaluated identically, is the null.
+What is missing is the same in the three families: a forecast whose rain
+systems can be identified, and a skill resolved by their size. This work
+provides both. The data are a global storm-resolving DYAMOND integration
+\cite{stevens2019}, in which the mesoscale convective systems that dominate
+tropical extremes are resolved rather than parameterized. The forecasts are
+a matched pair, a deterministic network and a generative flow-matching
+model that differ only in their training objective: the first returns the
+mean, the second sharp \emph{samples} of the possible outcomes, so the
+stochasticity moves from an error stamped into the field to a spread across
+draws, where it is measured and priced. Rain is the target itself,
+predicted from the \emph{simultaneous} large-scale state: the horizon we
+measure is conditional on perfect state knowledge, an upper bound that no
+system deriving rain from these state variables can exceed. Persistence,
+evaluated identically, is the null.
 
 The measurement is object-based, in the tradition of
 \citeA{davis2006} and \citeA{wernli2008}, and it separates the two
