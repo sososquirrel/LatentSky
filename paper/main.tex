@@ -135,11 +135,15 @@ of the forecast model behind the reanalysis and is not observed.
 The models differ in how they learn that field. GraphCast and FuXi learn it
 jointly with the rest of the state, by minimizing a grid-point error.
 FourCastNet diagnoses it from the predicted state with a separate network
-\cite{pathak2022}, and Pangu-Weather predicts no rain at all
-\cite{bi2023}. The most recent models are probabilistic, and an ensemble is
-a set of their draws: GenCast draws each next state at random from a
-learned distribution, with a diffusion model \cite{price2025}, and FGN is
-trained on a probabilistic score at each grid point \cite{alet2025}. Both
+\cite{pathak2022} (Pangu-Weather predicts no rain at all \cite{bi2023}).
+The most recent models are ensemble systems. GenCast is a diffusion model:
+it generates the next state of each member by progressively refining a
+field of noise into a forecast, given the previous states, and a different
+noise field gives a different member \cite{price2025}. FGN obtains its
+members by perturbing the network itself with a random vector, and is
+trained to minimize the continuous ranked probability score, the usual
+verification score of ensembles, computed separately at each grid point and
+for each variable \cite{alet2025}. Both
 leave precipitation out of their headline results, for lack of confidence
 in the reanalysis rain.
 
