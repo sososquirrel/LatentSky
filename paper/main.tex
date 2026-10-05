@@ -121,24 +121,26 @@ model cannot learn. Second, the loss of the deterministic models is a mean-squar
 optimum is the conditional mean, and averaged over every possible future
 the field is a blur --- area over-spread, intensity under-drawn --- which
 pixel scores reward (the double-penalty problem \cite{ravuri2021}).
-Probabilistic models escape the blur, by sampling \cite{ravuri2021,
-price2025} or by predicting a rain-rate distribution at each pixel.
-RainPro-8 \cite{sarabia2025}, built on MetNet-3 \cite{andrychowicz2023}, is
-the clearest regional example: from radar, satellite, and model fields it
-returns the probability of $20$ rain-rate classes at $2$~km over Europe, out
-to $8$~h. Its skill is reported per rain threshold and per lead: the
-critical success index falls from $0.45$ at $0.2$~mm\,h$^{-1}$ to $0.15$ at
-$10$~mm\,h$^{-1}$ (against $0.25$ and $0.01$ for the GFS model), and from
-about $0.45$ at $10$~min to about $0.15$ at $8$~h, with a fractions skill
-score over $2$--$20$~km neighborhoods. Rain rate and lead both stand in for
-scale there, but neither is the size of the system: a per-pixel distribution
-contains no rain systems to detect, and a neighborhood is a tolerance, not
-an object.
+Sampling escapes the blur \cite{ravuri2021, price2025}.
 Third, rain is a
 by-product: it is diagnosed from the predicted state by a separate network
 \cite{bi2023} or predicted jointly with the other targets
 \cite{price2025}, at 3--6~h steps, so its error compounds the error in the
 state with the uncertainty of the map from state to rain.
+
+A second family of models has none of these three features. Nowcasting
+models such as MetNet-3 \cite{andrychowicz2023} and RainPro-8
+\cite{sarabia2025} are regional and driven by observations: they map radar
+and satellite images directly to rain, at kilometer and minute resolution,
+over a few hours. Rain is their target, not a by-product, and they do not
+blur: RainPro-8 returns the probability of $20$ rain-rate classes at $2$~km
+over Europe, out to $8$~h. The global models of WeatherBench~2
+\cite{rasp2024} are the opposite case: trained on reanalysis at
+$0.25^{\circ}$, they step the atmospheric state forward by hours, out to
+days. Neither family is verified by system size. RainPro-8 reports a
+pixel-wise critical success index per rain threshold, from $0.45$ at
+$0.2$~mm\,h$^{-1}$ to $0.15$ at $10$~mm\,h$^{-1}$; a per-pixel probability
+contains no rain systems to detect.
 
 This work removes the three obstacles in turn. The data are a global
 storm-resolving DYAMOND integration \cite{stevens2019}, in which the
