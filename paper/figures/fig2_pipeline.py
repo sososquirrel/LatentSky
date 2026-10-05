@@ -115,9 +115,10 @@ def draw():
     rcmap.set_under("#ffffff")
     rcmap.set_bad("#ffffff")
 
-    plt.rcParams.update({"font.family": "sans-serif",
-                         "font.sans-serif": ["Helvetica", "Arial", "Nimbus Sans", "DejaVu Sans"],
-                         "mathtext.fontset": "dejavusans"})
+    # the paper's text font is Computer Modern: use it here too
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
     fig, ax = plt.subplots(figsize=(W2, W2 * 0.52))
     ax.set_xlim(0, 100)
     ax.set_ylim(3.5, 55.5)
@@ -146,8 +147,8 @@ def draw():
                                     fc=fc, ec=ec, lw=0.5, zorder=1))
 
     def panel(x, letter, title):
-        ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=8, fontweight="bold")
-        ax.text(x + 2.0, 52.4, title, ha="left", va="bottom", fontsize=7)
+        ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=9, fontfamily="cmb10")
+        ax.text(x + 2.0, 52.4, title, ha="left", va="bottom", fontsize=8)
 
     YC = 38.0   # the level of the U-Net's input and output
 
@@ -186,7 +187,7 @@ def draw():
     xd = [52.3 - DX * i for i in range(5)]
     yc = [YC - DY * i for i in range(5)]
     hh = [15.0, 11.5, 8.6, 6.2, 4.2]
-    res = ["128²", "64²", "32²", "16²", "8²"]
+    res = ["$128^2$", "$64^2$", "$32^2$", "$16^2$", "$8^2$"]
     xbm, ybm, wb, hb = 37.05, YC - DY * 5, 3.4, 2.8      # bottleneck, on the same staircase
     for i in range(5):
         for x in (xe[i], xd[i]):
@@ -202,7 +203,7 @@ def draw():
             arrow((xd[i + 1] + W, yc[i + 1]), (xd[i], yc[i]), ms=5, lw=0.7)
     ax.add_patch(Rectangle((xbm - wb / 2, ybm - hb / 2), wb, hb, fc="#b9cfe6", ec=BLUE,
                            lw=0.8, zorder=3))
-    ax.text(xbm, ybm - hb / 2 - 0.5, "bottleneck 4²", ha="center", va="top", fontsize=5,
+    ax.text(xbm, ybm - hb / 2 - 0.5, "bottleneck $4^2$", ha="center", va="top", fontsize=5,
             color=GRAY)
     arrow((xe[4] + W, yc[4]), (xbm - wb / 2, ybm), ms=5, lw=0.7)
     arrow((xbm + wb / 2, ybm), (xd[4], yc[4]), ms=5, lw=0.7)
@@ -224,30 +225,40 @@ def draw():
     ax.text(x0s + S / 2, y0 - 0.6, r"forecast $+\,\sigma\varepsilon$", ha="center",
             va="top", fontsize=5.5, color=ORANGE)
     arrow((xf + S, YC), (x0s, YC), color=ORANGE)
-    # the velocity network: one block, applied 32 times
-    bx0, bx1, bh = 79.2, 86.4, 6.4
+    # the velocity network: a second U-Net, drawn like the one in b, applied 32 times
+    bx0, bx1, bh = 78.3, 88.1, 8.4
     by0, by1 = YC - bh / 2, YC + bh / 2
     ax.add_patch(FancyBboxPatch((bx0, by0), bx1 - bx0, bh, boxstyle="round,pad=0,rounding_size=0.5",
-                                fc="white", ec=ORANGE, lw=0.9, zorder=3))
-    for k, (hk, dyk) in enumerate([(3.6, 0.7), (2.6, 0.1), (1.6, -0.5), (2.6, 0.1), (3.6, 0.7)]):
-        xk = bx0 + 1.0 + k * 1.12      # a small U-Net glyph: the same trunk as in b
-        ax.add_patch(Rectangle((xk, YC + dyk - hk / 2), 0.7, hk, fc=ORANGE_BG, ec=ORANGE,
-                               lw=0.6, zorder=4))
+                                fc=ORANGE_BG, ec=ORANGE, lw=0.7, zorder=3))
+    mw, mdx, mdy = 0.52, 0.80, 0.85
+    mh = [4.2, 3.2, 2.4, 1.7, 1.2]
+    xm0 = bx0 + 0.75
+    xme = [xm0 + mdx * i for i in range(5)]
+    xmd = [bx1 - 0.75 - mw - mdx * i for i in range(5)]
+    ymc = [YC + 1.5 - mdy * i for i in range(5)]
+    for i in range(5):
+        for x in (xme[i], xmd[i]):
+            ax.add_patch(Rectangle((x, ymc[i] - mh[i] / 2), mw, mh[i], fc="white", ec=ORANGE,
+                                   lw=0.6, zorder=4))
+        ax.plot([xme[i] + mw + 0.12, xmd[i] - 0.12], [ymc[i] + mh[i] / 2 - 0.3] * 2, color=ORANGE,
+                lw=0.35, ls=(0, (3, 2)), zorder=4)
+    xmb = (xme[4] + mw + xmd[4]) / 2
+    ax.add_patch(Rectangle((xmb - 0.5, ymc[4] - mdy - 0.45), 1.0, 0.9, fc=ORANGE, ec=ORANGE,
+                           lw=0.6, alpha=0.55, zorder=4))
+    ax.text((bx0 + bx1) / 2, by1 + 0.5, "velocity network", ha="center", va="bottom",
+            fontsize=6.5, color=ORANGE)
+    # in: the state x_t (with the ten fields c) and the time t; out: the velocity
     arrow((x0s + S, YC), (bx0, YC), color=ORANGE)
-    ax.text((x0s + S + bx0) / 2, YC + 0.7, "$x_t$", ha="center", va="bottom", fontsize=6)
-    ax.text((bx0 + bx1) / 2, by0 - 0.6, r"velocity network $\hat{v}$", ha="center", va="top",
-            fontsize=6, color=ORANGE)
-    # the loop: the updated state goes back in
-    arrow((bx1 - 0.9, by1 + 0.2), (bx0 + 0.9, by1 + 0.2), color=ORANGE, lw=0.8, ms=6, rad=0.9)
-    ax.text((bx0 + bx1) / 2, by1 + 4.3, r"$x_t \leftarrow x_t + \hat{v}\,\delta$", ha="center",
-            va="bottom", fontsize=6)
-    ax.text((bx0 + bx1) / 2, by1 + 6.3, "repeated 32 times", ha="center", va="bottom",
-            fontsize=5.5, color=ORANGE)
-    # conditioning enters the network
-    arrow(((bx0 + bx1) / 2, by0 - 5.6), ((bx0 + bx1) / 2, by0 - 2.6), color="0.45", lw=0.6,
-          ls=(0, (3, 2)), ms=5)
-    ax.text((bx0 + bx1) / 2, by0 - 5.9, "$c$: the ten input fields", ha="center", va="top",
-            fontsize=5.5, color=GRAY)
+    ax.text((x0s + S + bx0) / 2, YC + 0.6, "$x_t$", ha="center", va="bottom", fontsize=6.5)
+    for xq, lab in ((bx0 + 2.6, "$c$"), (bx1 - 2.6, "$t$")):
+        arrow((xq, by0 - 3.0), (xq, by0), color="0.4", lw=0.6, ms=5)
+        ax.text(xq, by0 - 3.3, lab, ha="center", va="top", fontsize=6.5, color="0.3")
+    ax.text((bx0 + bx1) / 2, by0 - 5.6, "$c$: the ten fields,  $t$: flow time", ha="center",
+            va="top", fontsize=5.5, color=GRAY)
+    # the loop: x_t <- x_t + v delta, 32 times
+    arrow((bx1 - 1.6, by1 + 3.3), (bx0 + 1.6, by1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.5)
+    ax.text((bx0 + bx1) / 2, by1 + 6.0, r"$x_t \leftarrow x_t + \hat{v}\,\delta$,  32 times",
+            ha="center", va="bottom", fontsize=6.5)
     # three draws, three noise seeds
     ys = [YC + S + 0.9 - S / 2, YC - S / 2, YC - S - 0.9 - S / 2]
     for y, seed, tag in zip(ys, SEEDS, "ABC"):
