@@ -169,7 +169,12 @@ where it can be improved. Here we explore that direction. We ask three
 questions: how to produce a realistic precipitation forecast, how its skill
 is distributed across scales, and what time horizon each scale admits.
 
-We use a 40-day global storm-resolving simulation \cite{stevens2019},
+Global kilometer-scale simulations provide what these questions require
+\cite{stevens2019, satoh2019}. They resolve deep convection explicitly, so
+their rain is produced by the simulated storms and not by a
+parameterization, from isolated cells to mesoscale convective systems. They
+also provide it every $15$~min, which is needed to measure horizons shorter
+than an hour. We use a 40-day simulation of the DYAMOND project,
 coarse-grained to $0.25^{\circ}$ over the tropical belt, and train two
 forecast models that differ only in their training objective: a
 deterministic U-Net and a generative flow-matching model started from its
