@@ -167,11 +167,13 @@ do, escapes the blur. Third, rain is a by-product, accumulated over steps
 of $6$ to $12$~h: its error compounds the error in the state with the
 uncertainty of the map from state to rain.
 
-Regional nowcasting models take another route:
-MetNet-3 \cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025} map radar
-and satellite images directly to rain-rate probabilities, at kilometer
-resolution over a few hours. That is a different problem, and we do not
-address it here.
+Regional nowcasting models are the closest relatives of the models trained
+here. MetNet-3 \cite{andrychowicz2023} and RainPro-8 \cite{sarabia2025}
+also predict rain over the next hours from the current rain and its
+environment, using radar and satellite observations at kilometer
+resolution. They return a rain-rate probability at each grid point, not a
+rain field, and are tied to the observing network of one region; we do not
+evaluate them here.
 
 This work removes the three obstacles in turn. The data are a global
 storm-resolving DYAMOND integration \cite{stevens2019}, in which the
