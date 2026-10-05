@@ -50,34 +50,44 @@ def cloud(ax, df, label, letter):
             rotation=-45, ha="center", va="center")
     ax.set_xlim(-LIM, LIM)
     ax.set_ylim(-LIM, LIM)
-    ax.set_xlabel(r"too small  $\leftarrow$   area error  d$\ln A$   $\rightarrow$  too large")
+    ax.set_xlabel(r"area error  d$\ln A$", labelpad=3)
+    # direction hints at the two ends of the axis
+    ax.text(0.0, -0.105, r"$\leftarrow$ too small", transform=ax.transAxes, ha="left",
+            va="top", fontsize=7, color="0.4")
+    ax.text(1.0, -0.105, r"too large $\rightarrow$", transform=ax.transAxes, ha="right",
+            va="top", fontsize=7, color="0.4")
     ax.set_aspect("equal")
     ax.set_xticks(range(-2, 3))
     ax.set_yticks(range(-2, 3))
-    # panel header: letter, model, number of pairs
-    ax.text(0.03, 0.97, letter, transform=ax.transAxes, ha="left", va="top",
-            fontsize=10, fontweight="bold")
-    ax.text(0.10, 0.968, label, transform=ax.transAxes, ha="left", va="top",
+    # panel title above the axes: letter, model, number of pairs
+    ax.text(0.0, 1.035, letter, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=9.5, fontweight="bold")
+    ax.text(0.075, 1.035, label, transform=ax.transAxes, ha="left", va="bottom",
             fontsize=9)
-    ax.text(0.10, 0.915, f"{len(m):,} matched pairs", transform=ax.transAxes,
-            ha="left", va="top", fontsize=7.5, color="0.35")
+    ax.text(1.0, 1.035, f"{len(m):,} matched pairs", transform=ax.transAxes,
+            ha="right", va="bottom", fontsize=7.5, color="0.35")
     return sc
 
 
 def main():
     # two square panels at the full double-column width; included at natural size
-    fig, axs = plt.subplots(1, 2, figsize=(W2, W2 * 0.60), sharey=True)
-    fig.subplots_adjust(left=0.075, right=0.985, top=0.985, bottom=0.215,
-                        wspace=0.06)
+    WF = 0.86 * W2
+    fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.635), sharey=True)
+    fig.subplots_adjust(left=0.085, right=0.985, top=0.935, bottom=0.225,
+                        wspace=0.07)
     df_th = pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz")
     df_fl = pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz")
-    sc = cloud(axs[0], df_th, "two-head U-Net", "A.")
-    cloud(axs[1], df_fl, "flow, per draw", "B.")
-    axs[0].set_ylabel(r"too weak  $\leftarrow$   intensity error  d$\ln\rho$   $\rightarrow$  too strong")
+    sc = cloud(axs[0], df_th, "Two-head U-Net", "A.")
+    cloud(axs[1], df_fl, "Flow, per draw", "B.")
+    axs[0].set_ylabel(r"intensity error  d$\ln\rho$", labelpad=3, fontsize=8)
+    axs[0].text(-0.125, 0.0, r"$\leftarrow$ too weak", transform=axs[0].transAxes, ha="center",
+                va="bottom", rotation=90, fontsize=6.5, color="0.4")
+    axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
+                va="top", rotation=90, fontsize=6.5, color="0.4")
     axs[0].legend(loc="upper right", fontsize=7.5, title="rain-weighted barycenter",
                   title_fontsize=7.5, handletextpad=0.3, borderaxespad=0.5,
                   frameon=True, facecolor="white", framealpha=0.85, edgecolor="none")
-    cax = fig.add_axes([0.26, 0.085, 0.54, 0.02])
+    cax = fig.add_axes([0.27, 0.09, 0.53, 0.02])
     cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
     cb.set_label("system scale L = √A (km)", fontsize=8.5)
     ticks = [30, 50, 100, 200, 500, 1000]
