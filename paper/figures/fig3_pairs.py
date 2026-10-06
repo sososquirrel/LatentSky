@@ -23,9 +23,9 @@ sys.path.insert(0, str(REPO / "docs"))
 from make_flow_pairs_panel import (  # noqa: E402
     INPUT_VARS, IOU_MIN, P, PIECES, RUNS, SCALE, THR)
 
-# a West African test frame (block (1, 0): 0-32E, 8S-24N) where the flow's gain is large:
-# in the full-record tables the two-head matches 10 of 59 truth systems and the flow 20
-PIECE, FRAME, BLOCK = 35, 60, (1, 0)
+# a West African test frame (block (1, 0): 0-32E, 8S-24N) with several squall lines over
+# the Sahel; in the full-record tables the two-head matches 7 truth systems and the flow 14
+PIECE, FRAME, BLOCK = 29, 44, (1, 0)
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
@@ -132,9 +132,9 @@ def main():
         ax.text(num_xy[0], num_xy[1], str(num_of[tid]), fontsize=5.5, fontweight="bold",
                 color="0.1", ha="center", va="center")
 
-    def missed(ax, tid):            # a truth system the forecast did not find
-        fill(ax, lt, tid, "0.25", 0.22)
-        outline(ax, lt, tid, "0.1", ls="--", lw=0.6)
+    def missed(ax, tid):            # a truth system no forecast found
+        fill(ax, lt, tid, "0.15", 0.55)
+        outline(ax, lt, tid, "0.05", lw=0.7)
 
     def false_alarm(ax, lab, pid):  # a forecast system that matches nothing
         fill(ax, lab, pid, FA, 0.35)
@@ -218,9 +218,7 @@ def main():
         n_miss = int((mm.role == "miss").sum())
         n_fa = int((mm.role == "false_alarm").sum())
         title(ax, letter, "Two-head U-Net" if model == "two-head" else "Flow, one draw",
-              f"{n_match} matched, {n_miss} missed, {n_fa} false alarms")
-        for _, rr in mm[mm.role == "miss"].iterrows():
-            missed(ax, lut_t[(round(rr["row"], 6), round(rr["col"], 6))])
+              f"{n_match} matched, {n_fa} false alarms")
         for _, rr in mm[mm.role == "match"].iterrows():
             tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
             pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
@@ -244,8 +242,7 @@ def main():
     handles = [
         Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour in A to C"),
         Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
-        Patch(fc="0.25", alpha=0.22, ec="0.1", ls="--", lw=0.6,
-              label="missed: truth system not found"),
+        Patch(fc="0.15", alpha=0.55, ec="0.05", lw=0.7, label="missed by both models (in D)"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
               label="false alarm: forecast system matching nothing"),
     ]
