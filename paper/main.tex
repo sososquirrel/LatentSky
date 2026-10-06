@@ -381,7 +381,7 @@ lead (Figure~\ref{fig:arch}C).
 $z = \ln(1 + R)/2$. Its input is the U-Net forecast $z_{\mathrm{fc}}$ for
 the block and the ten input fields $c$; its output is one rain field, a
 draw, with the shape and units of the target. The change at each step is
-computed by a second U-Net, the velocity network $\hat{v}(x_s, s, c)$,
+computed by a second U-Net, the velocity network $v_s(x_s, c)$,
 with the same trunk as the first and a comparable number of parameters:
 eleven channels in, the current field $x_s$ and the ten input fields, with
 the time $s$ scaling and shifting the features at every stage; one field
