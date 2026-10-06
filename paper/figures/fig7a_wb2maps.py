@@ -112,22 +112,29 @@ def compute():
     cmap.set_under("#ffffff")
     lsm = get_landmask(ds.lat.values, ds.lon.values)
 
+    # a 3:2 window around the same block, for the half-width panels of Fig. 6
+    jw0 = max(0, min(j0 - P // 4, truth.shape[1] - 3 * P // 2))
+    zoom_wide = np.s_[i0:i0 + P, jw0:jw0 + 3 * P // 2]
     return dict(ds=ds, truth=truth, fc=fc, ov_t=ov_t, ov_t_belt=ov_t_belt, ov_p=ov_p,
-                ov_p_belt=ov_p_belt, zoom=zoom, i0=i0, j0=j0, lon0=lon0, lon1=lon1, norm=norm,
+                ov_p_belt=ov_p_belt, zoom=zoom, zoom_wide=zoom_wide, jw0=jw0,
+                i0=i0, j0=j0, lon0=lon0, lon1=lon1, norm=norm,
                 cmap=cmap, lsm=lsm, pair_colors=pair_colors, MISS=MISS, FA=FA,
                 n_match=len(matches), n_miss=len(misses), n_fa=len(fas), P=P, ny=ny, nx=nx)
 
 
-def draw_zoom(ax, d, k):
-    """One zoom panel: k = 0 truth with its misses, k = 1 GraphCast with its false alarms."""
+def draw_zoom(ax, d, k, wide=False):
+    """One zoom panel: k = 0 truth with its misses, k = 1 GraphCast with its false alarms.
+    wide=True uses the 3:2 window around the block."""
     f, ov = (d["truth"], d["ov_t"]) if k == 0 else (d["fc"], d["ov_p"])
-    zoom = d["zoom"]
+    zoom = d["zoom_wide"] if wide else d["zoom"]
     ax.imshow(f[zoom], origin="lower", norm=d["norm"], cmap=d["cmap"], interpolation="nearest",
               aspect="auto")
     ax.imshow(ov[zoom], origin="lower", interpolation="nearest", aspect="auto")
     ax.contour(d["lsm"][zoom], levels=[0.5], colors=["0.35"], linewidths=0.5)
+    nx_ = f[zoom].shape[1]
     for v in (32, 64, 96):
         ax.axhline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
+    for v in range(32, nx_, 32):
         ax.axvline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
     if k == 0:
         ybar = 10
