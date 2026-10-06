@@ -305,14 +305,13 @@ return, one field for the U-Net, one field per draw for the flow.
 \subsubsection{The U-Net}
 
 The U-Net maps the ten input fields to the rain at $t + \Delta t$
-(Figure~\ref{fig:arch}B). It is a U-Net of $125$~M
-parameters (Text~S2): five encoder stages, each two $3 \times 3$
-convolutions with group normalization and ReLU, from $64$ channels at
-$128^2$ pixels to $1024$ at $8^2$; a $2048$-channel bottleneck at $4^2$; a
-mirrored decoder with skip connections; and two $1 \times 1$ output
+(Figure~\ref{fig:arch}B). It is a U-Net of $125$~M parameters (Text~S2)
+with a typical architecture: five encoder stages (each two $3 \times 3$
+convolutions with group normalization and ReLU), a $2048$-channel
+bottleneck, a mirrored decoder with skip connections, and two output
 heads. The rain head has a softplus activation, so the rain is
-non-negative; the wet/dry head returns logits. In addition to the
-ten fields, the network is given the mean and the minimum of the outgoing
+non-negative; the wet/dry head returns logits. In addition to the ten
+fields, the network is given the mean and the minimum of the outgoing
 longwave radiation over the block at its bottleneck: two numbers that
 tell it how much deep convection the block holds and how cold its highest
 tops are, and so whether the rain is more convective or more stratiform.
