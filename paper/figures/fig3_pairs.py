@@ -69,6 +69,7 @@ def main():
         flow = np.clip(np.expm1(SCALE * np.clip(z.numpy()[0, 0], 0, 2.5)),
                        0, None)
 
+    coast = np.load(REPO / "data/eval_legacy/_landmask_320x1440_-40_40_50m.npy")[sl].astype(float)
     lt, tt = label_systems(truth, THR, area_row)
     preds = {"two-head": det, "flow draw": flow}
     labels, tables, matches = {}, {}, {}
@@ -166,6 +167,7 @@ def main():
                               top=0.86, bottom=0.03, wspace=0.05)
     ax_pair = [fig_p.add_subplot(gs_p[0, c]) for c in cols]
     for ax in ax_rain + ax_sys + ax_pair:
+        ax.contour(coast, levels=[0.5], colors=["0.35"], linewidths=0.5, zorder=2.5)
         ax.set_xticks([])
         ax.set_yticks([])
         for sp in ax.spines.values():
