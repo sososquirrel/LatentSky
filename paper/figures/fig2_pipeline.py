@@ -104,9 +104,9 @@ CMAPS = {"precipw": "BrBG", "mse_500hPa": "BrBG", "mse_850hPa": "BrBG",
          "t2m": "plasma", "olrtoa": "gray", "uzonal_500hPa": "RdBu_r",
          "uzonal_850hPa": "RdBu_r", "umeridional_500hPa": "RdBu_r",
          "umeridional_850hPa": "RdBu_r", "rain_log1p": "Blues"}
-# muted versions of the paper's two model colours (blue = U-Net, warm = flow)
-BLUE, ORANGE = "#35526e", "#a8553a"
-BLUE_BG, ORANGE_BG, INK, GRAY = "#eef1f4", "#f7eeea", "0.2", "0.45"
+# muted slate for the U-Net, muted plum for the flow
+BLUE, ORANGE = "#35526e", "#6f4a86"
+BLUE_BG, ORANGE_BG, INK, GRAY = "#eef1f4", "#f2eef5", "0.2", "0.45"
 
 
 def draw():
@@ -257,7 +257,7 @@ def draw():
 
     # what the flow does to the distribution: three broad modes -> three sharp ones
     from matplotlib.colors import LinearSegmentedColormap
-    DENS = LinearSegmentedColormap.from_list("dens", ["#fbf6f3", "#e3b9a6", ORANGE, "#6e2f1c"])
+    DENS = LinearSegmentedColormap.from_list("dens", ["#f8f5fa", "#cbb9d9", ORANGE, "#3a2349"])
     g = np.linspace(-2.2, 2.2, 160)
     X, Y = np.meshgrid(g, g)
     mus = [(-0.95, -0.55), (0.95, -0.55), (0.0, 1.05)]
