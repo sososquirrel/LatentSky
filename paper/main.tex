@@ -389,11 +389,16 @@ out, the velocity, of either sign. It is the tendency term of a numerical
 model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned
 rather than derived.
 
-\textit{Equations.} A training pair is a noised forecast
-$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, $\varepsilon \sim \mathcal{N}(0, I)$,
-and its truth $x_1$, joined by the straight line
-$x_s = (1 - s)\,x_0 + s\,x_1$. Over all training pairs, the velocity
-network is the least-squares fit of
+\textit{Equations.} For one training sample, with inputs $c$, U-Net
+forecast $z_{\mathrm{fc}}$, and true rain $z$, both in the log space, define
+\begin{align}
+x_0 &= z_{\mathrm{fc}} + \sigma\,\varepsilon, \qquad \varepsilon \sim \mathcal{N}(0, I),
+  && \text{the noised forecast,} \nonumber\\
+x_1 &= z, && \text{the truth,} \nonumber\\
+x_s &= (1 - s)\,x_0 + s\,x_1, \qquad 0 \le s \le 1, && \text{the line between them.}
+\label{eq:pair}
+\end{align}
+Over all training samples, the velocity network is the least-squares fit of
 \begin{equation}
 v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] .
 \label{eq:velocity}
