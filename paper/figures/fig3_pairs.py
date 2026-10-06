@@ -215,7 +215,7 @@ def main():
     # (slate for the U-Net, plum for the flow, as in Fig. 2); missed by both: dark grey.
     UNET, FLOW = "#35526e", "#6f4a86"
     title(ax_sys[0], "D.", "Truth systems",
-          f"{neither} missed by both, {nC} by the U-Net only, {nB} by the flow only")
+          f"missed: {neither} by both, {nC} U-Net only, {nB} flow only")
     for tid, found in truth_match.items():
         if len(found) == 2:
             matched(ax_sys[0], lt, tid, tid)
