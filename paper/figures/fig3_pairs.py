@@ -140,8 +140,8 @@ def main():
                 color="0.1", ha="center", va="center")
 
     def missed(ax, tid):            # a truth system no forecast found
-        fill(ax, lt, tid, "0.15", 0.55)
-        outline(ax, lt, tid, "0.05", lw=0.7)
+        fill(ax, lt, tid, "0.05", 0.8)
+        outline(ax, lt, tid, "0.0", lw=0.7)
 
     def false_alarm(ax, lab, pid):  # a forecast system that matches nothing
         fill(ax, lab, pid, FA, 0.35)
@@ -211,9 +211,9 @@ def main():
         ax.set_xlim(ax_rain[0].get_xlim())
         ax.set_ylim(ax_rain[0].get_ylim())
         ax.set_aspect("equal")
-    # D: who missed what. Found by both: green; missed by one model only: that model's colour
-    # (slate for the U-Net, plum for the flow, as in Fig. 2); missed by both: dark grey.
-    UNET, FLOW = "#35526e", "#6f4a86"
+    # D: who missed what. Found by both: green; missed by the U-Net only: amber; missed by
+    # the flow only: violet; missed by both: black. Three hues far apart, none used elsewhere.
+    UNET, FLOW = "#e0a020", "#7b3294"
     title(ax_sys[0], "D.", "Truth systems",
           f"missed: {neither} by both, {nC} U-Net only, {nB} flow only")
     for tid, found in truth_match.items():
@@ -221,8 +221,8 @@ def main():
             matched(ax_sys[0], lt, tid, tid)
         else:
             col = UNET if "flow draw" in found else FLOW      # the model that missed it
-            fill(ax_sys[0], lt, tid, col, 0.55)
-            outline(ax_sys[0], lt, tid, col, lw=0.8)
+            fill(ax_sys[0], lt, tid, col, 0.65)
+            outline(ax_sys[0], lt, tid, col, lw=0.9)
     mm = matches["two-head"]
     for _, rr in mm[mm.role == "miss"].iterrows():
         tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
@@ -258,9 +258,9 @@ def main():
     handles = [
         Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour in A to C"),
         Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
-        Patch(fc=UNET, alpha=0.55, ec=UNET, lw=0.8, label="missed by the U-Net only (in D)"),
-        Patch(fc=FLOW, alpha=0.55, ec=FLOW, lw=0.8, label="missed by the flow only (in D)"),
-        Patch(fc="0.15", alpha=0.55, ec="0.05", lw=0.7, label="missed by both (in D)"),
+        Patch(fc=UNET, alpha=0.65, ec=UNET, lw=0.9, label="missed by the U-Net only (in D)"),
+        Patch(fc=FLOW, alpha=0.65, ec=FLOW, lw=0.9, label="missed by the flow only (in D)"),
+        Patch(fc="0.05", alpha=0.8, ec="0.0", lw=0.7, label="missed by both (in D)"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
               label="false alarm: forecast system matching nothing"),
     ]
