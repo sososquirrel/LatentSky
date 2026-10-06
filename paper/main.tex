@@ -223,13 +223,11 @@ discusses what the horizon does and does not measure.
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig1a_domain.pdf}}
-\caption{The domain and its tiling. Standardized precipitable water on
-one $15$-min frame of the $40$-day DYAMOND MPAS record, regridded to
-$0.25^{\circ}$ over $40^{\circ}$S--$40^{\circ}$N. The grid shows the
-$2 \times 11$ blocks of $128 \times 128$ pixels on which training,
-evaluation, and the split operate; the grey strips are left out. The
-$880$ block-days are split $616/132/132$ into training, validation, and
-test (Text~S1). The red box is the example block of
+\caption{Standardized precipitable water over the tropical belt
+($40^{\circ}$S--$40^{\circ}$N, $0.25^{\circ}$) on one $15$-min frame of the
+$40$-day DYAMOND MPAS record. Black lines show the $2 \times 11$ blocks of
+$128 \times 128$ pixels used for training, evaluation, and the data split;
+the shaded strips are excluded. The red box marks the example block of
 Figures~\ref{fig:arch} and~\ref{fig:pairs}.}
 \label{fig:data}
 \end{figure}
@@ -237,16 +235,17 @@ Figures~\ref{fig:arch} and~\ref{fig:pairs}.}
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig2_pipeline.pdf}}
-\caption{From the large-scale state to rain draws. (a) The inputs at
-time $t$: nine standardized fields of the large-scale state and the
-current rain. (b) The U-Net maps the ten fields ($128^2 \times 10$) to the
-rain at $t + \Delta t$ through a latent of $4^2 \times 2048$; its second
-output, a wet/dry field, is in Figure~S1. (c) Flow matching: the forecast
-plus noise, $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is carried to a
-sharp field in $32$ steps of a second U-Net, the velocity network, which
-also receives the ten input fields (dashed arrow); three noise fields give
-three draws. Bottom: the idea in two dimensions. Rain maps: the example
-block at $+3$~h, one log color scale.}
+\caption{Schematic of the forecast pipeline on the example block at a
+$3$~h lead. (a) The ten input fields at time $t$: nine standardized
+large-scale fields and the current rain. (b) The U-Net, which maps the ten
+fields ($128^2 \times 10$) to the rain at $t + \Delta t$ through a latent
+of $4^2 \times 2048$; the second output, a wet/dry field, is shown in
+Figure~S1. (c) Flow matching: the forecast plus noise,
+$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is carried to a sharp field
+in $32$ steps of the velocity network, a second U-Net that also receives
+the ten input fields (dashed arrow); three noise fields give the three
+draws shown. The lower sketch illustrates the idea in two dimensions. All
+rain maps share one logarithmic color scale.}
 \label{fig:arch}
 \end{figure}
 
@@ -507,31 +506,33 @@ skillful, and at which scales, is measured next.
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig3_pairs.pdf}}
-\caption{The evaluation on one frame (example block, $+3$~h). (a--c)
-Rain in the truth, the U-Net, and one flow draw, with the matched systems
-outlined: one color and number per truth system, repeated where a
-forecast found it. (d) The $120$ truth systems by outcome: found by both
-models (green, $11$), missed by the U-Net only (blue, $11$), by the flow
-only (purple, $6$), by both (black, $92$). (e, f) Each forecast's matched
-systems (green) and false alarms (red): $17$ and $5$ for the U-Net, $22$
-and $106$ for the flow. Systems: $>0.1$~mm, 8-connected; matching:
-one-to-one, $\mathrm{IoU} \ge 0.1$.}
+\caption{Object detection and matching on the example block at a $3$~h
+lead. (a--c) Rain in the truth, the U-Net forecast, and one flow draw;
+matched systems are outlined with one color and number per truth system,
+repeated in each forecast panel where that system was found. (d) The
+$120$ truth systems colored by outcome: found by both models (green,
+$11$), missed by the U-Net only (blue, $11$), missed by the flow only
+(purple, $6$), missed by both (black, $92$). (e, f) Matched systems
+(green) and false alarms (red) of the U-Net ($17$ and $5$) and of the
+flow draw ($22$ and $106$). Systems are 8-connected regions with rain
+above $0.1$~mm; matching is one-to-one at $\mathrm{IoU} \ge 0.1$.}
 \label{fig:pairs}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{figures/fig5_horizon.pdf}
-\caption{Skill by size and the horizon (full test record, $132$ blocks
-$\times$ $40$ days, ${\sim}10^6$ systems per forecast and lead). (a)
-Probability of detection and (b) false-alarm ratio by system size at
-$+3$~h. (c) Detection against lead time per size band (solid: flow;
-dotted: U-Net). (d) Horizon $\tau(L)$, the e-folding time of detection,
-with power laws $T(L) \propto L^{\alpha}$ fitted on the six bands from
-$59$ to $336$~km (shaded): $\alpha = 0.97$ (persistence), $1.77$ (U-Net),
-$1.78$ (flow). Filled markers enter the fit and are colored by the
-detection at $15$~min; hollow ones are left out; above the dotted line
-$\tau$ exceeds the longest lead.}
+\caption{Detection skill by system size and the detection horizon
+over the full test record ($132$ blocks $\times$ $40$ days, about $10^6$
+systems per forecast and lead). (a) Probability of detection and (b)
+false-alarm ratio as functions of system size $L$ at a $3$~h lead, for the
+U-Net, the flow (one draw), and persistence. (c) Probability of detection
+as a function of lead time in five size bands (solid, flow; dotted,
+U-Net). (d) Detection horizon $\tau(L)$, the e-folding time of detection,
+with power-law fits $T(L) \propto L^{\alpha}$ over the six bands from
+$59$ to $336$~km (shaded) for the three forecasts; filled markers enter
+the fits and are colored by the detection at the $15$-min lead, hollow
+markers are excluded, and the dotted line marks the longest lead.}
 \label{fig:horizon}
 \end{figure}
 
@@ -559,14 +560,13 @@ the highest of the three at every size ($0.35$ at $190$~km).
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig4_decomp.pdf}}
-\caption{Area and intensity errors of the matched systems ($+3$~h, full
-test record, identical axes). For three size bands, the region holding
-$75\%$ of the band's matched pairs, darker where denser, and its
-rain-weighted mean error joined to the origin; the grey outline holds
-$95\%$ of all pairs; on the dotted diagonal the two errors cancel. (a)
-U-Net ($83{,}960$ pairs): too large and too weak, most for small systems,
-mean $(+0.53, -1.05)$. (b) Flow, per draw ($125{,}159$ pairs): means at
-$(+0.21, -0.24)$, $(-0.15, -0.15)$, $(-0.14, -0.04)$ from small to large.}
+\caption{Area and intensity errors of the matched systems at a $3$~h
+lead over the full test record, for (a) the U-Net ($83{,}960$ pairs) and
+(b) the flow, one draw ($125{,}159$ pairs). Shaded regions contain $75\%$
+of the matched pairs of each size band and are darker where pairs are
+denser; dots mark the rain-weighted mean error of each band, joined to the
+origin; the grey outline contains $95\%$ of all pairs; along the dotted
+diagonal the area and intensity errors cancel.}
 \label{fig:decomp}
 \end{figure}
 
@@ -630,41 +630,35 @@ Figure~\ref{fig:horizon}D are shown but not fitted.
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig7a_wb2maps.pdf}}
-\caption{The matching on an operational forecast (GraphCast $+6$~h
-against ERA5, 2020-08-15 06 UTC; systems $>2.4$~mm per $6$~h, the rate of
-the kilometer-scale threshold; $\mathrm{IoU} \ge 0.1$). (a, b) The
-tropical belt on the block grid of Figure~\ref{fig:data}: matched pairs
-share a color across the two maps ($145$). (c, d) One $128$-pixel block
-($96$--$128^{\circ}$E), with the missed truth systems in (c) and the false
-alarms in (d) in black ($313$ and $90$ over the belt): the large systems are
-found, the small ones are not.}
+\caption{Object matching for GraphCast at a $6$~h lead against ERA5,
+valid 2020-08-15 06 UTC, with systems above $2.4$~mm per $6$~h (the rate
+of the kilometer-scale threshold) and one-to-one matching at
+$\mathrm{IoU} \ge 0.1$. (a, b) The tropical belt on the block grid of
+Figure~\ref{fig:data}; matched pairs share a color across the two maps
+($145$ pairs). (c, d) One $128$-pixel block ($96$--$128^{\circ}$E), with
+the missed truth systems in (c) and the false alarms in (d) shown in black
+($313$ and $90$ over the whole belt).}
 \label{fig:wb2maps}
 \end{figure}
 
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig7b_pod.pdf}}
-\caption{Detection and false alarms by size, WeatherBench~2 models
-($+12$~h, 2020-08-15, two initializations; threshold and matching of
-Figure~\ref{fig:wb2maps}; bands with fewer than $20$ systems blank). (a)
-Probability of detection, (b) false-alarm ratio. One GenCast member
-detects most from $240$~km up ($0.78$--$0.82$) at a false-alarm ratio of
-$0.32$ against GraphCast's $0.17$; the ensemble mean falls back among the
-deterministic models; below $60$~km every model is at or below $0.13$.}
+\caption{(a) Probability of detection and (b) false-alarm ratio as
+functions of system size for the WeatherBench~2 models and persistence at
+a $12$~h lead (2020-08-15, two initializations), with the threshold and
+matching of Figure~\ref{fig:wb2maps}. Bands with fewer than $20$ systems
+are left blank.}
 \label{fig:wb2pod}
 \end{figure}
 
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig7c_clouds.pdf}}
-\caption{Area and intensity errors, WeatherBench~2 models ($+12$~h,
-August 2020, ${\sim}8{,}000$ matched pairs per model; conventions of
-Figure~\ref{fig:decomp}, bands $<100$, $100$--$400$, $>400$~km). The
-deterministic models are too weak (mean $\mathrm{d}\ln\rho$ of $-0.24$,
-$-0.17$, $-0.06$ from small to large); the GenCast member is not ($-0.06$,
-$-0.03$, $+0.01$). The clouds are wide in area and narrow in intensity,
-the reverse of Figure~\ref{fig:decomp}: at $0.25^{\circ}$ the rate is
-recovered, the boundaries are not.}
+\caption{Area and intensity errors of the matched systems for the
+WeatherBench~2 models at a $12$~h lead, pooled over August 2020 (about
+$8{,}000$ pairs per model), with the conventions of Figure~\ref{fig:decomp}
+and size bands of $<100$, $100$--$400$, and $>400$~km.}
 \label{fig:wb2clouds}
 \end{figure}
 
