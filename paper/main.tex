@@ -293,12 +293,18 @@ at a time; nothing outside the block is given to them.
 
 \subsection{Models}\label{sec:unet}
 
-We train two models per lead. The first is deterministic and returns one
-rain field; the second is generative, starts from the first's field, and
-returns as many different rain fields as one asks for.
+We forecast at six lead times, $\Delta t = 0.25, 0.5, 1, 2, 3$, and
+$6$~h. Each lead has its own models: a deterministic U-Net, trained to
+predict the rain at $t + \Delta t$ from the ten fields at $t$, and a
+flow-matching model, trained afterwards on that U-Net's forecasts to turn
+them into realistic rain fields. Twelve models in all. The two models of
+a lead have the same inputs and the same target; they differ in what they
+return, one field for the U-Net, one field per draw for the flow.
 
-\textit{The deterministic U-Net.} It maps the ten input fields to the rain
-at $t + \Delta t$ (Figure~\ref{fig:arch}B). It is a U-Net of $125$~M
+\subsubsection{The U-Net}
+
+The U-Net maps the ten input fields to the rain at $t + \Delta t$
+(Figure~\ref{fig:arch}B). It is a U-Net of $125$~M
 parameters (Text~S2): five encoder stages, each two $3 \times 3$
 convolutions with group normalization and ReLU, from $64$ channels at
 $128^2$ pixels to $1024$ at $8^2$; a $2048$-channel bottleneck at $4^2$; a
@@ -330,7 +336,9 @@ the loss-minimizing answer is to call almost every pixel wet, and it does
 asks. The evaluation uses the rain head alone, thresholded, and the
 generative model is added to obtain fields that commit to one outcome.
 
-\textit{The generative model, in words.} The U-Net has already placed the
+\subsubsection{Flow matching}
+
+\textit{In words.} The U-Net has already placed the
 rain; what it cannot do is choose between the outcomes it averages over.
 The generative model makes that choice. It takes the U-Net forecast,
 adds a little noise to it, and then sharpens the noisy field step by step
