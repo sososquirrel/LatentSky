@@ -483,25 +483,24 @@ and rain thresholds and to one-to-one matching are in Text~S4.
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}
 
-\subsection{A realistic forecast}\label{sec:res-model}
+\subsection{Detection and false alarms by size}\label{sec:res-scales}
 
-The U-Net places the rain where the truth has rain, as a smooth envelope.
-On the example block at $+3$~h (Figures~\ref{fig:arch}B
-and~\ref{fig:pairs}B) it draws $22$ systems where the truth holds $120$,
-and its peaks are weaker than the truth's. This is the conditional mean.
-It blurs more as the lead grows: the forecast's error on wet pixels, the
-$\sigma$ of Section~\ref{sec:unet}, doubles from $0.10$ at $+15$~min to
-$0.20$ at $+6$~h.
-
-The flow draws are sharp at every lead. Started from the same forecast plus
-noise, each draw has cells and intensities like the truth's
-(Figure~\ref{fig:arch}C). Draws agree where the forecast is certain and
-differ where it is not: the uncertainty that the U-Net expresses as blur,
-the flow expresses as systems placed differently from one draw to the
-next. A sharp field can be sharply wrong. Whether the draws are also more
-skillful, and at which scales, is measured next.
-
-\subsection{Skill by scale}\label{sec:res-scales}
+Before asking whether systems are found, we count them. Over the test
+record at $+3$~h, the truth holds $692{,}000$ systems; the U-Net forecasts
+hold $126{,}000$ and the flow draws $637{,}000$. By size band, the U-Net
+has $4\%$ of the truth's number of systems at $30$~km, $53\%$ at
+$120$~km, and $2.4$ times the truth's above $600$~km: it merges many
+small systems into few large envelopes. The flow has $85$ to $110\%$ of
+the truth's number in every band from $30$ to $670$~km. The intensities
+follow the same pattern: for the matched systems, the median ratio of
+forecast to truth intensity is $0.54$ for the U-Net and $0.99$ for the
+flow. The example block shows both effects (Figures~\ref{fig:arch}
+and~\ref{fig:pairs}a--c): the U-Net draws $22$ systems where the truth has
+$120$, as smooth envelopes with weaker peaks; the flow draw has cells and
+intensities like the truth's. The flow fields are realistic in this
+statistical sense, and the U-Net fields are not. Realism is not skill: a
+sharp field can be sharply wrong. The rest of this section measures
+whether the systems are the right ones.
 
 \begin{figure}
 \centering
@@ -569,6 +568,8 @@ origin; the grey outline contains $95\%$ of all pairs; along the dotted
 diagonal the area and intensity errors cancel.}
 \label{fig:decomp}
 \end{figure}
+
+\subsection{Area and intensity of the matched systems}\label{sec:res-decomp}
 
 The matched systems show what each forecast gets wrong when it does find
 a system (Figure~\ref{fig:decomp}). At $+3$~h the U-Net's systems are too
