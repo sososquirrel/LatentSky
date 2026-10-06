@@ -89,8 +89,8 @@ def main():
     pair_colors = ["#1f78b4", "#33a02c", "#e6ab02", "#7570b3", "#e7298a", "#66a61e",
                    "#a6761d", "#1b9e77", "#d95f02", "#386cb0", "#f0027f", "#bf5b17",
                    "#666666", "#8da0cb", "#fc8d62", "#a6d854", "#ffd92f", "#e5c494"]
-    HIT = "#2a7f62"
-    color_of = {tid: HIT for tid in order}
+    HIT = "#2a7f62"                 # the outline says "matched"; the fill says which pair
+    color_of = {tid: pair_colors[k % len(pair_colors)] for k, tid in enumerate(order)}
     num_of = {tid: k + 1 for k, tid in enumerate(order)}
     neither = len(tt) - len(truth_match)
 
@@ -113,8 +113,8 @@ def main():
     def fill(ax, lab, lid, color, alpha):
         ax.contourf(lab == lid, levels=[0.5, 1.5], colors=[color], alpha=alpha)
 
-    def matched(ax, lab, lid):      # a system found by the forecast
-        fill(ax, lab, lid, HIT, 0.25)
+    def matched(ax, lab, lid, tid):  # a system found by the forecast
+        fill(ax, lab, lid, color_of[tid], 0.45)
         outline(ax, lab, lid, HIT, lw=1.0)
 
     def missed(ax, tid):            # a truth system the forecast did not find
@@ -182,7 +182,7 @@ def main():
         ax.set_aspect("equal")
     title(ax_sys[0], "D.", "Truth systems", f"{len(tt)}, of which {neither} missed by both")
     for tid in truth_match:
-        matched(ax_sys[0], lt, tid)
+        matched(ax_sys[0], lt, tid, tid)
         rrow = tt.set_index("label").loc[tid]
         ax_sys[0].text(rrow["col"], rrow["row"], str(num_of[tid]), fontsize=5.5,
                        fontweight="bold", color="0.1", ha="center", va="center")
@@ -203,7 +203,7 @@ def main():
         for _, rr in mm[mm.role == "match"].iterrows():
             tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
             pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
-            matched(ax, labels[model], pid)
+            matched(ax, labels[model], pid, tid)
             ax.text(rr["col_p"], rr["row_p"], str(num_of[tid]), fontsize=5.5,
                     fontweight="bold", color="0.1", ha="center", va="center")
         for _, rr in mm[mm.role == "false_alarm"].iterrows():
@@ -223,8 +223,8 @@ def main():
     cb.outline.set_linewidth(0.5)
     from matplotlib.patches import Patch
     handles = [
-        Patch(fc=HIT, alpha=0.25, ec=HIT, lw=1.0,
-              label="matched: found by the forecast (same number in every panel)"),
+        Patch(fc=pair_colors[0], alpha=0.45, ec=HIT, lw=1.0,
+              label="matched: found by the forecast (fill colour and number identify the pair)"),
         Patch(fc="0.25", alpha=0.22, ec="0.1", ls="--", lw=0.6,
               label="missed: truth system not found"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
