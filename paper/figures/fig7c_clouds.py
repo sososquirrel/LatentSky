@@ -23,7 +23,7 @@ _v = plt.get_cmap("viridis")
 BANDS = [(0, 100, r"small, $<$ 100 km", _v(0.08)),
          (100, 400, "medium, 100 to 400 km", _v(0.52)),
          (400, 1e9, r"large, $>$ 400 km", _v(0.88))]
-LIM = 1.5
+LIM = 2.0
 
 
 def main():
