@@ -1,7 +1,7 @@
 """Paper Fig 5 — the error decomposition on matched pairs (+3 h, full record).
 
 (A) two-head U-Net, (B) flow per draw, in the (dlnA, dlnrho) plane, same axes.
-Behind, in grey, the region holding 90 % of all matched pairs. For each of
+Behind, in grey, the region holding 95 % of all matched pairs. For each of
 three size bands: the region holding 75 % of the band's pairs (shaded; from a
 2-D histogram with 0.05 bins smoothed by a Gaussian of 3.5 bins), and the
 rain-weighted barycenter of the raw pairs joined to the origin (the mean
@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -58,18 +59,24 @@ def panel(ax, df, letter, label):
         h, _, _ = np.histogram2d(b.dlnA, b.dlnrho, bins=[EDGES, EDGES])
         return gaussian_filter(h.T, 3.5)              # removes the pixel-count striping in dlnA
 
-    # behind everything, in grey: where 90 % of all matched pairs lie
+    # behind everything, in grey: where 95 % of all matched pairs lie
     h = density(m)
-    (l90,) = hdr_levels(h, (0.9,))
-    ax.contourf(MIDS, MIDS, h, levels=[l90, h.max() * 1.01], colors=["0.90"], zorder=1.5)
-    ax.contour(MIDS, MIDS, h, levels=[l90], colors=["0.72"], linewidths=0.5, zorder=1.6)
+    (l95,) = hdr_levels(h, (0.95,))
+    ax.contourf(MIDS, MIDS, h, levels=[l95, h.max() * 1.01], colors=["0.90"], zorder=1.5)
+    ax.contour(MIDS, MIDS, h, levels=[l95], colors=["0.72"], linewidths=0.5, zorder=1.6)
     # per band, small drawn first so that medium and large sit on top
     for z, (lo, hi, _, col) in enumerate(BANDS):
         b = m[(m.scale >= lo) & (m.scale < hi)]
         h = density(b)
         (l75,) = hdr_levels(h, (0.75,))
-        ax.contourf(MIDS, MIDS, h, levels=[l75, h.max() * 1.01], colors=[col], alpha=0.35,
-                    zorder=2 + z)
+        # inside the 75 % region the shading follows the density: faint at the edge, strong at the peak
+        rgba = mcolors.to_rgba(col)
+        cm_band = mcolors.LinearSegmentedColormap.from_list(
+            "band", [(*rgba[:3], 0.12), (*rgba[:3], 0.75)])
+        inside = np.ma.masked_less(h, l75)
+        ax.imshow(inside, origin="lower", extent=(EDGES[0], EDGES[-1], EDGES[0], EDGES[-1]),
+                  cmap=cm_band, vmin=l75, vmax=h.max(), interpolation="bilinear", aspect="auto",
+                  zorder=2 + z)
         ax.contour(MIDS, MIDS, h, levels=[l75], colors=[col], linewidths=0.9, zorder=2.5 + z)
     for lo, hi, _, col in BANDS:                      # barycentres on top: the mean bias
         b = m[(m.scale >= lo) & (m.scale < hi)]
@@ -192,8 +199,8 @@ def main():
     axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
                 va="top", rotation=90, fontsize=6.5, color="0.4")
     handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
-    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where three quarters of the band's pairs lie"),
-                Patch(fc="0.90", ec="0.72", label="90% of all pairs"),
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where three quarters of the band's pairs lie (darker: denser)"),
+                Patch(fc="0.90", ec="0.72", label="95% of all pairs"),
                 Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
                        label="rain-weighted mean error")]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
