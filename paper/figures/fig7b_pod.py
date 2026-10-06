@@ -10,7 +10,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import xarray as xr
 from fig6bc_wb2 import COLW, pod_bands, MIDS
-from paperfig import W2, panel_label  # noqa: F401
+from fig4_decomp import PAPER_FONT
+from fig5_horizon import log_ticks
+from paperfig import W2
 
 from latentsky.metrics import cell_area_km2, match_systems
 
@@ -49,17 +51,26 @@ def main():
                               for i in range(ds.init.size)]),
     }
 
-    fig, ax = plt.subplots(figsize=(W2 * 0.62, W2 * 0.42))
+    NAMES = {"graphcast": "GraphCast", "fuxi": "FuXi", "gencast mean": "GenCast mean",
+             "gencast member": "GenCast member", "persistence": "persistence"}
+    plt.rcParams.update(PAPER_FONT)
+    fig, ax = plt.subplots(figsize=(W2 * 0.62, W2 * 0.45))
+    fig.subplots_adjust(left=0.13, right=0.98, top=0.90, bottom=0.16)
+    ax.grid(True, color="0.88", lw=0.4)
+    ax.set_axisbelow(True)
     for name, pod in series.items():
         ls = "--" if name == "persistence" else "-"
         ax.plot(MIDS, pod, ls, color=COLW[name], marker="o", ms=3.5,
-                lw=1.5, label=name)
+                lw=1.5, label=NAMES[name])
     ax.set_xscale("log")
     ax.set_xlim(40, 3000)
     ax.set_ylim(0, 1.0)
-    ax.set_xlabel("system scale L = √A (km)")
+    log_ticks(ax.xaxis, [50, 100, 200, 500, 1000, 2000])
+    ax.set_xlabel(r"system scale $L = \sqrt{A}$ (km)")
     ax.set_ylabel("Probability of Detection (POD)")
     ax.legend(fontsize=7.5, loc="upper left")
+    ax.text(0.0, 1.03, "Detection by system size, WeatherBench 2 models, +12 h",
+            transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
     fig.savefig(OUT / "fig7b_pod.pdf")
     print("saved fig7b_pod.pdf")
 
