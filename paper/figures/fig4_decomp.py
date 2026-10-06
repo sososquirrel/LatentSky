@@ -59,11 +59,10 @@ def panel(ax, df, letter, label):
         h, _, _ = np.histogram2d(b.dlnA, b.dlnrho, bins=[EDGES, EDGES])
         return gaussian_filter(h.T, 3.5)              # removes the pixel-count striping in dlnA
 
-    # behind everything, in grey: where 95 % of all matched pairs lie
+    # behind everything, a grey outline: where 95 % of all matched pairs lie
     h = density(m)
     (l95,) = hdr_levels(h, (0.95,))
-    ax.contourf(MIDS, MIDS, h, levels=[l95, h.max() * 1.01], colors=["0.90"], zorder=1.5)
-    ax.contour(MIDS, MIDS, h, levels=[l95], colors=["0.72"], linewidths=0.5, zorder=1.6)
+    ax.contour(MIDS, MIDS, h, levels=[l95], colors=["0.55"], linewidths=0.6, zorder=1.6)
     # per band, small drawn first so that medium and large sit on top
     for z, (lo, hi, _, col) in enumerate(BANDS):
         b = m[(m.scale >= lo) & (m.scale < hi)]
@@ -200,7 +199,7 @@ def main():
                 va="top", rotation=90, fontsize=6.5, color="0.4")
     handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
     handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where three quarters of the band's pairs lie (darker: denser)"),
-                Patch(fc="0.90", ec="0.72", label="95% of all pairs"),
+                Line2D([], [], color="0.55", lw=0.6, label="95% of all pairs"),
                 Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
                        label="rain-weighted mean error")]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
