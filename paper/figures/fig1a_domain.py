@@ -32,6 +32,10 @@ FH = TOP + MAPH + GAP + CBH + BOT
 
 
 def main():
+    # the paper's text font
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
     pw = load("precipw")
     fig = plt.figure(figsize=(FW, FH))
     ax = fig.add_axes([LABW / FW, (BOT + CBH + GAP) / FH,
@@ -45,9 +49,11 @@ def main():
     ax.add_patch(Rectangle((c * P, r * P), P, P, fill=False, ec="#b2182b",
                            lw=2.0))
     ax.set_xticks([0, 360, 720, 1080, 1440])
-    ax.set_xticklabels(["0°", "90°E", "180°", "90°W", "0°"])
-    ax.set_yticks([0, 160, 320])
-    ax.set_yticklabels(["40°S", "0°", "40°N"])
+    ax.set_xticklabels([r"$0^{\circ}$", r"$90^{\circ}$E", r"$180^{\circ}$", r"$90^{\circ}$W",
+                        r"$0^{\circ}$"])
+    ax.set_yticks([0, 80, 160, 240, 320])
+    ax.set_yticklabels([r"$40^{\circ}$S", r"$20^{\circ}$S", r"$0^{\circ}$", r"$20^{\circ}$N",
+                        r"$40^{\circ}$N"])
     ax.tick_params(axis="both", labelsize=8, length=2.5, width=0.7)
     xlabs = ax.get_xticklabels()
     xlabs[0].set_ha("left")
@@ -56,9 +62,8 @@ def main():
     cax = fig.add_axes([(LABW + 0.16 * MAPW) / FW, BOT / FH,
                         0.68 * MAPW / FW, CBH / FH])
     cb = fig.colorbar(im, cax=cax, orientation="horizontal")
-    cb.set_label(r"Precipitable Water [mm], standardized"
-                 r" $(\mathrm{PW}-\mu)/\sigma$", fontsize=8,
-                 fontstyle="italic")
+    cb.set_label(r"precipitable water, standardized: $(\mathrm{PW} - \mu)/\sigma$",
+                 fontsize=8)
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
     fig.savefig(OUT / "fig1a_domain.pdf", dpi=300)
