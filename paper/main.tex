@@ -388,55 +388,42 @@ out, the velocity, of either sign. It is the tendency term of a numerical
 model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned
 rather than derived.
 
-\textit{The two end points.} The starting point is the forecast plus
-noise,
+\textit{Equations.} The starting point is the forecast plus noise,
+$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ with
+$\varepsilon \sim \mathcal{N}(0, I)$, and the end point $x_1$ is the true
+field at the same valid time. The straight line between them,
+$x_s = (1 - s)\,x_0 + s\,x_1$, has the constant velocity
+$\hat{v} = x_1 - x_0$. Many pairs pass near the same point at the same
+time, each with its own $\hat{v}$; the velocity network is trained, by
+least squares, to return their average,
 \begin{equation}
-x_0 = z_{\mathrm{fc}} + \sigma\,\varepsilon, \qquad
-\varepsilon \sim \mathcal{N}(0, I),
+v_s(x, c) = \mathbb{E}\big[\,\hat{v} \;\big|\; x_s = x,\, c\,\big] ,
+\label{eq:velocity}
 \end{equation}
-with $\varepsilon$ a field of independent Gaussian numbers. The amplitude
-$\sigma$ is not tuned: it is the root-mean-square error of the U-Net
-forecast on the wet pixels of the training set, in $z$, at that lead
-($0.10, 0.12, 0.15, 0.17, 0.19$, and $0.20$ for the six leads). The end
-point $x_1$ is the true field at the same valid time.
-
-\textit{Training.} For each example we draw $\varepsilon$ and a time $s$
-uniform in $[0, 1]$, and form the point on the straight line between the
-end points,
+which is the direction toward the realistic fields that are consistent
+with the current field and the inputs. A draw is the integral of that
+velocity from the starting point,
 \begin{equation}
-x_s = (1 - s)\,x_0 + s\,x_1 .
+x_1 = x_0 + \int_0^1 v_s(x_s, c)\,\mathrm{d}s ,
+\label{eq:flow}
 \end{equation}
-Along this line the velocity is constant, $x_1 - x_0$, and the network is
-trained to return it:
-\begin{equation}
-\mathcal{L} = \big\langle\, \| \hat{v}(x_s, s, c) - (x_1 - x_0) \|^2
-\,\big\rangle .
-\end{equation}
-Each forecast is paired with its own truth, so the lines are short: the
-network learns a correction to the forecast, not a rain field from pure
-noise. Optimizer, batches, and stopping rule are those of the U-Net.
+computed with $32$ steps of Heun's method, the second-order
+predictor--corrector ($63$ evaluations of the network per draw), and
+transformed back to mm. The noise amplitude $\sigma$ is not tuned: it is
+the root-mean-square error of the U-Net on the wet pixels of the training
+set, in $z$, at that lead ($0.10$ to $0.20$ from $15$~min to $6$~h). The
+noise is the only source of randomness; with $\sigma = 0$ the flow is a
+deterministic correction. Optimizer, batches, and stopping rule are those
+of the U-Net (Text~S2).
 
-\textit{Sampling.} To produce one draw we draw $\varepsilon$, form $x_0$,
-and integrate $\mathrm{d}x/\mathrm{d}s = \hat{v}(x_s, s, c)$ from $s = 0$
-to $1$ with $32$ steps of Heun's method, the second-order
-predictor--corrector: a trial Euler step with the velocity at the current
-state, then the update with the mean of the velocities at the current and
-trial states. The network is evaluated at $s = 0, 1/32, \ldots, 31/32$,
-twice per step except the last, which is a plain Euler step: $63$
-evaluations per draw. The field at $s = 1$, transformed back to mm, is the
-draw. Nothing is learned at this stage.
-
-\textit{Noise and scoring.} The noise is the only source of randomness;
-with $\sigma = 0$ the flow is a deterministic correction. Each
-$\varepsilon$ gives a different sharp field consistent with the same
-smooth forecast (Figure~\ref{fig:arch}C). All statistics of the flow in
-this paper are computed on one draw per block and frame, with a fixed
-seed, and never on an average of draws: the average of draws is again an
-estimate of the mean and would remove the difference we measure. A
-denoising diffusion model started from the same forecast was also tested;
-its small-scale variance saturates at $0.80$--$0.85$ of the truth's,
-because it is trained to denoise noised truth and applied to noised
-forecasts, and it is reported as a sensitivity in Text~S3.
+\textit{Scoring.} All statistics of the flow are computed on one draw per
+block and frame, with a fixed seed, and never on an average of draws: the
+average of draws is again an estimate of the mean and would remove the
+difference we measure. A denoising diffusion model started from the same
+forecast was also tested; its small-scale variance saturates at
+$0.80$--$0.85$ of the truth's, because it is trained to denoise noised
+truth and applied to noised forecasts, and it is reported as a
+sensitivity in Text~S3.
 
 \subsection{Evaluation: systems, matching, and the horizon}
 \label{sec:evaluation}
