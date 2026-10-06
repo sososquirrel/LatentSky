@@ -487,11 +487,13 @@ and rain thresholds and to one-to-one matching are in Text~S4.
 
 Before asking whether systems are found, we count them. Over the test
 record at $+3$~h, the truth holds $692{,}000$ systems; the U-Net forecasts
-hold $126{,}000$ and the flow draws $637{,}000$. By size band, the U-Net
-has $4\%$ of the truth's number of systems at $30$~km, $53\%$ at
-$120$~km, and $2.4$ times the truth's above $600$~km: it merges many
-small systems into few large envelopes. The flow has $85$ to $110\%$ of
-the truth's number in every band from $30$ to $670$~km. The intensities
+hold $126{,}000$ and the flow draws $637{,}000$. In each size band, we compare
+the number of forecast systems to the number of truth systems. For the
+U-Net the ratio is $0.04$ at $30$~km, $0.53$ at $120$~km, and $2.4$ above
+$600$~km: it has almost none of the small systems and more than twice the
+large ones, because it merges many small systems into few large envelopes.
+For the flow the ratio is between $0.85$ and $1.10$ in every band from
+$30$ to $670$~km: it has as many systems of each size as the truth. The intensities
 follow the same pattern: for the matched systems, the median ratio of
 forecast to truth intensity is $0.54$ for the U-Net and $0.99$ for the
 flow. The example block shows both effects (Figures~\ref{fig:arch}
