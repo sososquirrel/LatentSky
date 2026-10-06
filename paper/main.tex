@@ -6,6 +6,7 @@
 
 \documentclass[draft]{agujournal2019}
 \usepackage{url}
+\usepackage{amsmath}
 \usepackage{lineno}
 \usepackage[inline]{trackchanges}
 \usepackage{soul}
@@ -310,17 +311,29 @@ convolutions with group normalization and ReLU, from $64$ channels at
 $128^2$ pixels to $1024$ at $8^2$; a $2048$-channel bottleneck at $4^2$; a
 mirrored decoder with skip connections; and two $1 \times 1$ output
 heads. The rain head has a softplus activation, so the rain is
-non-negative; the wet/dry head returns logits. The bottleneck is
-modulated by the mean and minimum outgoing longwave radiation of the
-block through a small network that returns a scale and a shift per
-channel (FiLM), which gives the network the convective regime of the block
-in one number pair. The loss is
-$\mathrm{MSE}_{\mathrm{wet}} + \mathrm{BCE} + 0.25\,\mathrm{FSS}$: the
-mean-square error of the rain on the wet pixels of the truth, the binary
-cross-entropy of the wet/dry logits against the truth being wet
-($R > 0$) on all pixels, and a differentiable fractions skill score at
-kernel sizes of $1, 3, 5, 11, 19$, and $33$ pixels ($28$ to $920$~km),
-which penalizes rain placed at the wrong scale. Training uses AdamW
+non-negative; the wet/dry head returns logits. In addition to the
+ten fields, the network is given the mean and the minimum of the outgoing
+longwave radiation over the block at its bottleneck: two numbers that
+tell it how much deep convection the block holds and how cold its highest
+tops are, and so whether the rain is more convective or more stratiform.
+The loss has three terms,
+\begin{equation}
+\mathcal{L} =
+\underbrace{\frac{1}{|\mathcal{M}|}\sum_{i \in \mathcal{M}}
+  \big(\hat{R}_i - R_i\big)^2}_{\text{rain on the wet pixels}}
+\;+\;
+\underbrace{\mathrm{BCE}\big(\hat{m},\, \mathbf{1}[R > 0]\big)}_{\text{wet or dry}}
+\;+\; 0.25\,
+\underbrace{\frac{1}{6}\sum_{k=1}^{6}
+  \big\| \bar{f}_k(\hat{R}) - \bar{f}_k(R) \big\|^2}_{\text{rain fractions at six scales}} ,
+\label{eq:loss}
+\end{equation}
+where $\mathcal{M}$ is the set of pixels where the truth $R$ is wet, $\hat{R}$
+and $\hat{m}$ are the two outputs, and $\bar{f}_k$ is the fraction of wet
+pixels ($R > 0.1$~mm) in a window of $1, 3, 5, 11, 19$, or $33$ pixels
+($28$ to $920$~km). The first term fits the intensity where it rains, the
+second decides where it rains, and the third penalizes rain placed at the
+wrong scale. Training uses AdamW
 (learning rate $10^{-3}$, weight decay $10^{-5}$), batches of $64$
 blocks, a learning rate halved every $8$ epochs, and early stopping after
 $10$ epochs without improvement of the validation loss ($51$ to $82$
