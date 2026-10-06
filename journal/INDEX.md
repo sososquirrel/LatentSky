@@ -8,6 +8,7 @@ Flow leads 1/2/3/0.25/0.5 h training as serial chain (5815664–68).
 R3 +3 h confirmed at full record (132 blocks × 40 days); page restructured flow-only;
 I1 = WB2 +6 h POD(L) at the 2.4 mm/6 h rate-equivalent threshold.
 
+- [2026-10-06](2026-10-06.md) — figures and captions in one AGU style; sections 2–3 rewritten plain; realism measured by a system census
 - [2026-10-05](2026-10-05.md) — paper reordered to the deck: flow matching, rain decomposition, horizon; WB2 outlook
 - [2026-09-08](2026-09-08.md) — paper figures restyled to publication standard, all seven rebuilt
 - [2026-09-07](2026-09-07.md) — full-record α; §8–§9 final; AGU Advances draft written, 6 figures
