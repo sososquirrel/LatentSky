@@ -23,9 +23,17 @@ sys.path.insert(0, str(REPO / "docs"))
 from make_flow_pairs_panel import (  # noqa: E402
     INPUT_VARS, IOU_MIN, P, PIECES, RUNS, SCALE, THR)
 
-# a West African test frame (block (1, 0): 0-32E, 8S-24N) with several squall lines over
-# the Sahel; in the full-record tables the two-head matches 7 truth systems and the flow 14
-PIECE, FRAME, BLOCK = 29, 44, (1, 0)
+# a West African test frame (block (1, 0): 0-32E, 8S-24N) with several bow-shaped squall
+# lines over the Sahel; chosen among the test frames with a clear detection gain of the flow
+PIECE, FRAME, BLOCK = 29, 48, (1, 0)
+# FIG3_EXAMPLE="piece,row,col,frame[,outfile]" tries another frame without editing the script
+import os  # noqa: E402
+if os.environ.get("FIG3_EXAMPLE"):
+    _e = os.environ["FIG3_EXAMPLE"].split(",")
+    PIECE, BLOCK, FRAME = int(_e[0]), (int(_e[1]), int(_e[2])), int(_e[3])
+    OUT_FILE = Path(_e[4]) if len(_e) > 4 else None
+else:
+    OUT_FILE = None
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
@@ -248,8 +256,8 @@ def main():
     ]
     fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=7, frameon=False,
                bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.4)
-    fig.savefig(OUT / "fig3_pairs.pdf", dpi=300)
-    print("saved fig3_pairs.pdf")
+    fig.savefig(OUT_FILE or OUT / "fig3_pairs.pdf", dpi=300)
+    print("saved", OUT_FILE or "fig3_pairs.pdf")
 
 
 if __name__ == "__main__":

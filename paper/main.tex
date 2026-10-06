@@ -459,18 +459,19 @@ Whether it is skill, and at which scales, is the next question.
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig3_pairs.pdf}}
 \caption{\textbf{The instrument on one frame} ($+3$~h; a West African test
-frame, $0$--$32^{\circ}$E, $8^{\circ}$S--$24^{\circ}$N, with several squall
-lines over the Sahel; the truth on the left, the two forecasts on the
-right). Top: the rain fields of the truth (A), the two-head U-Net (B), and
-one flow draw (C), on one log color scale, with the matched pairs outlined:
-one color per truth system, the same in every panel where a model found it.
-Bottom: the outcome of the matching (systems $>0.1$~mm, 8-connected; greedy
-one-to-one, $\mathrm{IoU} \ge 0.1$). D.~The $72$ truth systems: green if
-found by at least one model, dark grey if missed by both ($57$,
-overwhelmingly the smallest). E.--F.~For each forecast, its matched systems
-(green) and its false alarms (forecast systems matching nothing, red). The
-flow finds $14$ systems where the U-Net finds $7$, and produces many more
-small false alarms, $68$ against $7$.}
+frame, $0$--$32^{\circ}$E, $8^{\circ}$S--$24^{\circ}$N, with several
+bow-shaped squall lines over the Sahel; the truth on the left, the two
+forecasts on the right). Top: the rain fields of the truth (A), the two-head
+U-Net (B), and one flow draw (C), on one log color scale, with the matched
+pairs outlined: one color per truth system, the same in every panel where a
+model found it. Bottom: the outcome of the matching (systems $>0.1$~mm,
+8-connected; greedy one-to-one, $\mathrm{IoU} \ge 0.1$). D.~The $76$ truth
+systems: green if found by at least one model, dark grey if missed by both
+($58$, overwhelmingly the smallest). E.--F.~For each forecast, its matched
+systems (green) and its false alarms (forecast systems matching nothing,
+red). Both models find the squall lines; the flow finds $15$ systems where
+the U-Net finds $12$, follows the arcs more closely, and produces many more
+small false alarms, $48$ against $5$.}
 \label{fig:pairs}
 \end{figure}
 
@@ -493,8 +494,8 @@ longest trained lead and is an extrapolation of the exponential fit.}
 \end{figure}
 
 Figure~\ref{fig:pairs} shows the instrument at work on one frame over West
-Africa: of $72$ truth systems the two-head matches $7$ and the flow draw
-$14$, at the price of $68$ false alarms against $7$, and the $57$ systems
+Africa: of $76$ truth systems the two-head matches $12$ and the flow draw
+$15$, at the price of $48$ false alarms against $5$, and the $58$ systems
 found by neither are overwhelmingly the smallest. The statistics that follow
 pool ${\sim}10^6$ such systems per model and lead over the full held-out
 record ($132$ test blocks $\times$ $40$ days).
