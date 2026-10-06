@@ -21,7 +21,11 @@ from paperfig import W2
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 sys.path.insert(0, str(REPO / "docs"))
 from make_flow_pairs_panel import (  # noqa: E402
-    BLOCK, FRAME, INPUT_VARS, IOU_MIN, P, PIECE, PIECES, RUNS, SCALE, THR)
+    INPUT_VARS, IOU_MIN, P, PIECES, RUNS, SCALE, THR)
+
+# a West African test frame (block (1, 0): 0-32E, 8S-24N) where the flow's gain is large:
+# in the full-record tables the two-head matches 10 of 59 truth systems and the flow 20
+PIECE, FRAME, BLOCK = 35, 60, (1, 0)
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
@@ -105,6 +109,10 @@ def main():
     nC = sum(1 for d in truth_match.values() if list(d) == ["flow draw"])
     print(f"truth systems {len(tt)}; matched by both {nA}, two-head only {nB}, "
           f"flow only {nC}, neither {neither}")
+    for n_ in preds:
+        mm_ = matches[n_]
+        print(f"  {n_}: matched {(mm_.role == 'match').sum()}, missed {(mm_.role == 'miss').sum()}, "
+              f"false alarms {(mm_.role == 'false_alarm').sum()}")
 
     def outline(ax, lab, lid, color, ls="-", lw=1.2):
         ax.contour(lab == lid, levels=[0.5], colors=[color], linewidths=lw,
