@@ -16,7 +16,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from paperfig import COLOR, MARKER, W2, panel_label
+from paperfig import COLOR, MARKER, W2
 
 from latentsky.metrics import default_scale_edges, fit_powerlaw, summarize_by_scale
 
@@ -55,9 +55,24 @@ def pod_decay():
     return out
 
 
+def title(ax, letter, text):
+    """Panel letter and a short title above the axes, as in Figs. 2 and 5."""
+    ax.text(0.0, 1.02, letter, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=9, fontfamily="cmb10")
+    ax.text(0.085, 1.02, text, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=8.5)
+
+
 def main():
-    fig, axs = plt.subplots(2, 2, figsize=(W2, W2 * 0.98))
+    # the paper's text font
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
+    fig, axs = plt.subplots(2, 2, figsize=(W2, W2 * 1.0))
     ax_pod, ax_far, ax_dec, ax_tau = axs.ravel()
+    for ax in axs.ravel():
+        ax.grid(True, color="0.88", lw=0.4)
+        ax.set_axisbelow(True)
 
     # --- (a)/(b) POD and FAR by scale at +3 h -------------------------------
     edges = default_scale_edges(25, 600, 10)
@@ -71,11 +86,11 @@ def main():
         ax.set_xscale("log")
         ax.set_xlim(25, 620)
         ax.set_ylim(0, 1.02)
-        ax.set_xlabel("system scale L = √A (km)")
+        ax.set_xlabel(r"system scale $L = \sqrt{A}$ (km)")
         ax.set_ylabel(ylab)
     ax_pod.legend(loc="center left", fontsize=8)
-    panel_label(ax_pod, "A.")
-    panel_label(ax_far, "B.")
+    title(ax_pod, "A.", "Detection by system size, +3 h")
+    title(ax_far, "B.", "False alarms by system size, +3 h")
 
     # --- (c) POD decay per band --------------------------------------------
     decay = pod_decay()
@@ -91,7 +106,7 @@ def main():
     ax_dec.plot([], [], "-", color="0.3", lw=1.5, label="flow")
     ax_dec.plot([], [], ":", color="0.3", lw=1.2, label="two-head")
     ax_dec.legend(loc="center", bbox_to_anchor=(0.72, 0.55), fontsize=7.5)
-    panel_label(ax_dec, "C.")
+    title(ax_dec, "C.", "Detection against lead time, per size band")
 
     # --- (d) tau(L) scaling -------------------------------------------------
     df = pd.read_csv(ASSETS / "tau_fullrecord.csv")
@@ -111,7 +126,7 @@ def main():
         c0 = out["tau_ref"] / (out["L_ref"] ** a)
         Lg = np.array(FIT_WINDOW, dtype=float)
         ax_tau.plot(Lg, c0 * Lg ** a, "-", color=COLOR[model], lw=1.4,
-                    label=f"{model}: α = {a:.2f}")
+                    label=rf"{model}: $\alpha$ = {a:.2f}")
         sc = ax_tau.scatter(mids[inw], t[inw], c=pod0[inw], cmap="plasma",
                             vmin=0, vmax=1, marker=MARKER[model], s=26,
                             edgecolors=COLOR[model], linewidths=1.0, zorder=4)
@@ -125,18 +140,18 @@ def main():
     ax_tau.set_xlim(25, 800)
     ax_tau.set_ylim(0.3, 110)
     ax_tau.set_xlabel("system scale L (km)")
-    ax_tau.set_ylabel("τ(L) (h)")
+    ax_tau.set_ylabel(r"detection horizon $\tau(L)$ (h)")
     ax_tau.legend(loc="upper left", fontsize=7.5)
-    panel_label(ax_tau, "D.")
+    title(ax_tau, "D.", "Horizon against system size")
     # colorbar below panel D, without shrinking the panel itself: give it an
     # explicit axis so D stays the same size as the POD panel
-    fig.subplots_adjust(left=0.075, right=0.985, top=0.99,
-                        bottom=0.055, hspace=0.26, wspace=0.22)
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.965,
+                        bottom=0.055, hspace=0.32, wspace=0.22)
     pos = ax_tau.get_position()
     cax = fig.add_axes([pos.x0 + 0.08 * pos.width, pos.y0 - 0.105,
                         0.84 * pos.width, 0.016])
     cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
-    cb.set_label("POD at 0.25 h lead (POD₀)", fontsize=8)
+    cb.set_label(r"POD at 0.25 h lead ($\mathrm{POD}_0$)", fontsize=8)
     cb.ax.tick_params(labelsize=7, length=2, width=0.6)
     cb.outline.set_linewidth(0.5)
 
