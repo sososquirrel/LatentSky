@@ -234,29 +234,17 @@ split $616/132/132$ into train/val/test (Text~S1).}
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig2_pipeline.pdf}}
-\caption{\textbf{From the large-scale state to rain draws} (the standard
-example block at $+3$~h; all rain maps are model fields on one log color
-scale). A.~The inputs at time $t$: nine fields of the large-scale state,
-stacked, and the current rain. B.~The U-Net maps these ten fields to the
-rain at $t + \Delta t$: an encoder of five stages, a bottleneck, a mirrored
-decoder, and skip connections (dashed). Sizes are resolution $\times$ channels. The ten input
-fields ($128^2 \times 10$) are reduced to a latent of $4^2 \times 2048$,
-the resolution halving and the channels doubling from $64$ at each stage,
-and expanded back to two output fields ($128^2 \times 2$): the rain shown
-here and a wet/dry field (Figure~S1).
-C.~Flow matching. The U-Net forecast plus noise,
-$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is the starting state. A
-second U-Net of comparable size, the velocity network, returns the velocity $\hat{v}$ at the
-current state $x_s$, and the state is advanced by $\hat{v}\,\delta$; this
-step is repeated $32$ times and gives one draw $x_1$. Its input has
-eleven channels, $x_s$ and the ten input fields (dashed arrow), and its
-output one, the
-velocity; it also receives the flow time $s$ (not drawn). Three
-noise realizations give draws A, B, and C. Bottom: a two-dimensional sketch
-of the idea, not of the actual distributions: one uncertain starting point
-is carried to definite outcomes, here one draw to one peak and two draws to
-another. The ten input maps, the full architecture, and the two outputs of
-the U-Net are shown in Figure~S1.}
+\caption{\textbf{From the large-scale state to rain draws.} (A) The
+inputs at time $t$: nine standardized fields of the large-scale state and
+the current rain. (B) The U-Net maps the ten fields ($128^2 \times 10$) to
+the rain at $t + \Delta t$ through a latent of $4^2 \times 2048$; the
+second output, a wet/dry field, is shown in Figure~S1. (C) Flow matching.
+The forecast plus noise, $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is
+carried to a sharp field $x_1$ in $32$ steps, each one evaluation of a
+second U-Net, the velocity network, which also receives the ten input
+fields (dashed arrow). Three noise fields give three draws. Bottom: the
+idea in two dimensions. Rain maps: the standard example block at $+3$~h,
+one log color scale.}
 \label{fig:arch}
 \end{figure}
 
