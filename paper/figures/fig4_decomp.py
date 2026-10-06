@@ -156,14 +156,14 @@ def main_density():
                          "mathtext.fontset": "cm", "axes.unicode_minus": False,
                          "axes.formatter.use_mathtext": True})
     WF = 0.84 * W2
-    fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.60), sharey=True)
-    fig.subplots_adjust(left=0.09, right=0.99, top=0.93, bottom=0.25, wspace=0.08)
+    fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.66), sharey=True)
+    fig.subplots_adjust(left=0.09, right=0.99, top=0.935, bottom=0.30, wspace=0.08)
     im = density_panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "A.",
                        "Two-head U-Net")
     density_panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "B.",
                   "Flow, per draw")
     axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
-    cax = fig.add_axes([0.30, 0.125, 0.40, 0.018])
+    cax = fig.add_axes([0.30, 0.15, 0.40, 0.016])
     cb = fig.colorbar(im, cax=cax, orientation="horizontal")
     cb.set_label("matched pairs per bin (0.08 by 0.08)", fontsize=7.5)
     cb.ax.tick_params(labelsize=7, length=2, width=0.5)
