@@ -361,33 +361,39 @@ generative model is added to obtain fields that commit to one outcome.
 
 \subsubsection{Flow matching}
 
-\textit{In words.} The U-Net has already placed the
-rain; what it cannot do is choose between the outcomes it averages over.
-The generative model makes that choice. It takes the U-Net forecast,
-adds a little noise to it, and then sharpens the noisy field step by step
-into one realistic rain field. Which realistic field comes out depends on
-the noise: a different noise gives a different field, and all of them are
-consistent with the same smooth forecast and the same inputs. The
-sharpening is learned from the training data with flow matching
-\cite{lipman2023, liu2023}: a method, not an architecture, that moves a
-field continuously from a starting point to an end point in a fictitious
-time $s$ from $0$ to $1$ (Figure~\ref{fig:arch}C). The U-Net is trained
-first and frozen; the generative model is trained on its forecasts for the
-same lead.
+\textit{In words.} The U-Net has already placed the rain; what it cannot
+do is choose between the outcomes it averages over. The generative model
+makes that choice. It takes a field as input and returns the change to
+make to that field to bring it closer to a realistic one. Applied
+repeatedly, each time to the field it has just changed, it moves the
+U-Net forecast step by step into one sharp rain field; the final field is
+the integral of those changes along the path. How the change is learned
+is flow matching \cite{lipman2023, liu2023}, a method and not an
+architecture (Figure~\ref{fig:arch}C). During training, each U-Net
+forecast is joined to its own truth by a straight line in a fictitious
+time $s$ from $0$ to $1$, and the model is trained, at random points
+along these lines, to return the direction of the line. Over many pairs
+it learns the envelope of all such paths, from the distribution of U-Net
+forecasts to the distribution of true fields, and can then carry any new
+forecast along it. To obtain different draws, a small noise is added to
+the forecast at the starting point: each noise leads to a different sharp
+field, all consistent with the same forecast and the same inputs. The
+U-Net is trained first and frozen; the generative model is trained on its
+forecasts for the same lead.
 
 \textit{Inputs and outputs.} The generative model works in the log space
 $z = \ln(1 + R)/2$. Its input is the U-Net forecast for the block,
 $z_{\mathrm{fc}}$, together with the same ten input fields $c$ that the
 U-Net saw. Its output is one rain field, a draw, with the shape and units
-of the target. Inside, the model is a second U-Net, the velocity network
-$\hat{v}(x_s, s, c)$, with the same trunk as the first and a comparable
-number of parameters. Its input has eleven channels, the current field
-$x_s$ stacked on the ten input fields, plus the time $s$, which scales and
-shifts the features at every stage; its output is one field, the velocity,
-of either sign: the direction in which each pixel must change at that
-moment. It plays the role of the tendency term of a numerical model,
-$\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned from data
-instead of derived from equations.
+of the target. The change at each step is computed by a second U-Net,
+the velocity network $\hat{v}(x_s, s, c)$, with the same trunk as the
+first and a comparable number of parameters. Its input has eleven
+channels, the current field $x_s$ stacked on the ten input fields, plus
+the time $s$, which scales and shifts the features at every stage; its
+output is one field, the velocity, of either sign: how much each pixel
+must change at that moment. It plays the role of the tendency term of a
+numerical model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state,
+learned from data instead of derived from equations.
 
 \textit{The two end points.} The starting point is the forecast plus
 noise,
