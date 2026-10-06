@@ -80,7 +80,8 @@ def main():
             rgba[m & edge] = (*other_col, 1.0)
         return rgba
 
-    ov_t = overlay(lt, color_of_t, miss_ids, MISS)
+    ov_t = overlay(lt, color_of_t, miss_ids, MISS)        # pairs and misses: the zoom
+    ov_t_belt = overlay(lt, color_of_t, set(), MISS)      # pairs only: the belt stays readable
     ov_p = overlay(lp, color_of_p, fa_ids, FA)
 
     # richest 128-px block, merged-miss windows excluded (as on the page)
@@ -137,7 +138,7 @@ def main():
     y_cursor = FH
     axes = []
     labels = ["Truth (ERA5), valid 2020-08-15 06 UTC", "GraphCast, +6 h"]
-    for k, (f, ov) in enumerate([(truth, ov_t), (fc, ov_p)]):
+    for k, (f, ov) in enumerate([(truth, ov_t_belt), (fc, ov_p)]):
         y_cursor -= TITLE + belt_h
         ax = fig.add_axes([LABW / FW, y_cursor / FH, W2 / FW, belt_h / FH])
         ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest",
@@ -200,8 +201,8 @@ def main():
         Patch(fc=(*pair_colors[0], 0.55), ec=pair_colors[0], lw=1.0,
               label=f"matched pair: same colour in both maps ({len(matches)})"),
         Patch(fc=(*MISS, 0.75), ec=MISS, lw=1.0,
-              label=f"black: missed truth systems in A and C ({len(misses)}), "
-                    f"false alarms in B and D ({len(fas)})")]
+              label=f"black: false alarms in B and D ({len(fas)}); "
+                    f"missed truth systems in C ({len(misses)} over the belt)")]
     fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=7, frameon=False,
                bbox_to_anchor=(0.5 + LABW / FW / 2, 0.0), handlelength=1.8, columnspacing=1.6)
 
