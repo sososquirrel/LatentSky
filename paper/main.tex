@@ -485,25 +485,6 @@ and rain thresholds and to one-to-one matching are in Text~S4.
 
 \subsection{Detection and false alarms by size}\label{sec:res-scales}
 
-Before asking whether systems are found, we count them. Over the test
-record at $+3$~h, the truth holds $692{,}000$ systems; the U-Net forecasts
-hold $126{,}000$ and the flow draws $637{,}000$. In each size band, we compare
-the number of forecast systems to the number of truth systems. For the
-U-Net the ratio is $0.04$ at $30$~km, $0.53$ at $120$~km, and $2.4$ above
-$600$~km: it has almost none of the small systems and more than twice the
-large ones, because it merges many small systems into few large envelopes.
-For the flow the ratio is between $0.85$ and $1.10$ in every band from
-$30$ to $670$~km: it has as many systems of each size as the truth. The intensities
-follow the same pattern: for the matched systems, the median ratio of
-forecast to truth intensity is $0.54$ for the U-Net and $0.99$ for the
-flow. The example block shows both effects (Figures~\ref{fig:arch}
-and~\ref{fig:pairs}a--c): the U-Net draws $22$ systems where the truth has
-$120$, as smooth envelopes with weaker peaks; the flow draw has cells and
-intensities like the truth's. The flow fields are realistic in this
-statistical sense, and the U-Net fields are not. Realism is not skill: a
-sharp field can be sharply wrong. The rest of this section measures
-whether the systems are the right ones.
-
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig3_pairs.pdf}}
@@ -537,26 +518,29 @@ markers are excluded, and the dotted line marks the longest lead.}
 \label{fig:horizon}
 \end{figure}
 
-Figure~\ref{fig:pairs} shows the matching on the example block. Of $120$
-truth systems the U-Net matches $17$ and the flow draw $22$; the flow
-produces $106$ false alarms against $5$; $92$ systems, overwhelmingly the
-smallest, are found by neither. The statistics below pool about $10^6$
-systems per forecast and lead over the $132$ test blocks of the $40$
-days.
+Figure~\ref{fig:pairs} shows the evaluation on one block at $+3$~h. The
+truth holds $120$ systems. The U-Net draws $22$, as smooth envelopes with
+weak peaks, and matches $17$ of the truth's; the flow draw has cells and
+intensities like the truth's, matches $22$, and adds $106$ false alarms
+against the U-Net's $5$. Of the $120$, $92$ are found by neither model,
+and they are the smallest. Over the whole test record the same holds for
+the number of systems: per size band, the U-Net has $0.04$ to $0.5$ times
+the truth's count below $120$~km and $2.4$ times above $600$~km, the flow
+$0.85$ to $1.1$ times at every size.
 
-Detection depends on size first and on the forecast second
-(Figure~\ref{fig:horizon}A). At $+3$~h the probability of detection rises
-from $0.04$ at $L \approx 30$~km to $0.98$ at $480$~km for the flow, and
-the U-Net and persistence follow the same ramp. The flow detects more than
-the U-Net in every band: $0.79$ against $0.72$ at $190$~km, and $0.078$
-against $0.028$ below $65$~km, nearly three times more. The price is in
-Figure~\ref{fig:horizon}B: below $65$~km the flow's false-alarm ratio is
-$0.92$ against the U-Net's $0.64$, and at $190$~km it is $0.17$ against
-$0.08$. Persistence is a strong null at this lead. Its detection is $0.64$
-at $190$~km, and below about $70$~km it is above the flow's ($0.25$
-against $0.22$ at $60$~km), because a long-lived system still overlaps its
-own earlier position at $\mathrm{IoU} \ge 0.1$; its false-alarm ratio is
-the highest of the three at every size ($0.35$ at $190$~km).
+Figure~\ref{fig:horizon}a,b gives the detection and false-alarm ratios by
+size over the record, at $+3$~h. Detection rises with size for every
+forecast, from $0.04$ at $30$~km to $0.98$ at $480$~km for the flow. The
+flow detects more than the U-Net in every band, $0.79$ against $0.72$ at
+$190$~km and $0.078$ against $0.028$ below $65$~km, and produces more
+false alarms in every band, $0.92$ against $0.64$ below $65$~km and
+$0.17$ against $0.08$ at $190$~km. Persistence detects $0.64$ at $190$~km
+and more than the flow below $70$~km, because a long-lived system still
+overlaps its own earlier position; its false-alarm ratio is the highest of
+the three at every size. The matched systems of this figure are the
+input of the next comparison.
+
+\subsection{Area and intensity of the matched systems}\label{sec:res-decomp}
 
 \begin{figure}
 \centering
@@ -571,19 +555,26 @@ diagonal the area and intensity errors cancel.}
 \label{fig:decomp}
 \end{figure}
 
-\subsection{Area and intensity of the matched systems}\label{sec:res-decomp}
+We now look only at the matched pairs, and ask how well a system is drawn
+once it is found. Each pair has an area error $\mathrm{d}\ln A$ and an
+intensity error $\mathrm{d}\ln\rho$ (Eq.~\ref{eq:decomp}). In
+Figure~\ref{fig:decomp} the pairs of each size band are summarized by the
+region that holds $75\%$ of them, darker where they are denser, and by
+their rain-weighted mean error, drawn as a dot joined to the origin; the
+grey outline holds $95\%$ of all pairs. A pair at the origin has the right
+area and the right intensity.
 
-The matched systems show what each forecast gets wrong when it does find
-a system (Figure~\ref{fig:decomp}). At $+3$~h the U-Net's systems are too
-large and too weak: the rain-weighted mean errors
-$(\mathrm{d}\ln A, \mathrm{d}\ln\rho)$ are $(+0.53, -1.05)$ for systems
-below $65$~km, $(+0.14, -0.75)$ between $65$ and $200$~km, and
-$(+0.20, -0.39)$ above $200$~km. The two errors partly cancel in the total
-rain $\mathrm{d}\ln P$, which is why a score on rain amounts does not see
-them. The bias is largest for the smallest systems. The flow's systems
-have the right size and intensity at every scale: the mean errors move to
-$(+0.21, -0.24)$, $(-0.15, -0.15)$, and $(-0.14, -0.04)$. These are single
-draws, not an average of draws.
+The U-Net's systems are too large and too weak at every size: the mean
+errors are $(+0.53, -1.05)$ below $65$~km, $(+0.14, -0.75)$ between $65$
+and $200$~km, and $(+0.20, -0.39)$ above $200$~km, and the bias is largest
+for the small systems. When the flow finds a system, it draws it much
+better: the mean errors move to $(+0.21, -0.24)$, $(-0.15, -0.15)$, and
+$(-0.14, -0.04)$, and the three regions sit on the origin. The bias of the
+conditional mean is removed. The small systems remain too large by
+$+0.21$, that is $23\%$ in area; one pixel added to a two-pixel system is
+already $+0.4$ in $\ln A$, so this residual is of the order of one pixel,
+whereas the same relative error on a $500$-km system would be a gross
+one.
 
 \subsection{The horizon of each scale}\label{sec:res-horizon}
 
