@@ -116,8 +116,8 @@ def main():
                          "axes.formatter.use_mathtext": True})
     LABW = 0.85 * CM
     belt_h = W2 * ny / nx
-    zoom_w = 0.36 * W2
-    TITLE, GAP, TICK, LEG = 0.55 * CM, 0.45 * CM, 0.45 * CM, 0.75 * CM
+    zoom_w = 0.285 * W2      # the panel size of Fig. 3
+    TITLE, GAP, TICK, LEG = 0.5 * CM, 0.35 * CM, 0.45 * CM, 0.7 * CM
     FW = LABW + W2
     FH = 2 * (TITLE + belt_h) + TICK + zoom_w + TITLE + LEG + 2 * GAP
     fig = plt.figure(figsize=(FW, FH))
@@ -171,11 +171,11 @@ def main():
 
     # zoom pair, centred, equal squares
     y_cursor -= TITLE + zoom_w
-    x_left = (LABW + (W2 - 2 * zoom_w - 1.2 * CM) / 2) / FW
+    x_left = (LABW + (W2 - 2 * zoom_w - 1.0 * CM) / 2) / FW
     zoom_labels = [f"Truth, one 128-pixel block ({lon0:.0f} to {lon1:.0f}" + r"$^{\circ}$E)",
                    "GraphCast, same block"]
     for k, (f, ov) in enumerate([(truth, ov_t), (fc, ov_p)]):
-        ax = fig.add_axes([x_left + k * (zoom_w + 1.2 * CM) / FW, y_cursor / FH, zoom_w / FW,
+        ax = fig.add_axes([x_left + k * (zoom_w + 1.0 * CM) / FW, y_cursor / FH, zoom_w / FW,
                            zoom_w / FH])
         ax.imshow(f[zoom], origin="lower", norm=norm, cmap=cmap, interpolation="nearest",
                   aspect="auto")
