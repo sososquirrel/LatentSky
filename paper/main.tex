@@ -432,77 +432,56 @@ sensitivity in Text~S3.
 \subsection{Evaluation: systems and their matching}
 \label{sec:evaluation}
 
-The question of the paper is how far ahead rain systems of a given size
-can be predicted. A score computed pixel by pixel cannot answer it: it
-does not know what a system is, and it penalizes a correct system drawn a
-few pixels away as much as a missing one. We therefore evaluate on
-systems. The evaluation must do three things: identify the systems in the
-truth and in the forecast and give each a size; decide, for each truth
-system, whether the forecast found it; and, when it did, say whether the
-forecast drew it with the right area and the right intensity. Detection
-by size, followed over lead time, gives the horizon; area and intensity
-errors give the bias.
+The question is how far ahead rain systems of a given size can be
+predicted. A pixel score cannot answer it: it does not know what a system
+is. We therefore evaluate on systems: find them, decide whether each one
+was found, and, if so, how well it was drawn.
 
 \textit{Systems.} In the truth and in each forecast, a system is an
-8-connected set of pixels with rain above $0.1$~mm per $15$~min. Pixel
-areas follow the cosine of latitude. A system has an area $A$ (km$^2$), a
-total rain $P$ (mm\,km$^2$), a mean intensity $\rho = P/A$, so that
-$P = \rho A$ exactly, and a size $L = \sqrt{A}$. One pixel is
-$L \approx 28$~km; the smallest systems evaluated are one pixel.
+8-connected set of pixels with rain above $0.1$~mm per $15$~min. Each has
+an area $A$ (km$^2$, pixel areas following the cosine of latitude), a
+total rain $P$ (mm\,km$^2$), a mean intensity $\rho$, and a size $L$:
+\begin{equation}
+P = \rho\,A, \qquad L = \sqrt{A}.
+\label{eq:PrhoA}
+\end{equation}
+One pixel is $L \approx 28$~km, and a one-pixel system counts as a system.
 
-This segmentation is simple on purpose: one threshold, one connectivity
-rule, no tracking in time, so that the same operation applies to every
-field, at kilometer scale or at $0.25^{\circ}$, from a numerical model or
-a neural network. It has clear limits. A single threshold cuts a stratiform
-shield and its embedded convective cores into one system or several
-depending on where the $0.1$~mm contour falls; two neighboring cells
-touching at one pixel become one system; and a system is identified at one
-instant, with no memory of what it was. Two risks follow, in opposite directions. The low
-threshold can over-segment: a sharp field whose rain is more broken than
-the truth's is cut into several systems where the truth has one, and each
-fragment beyond the first counts as a false alarm. Conversely, a smooth
-field connects neighboring systems into one. The second is a bias of the
-deterministic model, not of the method: merging two storms into one
-envelope is a wrong forecast, and the segmentation should not be made
-tolerant enough to excuse it. Nor are the smallest systems noise: one
-pixel is $28$~km, the size of a convective cell cluster, and a one-pixel
-system is counted as a system. How much of the false alarms is
-fragmentation is taken up in the discussion and in Text~S4. Methods built for mesoscale
-convective systems do better on all three counts, with brightness
-temperature and rain thresholds chosen for convection, area and duration
-criteria, and tracking across frames \cite{fiolleau2013, feng2023,
-prein2023, feng2025}. The present method is a first, uniform instrument;
-replacing it by one of these trackers is the natural next step, and the
-matching and the decomposition below apply to any segmentation.
-
-\textit{Matching.} Within each frame, the intersection over union (IoU) is
-computed between every truth system and every forecast system. Pairs are
-accepted in decreasing order of IoU, each system at most once, down to
-$\mathrm{IoU} = 0.1$. Every system then has one of three roles: matched,
-missed (a truth system without partner), or false alarm (a forecast system
-without partner). In each size band, the probability of detection is
-$\mathrm{POD} = \mathrm{matched}/(\mathrm{matched} + \mathrm{missed})$,
-counted on truth systems, and the false-alarm ratio is $\mathrm{FAR} =
-\mathrm{false\ alarms}/(\mathrm{matched} + \mathrm{false\ alarms})$,
-counted on forecast systems. The bands are ten, log-spaced, from $25$ to
-$600$~km for the curves at one lead (Figure~\ref{fig:horizon}A,B) and
-from $25$ to $800$~km for the horizon (Figure~\ref{fig:horizon}C,D).
-
-\textit{Area and intensity errors.} For a matched pair,
-$\mathrm{d}\ln A = \ln(A_{\mathrm{fc}}/A_{\mathrm{truth}})$ and
-$\mathrm{d}\ln\rho = \ln(\rho_{\mathrm{fc}}/\rho_{\mathrm{truth}})$, so
-that $\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho$; negative
-means too small or too weak, and a given relative error weighs the same
-on a $30$-km cell and a $400$-km system. Band means are weighted by the
-truth system's rain $P$, in three bands: below $65$~km, $65$ to $200$~km,
-above $200$~km.
+\textit{Matching.} Within each frame, truth and forecast systems are paired
+by intersection over union, in decreasing order, each system at most once,
+down to $\mathrm{IoU} = 0.1$. Every system is then matched, missed (truth
+without partner), or a false alarm (forecast without partner). Per size
+band, $\mathrm{POD} = \mathrm{matched}/(\mathrm{matched} + \mathrm{missed})$
+over truth systems and $\mathrm{FAR} = \mathrm{false\ alarms}/(\mathrm{matched}
++ \mathrm{false\ alarms})$ over forecast systems; the bands are ten,
+log-spaced, from $25$ to $600$~km (Figure~\ref{fig:horizon}A,B) or $800$~km
+(Figure~\ref{fig:horizon}C,D). For a matched pair, Eq.~\ref{eq:PrhoA}
+splits the rain error exactly into an area and an intensity part,
+\begin{equation}
+\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho,
+\label{eq:decomp}
+\end{equation}
+with $\mathrm{d}\ln A = \ln(A_{\mathrm{fc}}/A_{\mathrm{truth}})$ and
+likewise for $\rho$; negative is too small or too weak. Band means are
+weighted by the truth system's rain, in three bands: below $65$~km, $65$
+to $200$~km, above $200$~km.
 
 \textit{The null.} Persistence, the rain at $t$ taken as the forecast for
-$t + \Delta t$, goes through the same detection, matching, and bands. It
-is a strong null for detection at this matching: a long-lived system still
-overlaps its own earlier position at $\mathrm{IoU} \ge 0.1$. The
-sensitivity of every result to the IoU threshold, the rain threshold, and
-one-to-one matching is reported in Text~S4.
+$t + \Delta t$, goes through the same steps. It is a strong null for
+detection: a long-lived system still overlaps its own earlier position at
+$\mathrm{IoU} \ge 0.1$.
+
+\textit{Limits.} The segmentation is simple on purpose, one threshold and
+one connectivity rule, so that it applies unchanged to any rain field.
+It has two risks. A sharp field can be cut into several systems where the
+truth has one, each extra fragment a false alarm; a smooth field can merge
+neighboring systems into one. The second is a bias of the deterministic
+model that the method should not excuse. Trackers built for mesoscale
+convective systems, with convective thresholds, area and duration
+criteria, and tracking in time \cite{fiolleau2013, feng2023, prein2023,
+feng2025}, are the natural refinement; the matching and
+Eq.~\ref{eq:decomp} apply to any segmentation. Sensitivities to the IoU
+and rain thresholds and to one-to-one matching are in Text~S4.
 
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}
