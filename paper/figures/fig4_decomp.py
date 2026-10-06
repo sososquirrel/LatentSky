@@ -1,9 +1,11 @@
 """Paper Fig 5 — the error decomposition on matched pairs (+3 h, full record).
 
 (A) two-head U-Net, (B) flow per draw, in the (dlnA, dlnrho) plane, same axes.
-For each of three size bands: the region holding half of the matched pairs
-(shaded), from a smoothed 2-D histogram, and the
-rain-weighted barycenter joined to the origin (the mean bias of the band).
+Behind, in grey, the region holding 90 % of all matched pairs. For each of
+three size bands: the region holding half of the band's pairs (shaded; from a
+2-D histogram with 0.05 bins smoothed by a Gaussian of 3.5 bins), and the
+rain-weighted barycenter of the raw pairs joined to the origin (the mean
+bias of the band).
 
 Caption sentence: the deterministic model sits in the compensating quadrant
 (too large, too weak, worst for small systems); the flow's barycenters
@@ -50,10 +52,19 @@ def panel(ax, df, letter, label):
     ax.plot(xs, -xs, color="0.45", lw=0.6, ls=(0, (1, 2)), zorder=1)
     ax.text(1.72, -1.60, r"$\mathrm{d}\ln P = 0$", color="0.4", fontsize=6.5,
             rotation=-45, ha="center", va="center")
-    for z, (lo, hi, _, col) in enumerate(reversed(BANDS)):
-        b = m[(m.scale >= lo) & (m.scale < hi)]
+    def density(b):
         h, _, _ = np.histogram2d(b.dlnA, b.dlnrho, bins=[EDGES, EDGES])
-        h = gaussian_filter(h.T, 3.5)                 # removes the pixel-count striping in dlnA
+        return gaussian_filter(h.T, 3.5)              # removes the pixel-count striping in dlnA
+
+    # behind everything, in grey: where 90 % of all matched pairs lie
+    h = density(m)
+    (l90,) = hdr_levels(h, (0.9,))
+    ax.contourf(MIDS, MIDS, h, levels=[l90, h.max() * 1.01], colors=["0.90"], zorder=1.5)
+    ax.contour(MIDS, MIDS, h, levels=[l90], colors=["0.72"], linewidths=0.5, zorder=1.6)
+    # per band, small drawn first so that medium and large sit on top
+    for z, (lo, hi, _, col) in enumerate(BANDS):
+        b = m[(m.scale >= lo) & (m.scale < hi)]
+        h = density(b)
         (l50,) = hdr_levels(h, (0.5,))
         ax.contourf(MIDS, MIDS, h, levels=[l50, h.max() * 1.01], colors=[col], alpha=0.35,
                     zorder=2 + z)
@@ -94,7 +105,7 @@ def main():
                          "axes.formatter.use_mathtext": True})
     WF = 0.84 * W2
     fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.60), sharey=True)
-    fig.subplots_adjust(left=0.09, right=0.99, top=0.93, bottom=0.235, wspace=0.08)
+    fig.subplots_adjust(left=0.09, right=0.99, top=0.93, bottom=0.25, wspace=0.08)
     panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "A.", "Two-head U-Net")
     panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "B.", "Flow, per draw")
     axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
@@ -103,7 +114,8 @@ def main():
     axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
                 va="top", rotation=90, fontsize=6.5, color="0.4")
     handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
-    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="region holding half of the pairs"),
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="region holding half of the band's pairs"),
+                Patch(fc="0.90", ec="0.72", label="90% of all pairs"),
                 Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
                        label="rain-weighted mean error")]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
