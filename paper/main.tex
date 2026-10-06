@@ -33,8 +33,8 @@ AI Precipitation Forecasts}
 draws that carry the intensities and the small scales of the truth
 \item Split into systems of intensity times area, the flow detects more at
 every size and removes the too-large, too-weak bias, at a false-alarm cost
-\item The detection horizon grows with system size as a power law of exponent
-1.6; operational AI forecasts show the same size-dependent limits
+\item The detection horizon grows with system size as a power law; the flow
+lengthens it 1.3 to 1.5 times at every size without changing the exponent
 \end{keypoints}
 
 %% ===================== ABSTRACT ============================================
@@ -54,13 +54,15 @@ between forecast and truth. At $+3$~h detection rises from $0.04$ for
 $30$-km systems to $0.98$ at $480$~km; the flow detects more than the U-Net
 in every size band, removes its too-large, too-weak bias per draw, and pays
 an explicitly priced false-alarm cost below $65$~km. Finally we define a
-scale-dependent detection horizon $T(L)$ --- the e-folding time of the
-probability of detection per size band --- with persistence as a nested
-null. Conditional on a perfectly known large-scale state, the horizon follows
-a power law $T(L) \propto L^{\alpha}$ with $\alpha = 1.63$ for the flow,
-$1.79$ for the U-Net, and $1.41$ for persistence: a $30$-km convective cell
-is lost within the hour, a $500$-km system survives beyond a day, and below
-${\sim}100$~km only the flow keeps up with persistence. Applied unchanged to
+scale-dependent detection horizon $T(L)$, the e-folding time of the
+probability of detection per size band, with persistence as a nested null.
+Between $60$ and $340$~km the horizon follows a power law
+$T(L) \propto L^{\alpha}$. For persistence $\alpha = 0.97$: a system is
+lost once it has moved its own size at about $8$~m\,s$^{-1}$. The U-Net and
+the flow share a steeper exponent, $\alpha \approx 1.8$, and the flow's
+horizon is $1.3$ to $1.5$ times the U-Net's at every size: $2$~h at
+$60$~km, $10$~h at $170$~km. A $30$-km cell is lost within the hour; below
+$100$~km only the flow keeps up with persistence. Applied unchanged to
 operational AI models (GraphCast, FuXi, GenCast, FGN), the same
 scale-dependent limits hold: sampling a diffusion member restores intensity
 from $150$~km up, while below $60$~km no model detects systems --- a limit
@@ -490,29 +492,25 @@ and one-to-one matching is reported in Text~S4.
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}
 
-\subsection{A realistic forecast: from the conditional mean to flow draws}
-\label{sec:res-model}
+\subsection{A realistic forecast}\label{sec:res-model}
 
-The two-head forecast has the right pattern and the wrong texture. On the
-example block at $+3$~h (Figures~\ref{fig:arch} and~\ref{fig:pairs}) it places rain where
-the truth has rain, but as a smooth envelope: it draws $22$ systems where
-the truth holds $120$, and its peaks are under-drawn. This is the
-conditional mean at work, and it ages: the forecast's wet-masked error in
-log-rain space, the $\sigma$ handed to the flow, doubles from $0.10$ at
-$+15$~min to $0.20$ at $+6$~h, and the field loses contrast as the
-distribution it averages over widens.
+The U-Net places the rain where the truth has rain, as a smooth envelope.
+On the example block at $+3$~h (Figures~\ref{fig:arch}B
+and~\ref{fig:pairs}B) it draws $22$ systems where the truth holds $120$,
+and its peaks are weaker than the truth's. This is the conditional mean.
+It blurs more as the lead grows: the forecast's error on wet pixels, the
+$\sigma$ of Section~\ref{sec:unet}, doubles from $0.10$ at $+15$~min to
+$0.20$ at $+6$~h.
 
-The flow draws do not age that way. Started from the same forecast plus
-noise of amplitude $\sigma$, each draw is a sharp field with the cells and
-the intensities of the truth, at every lead. Two draws agree where the
-forecast is certain and differ where it is not
-(Figure~\ref{fig:arch}C, draws A to C): the uncertainty that the
-U-Net stamps into the field as blur appears in the flow as displaced
-systems. A sharp field can be sharply wrong, so realism is not yet skill.
-Whether it is skill, and at which scales, is the next question.
+The flow draws are sharp at every lead. Started from the same forecast plus
+noise, each draw has cells and intensities like the truth's
+(Figure~\ref{fig:arch}C). Draws agree where the forecast is certain and
+differ where it is not: the uncertainty that the U-Net expresses as blur,
+the flow expresses as systems placed differently from one draw to the
+next. A sharp field can be sharply wrong. Whether the draws are also more
+skillful, and at which scales, is measured next.
 
-\subsection{Skill across scales: the rain decomposition}
-\label{sec:res-scales}
+\subsection{Skill by scale}\label{sec:res-scales}
 
 \begin{figure}
 \centering
@@ -551,26 +549,26 @@ longest trained lead and is an extrapolation of the exponential fit.}
 \label{fig:horizon}
 \end{figure}
 
-Figure~\ref{fig:pairs} shows the instrument at work on one frame: of $120$
-truth systems the two-head matches $17$ and the flow draw $22$, at the price
-of $106$ false alarms against $5$, and the $92$ systems found by neither are
-overwhelmingly the smallest. The statistics that follow
-pool ${\sim}10^6$ such systems per model and lead over the full held-out
-record ($132$ test blocks $\times$ $40$ days).
+Figure~\ref{fig:pairs} shows the matching on the example block. Of $120$
+truth systems the U-Net matches $17$ and the flow draw $22$; the flow
+produces $106$ false alarms against $5$; $92$ systems, overwhelmingly the
+smallest, are found by neither. The statistics below pool about $10^6$
+systems per forecast and lead over the $132$ test blocks of the $40$
+days.
 
-Detection is a function of size before it is a function of the model
-(Figure~\ref{fig:horizon}A). At $+3$~h the flow's POD rises from $0.04$ at
-$L \approx 30$~km to $0.98$ at $480$~km, and the two-head and persistence
-climb the same ramp. The flow sits above the two-head in every scale band
-($0.79$ vs $0.72$ at $L \approx 190$~km), and below $65$~km its POD nearly
-triples ($0.078$ vs $0.028$). The instrument prices the gain in the same
-breath (Figure~\ref{fig:horizon}B): below $65$~km the flow's FAR is $0.92$
-against $0.64$ --- it finds small storms by proposing many --- while at
-$190$~km it is $0.17$ against the two-head's $0.08$ and persistence's
-$0.35$. Persistence remains a strong null at this lead: its POD is $0.64$
-at $190$~km and, below ${\sim}70$~km, above the flow's ($0.25$ vs $0.22$
-at $60$~km), because a long-lived storm still overlaps its own
-past at $\mathrm{IoU} \ge 0.1$ (Text~S4).
+Detection depends on size first and on the forecast second
+(Figure~\ref{fig:horizon}A). At $+3$~h the probability of detection rises
+from $0.04$ at $L \approx 30$~km to $0.98$ at $480$~km for the flow, and
+the U-Net and persistence follow the same ramp. The flow detects more than
+the U-Net in every band: $0.79$ against $0.72$ at $190$~km, and $0.078$
+against $0.028$ below $65$~km, nearly three times more. The price is in
+Figure~\ref{fig:horizon}B: below $65$~km the flow's false-alarm ratio is
+$0.92$ against the U-Net's $0.64$, and at $190$~km it is $0.17$ against
+$0.08$. Persistence is a strong null at this lead. Its detection is $0.64$
+at $190$~km, and below about $70$~km it is above the flow's ($0.25$
+against $0.22$ at $60$~km), because a long-lived system still overlaps its
+own earlier position at $\mathrm{IoU} \ge 0.1$; its false-alarm ratio is
+the highest of the three at every size ($0.35$ at $190$~km).
 
 \begin{figure}
 \centering
@@ -594,51 +592,53 @@ large $(-0.14, -0.04)$).}
 \label{fig:decomp}
 \end{figure}
 
-Matched pairs say what the detected systems look like
-(Figure~\ref{fig:decomp}). At $+3$~h the pairs of the two-head model sit in
-a quadrant of compensating errors: band barycenters
-$(\mathrm{d}\ln A, \mathrm{d}\ln\rho) = (+0.53, -1.05)$ for small systems,
-$(+0.14, -0.75)$ at mid scales, $(+0.20, -0.39)$ for large --- systems too
-large and too weak, with the two errors partially canceling in
-$\mathrm{d}\ln P$, which is why aggregate scores miss them. This is the
-signature of the conditional mean, and it grows toward small scales.
+The matched systems show what each forecast gets wrong when it does find
+a system (Figure~\ref{fig:decomp}). At $+3$~h the U-Net's systems are too
+large and too weak: the rain-weighted mean errors
+$(\mathrm{d}\ln A, \mathrm{d}\ln\rho)$ are $(+0.53, -1.05)$ for systems
+below $65$~km, $(+0.14, -0.75)$ between $65$ and $200$~km, and
+$(+0.20, -0.39)$ above $200$~km. The two errors partly cancel in the total
+rain $\mathrm{d}\ln P$, which is why a score on rain amounts does not see
+them. The bias is largest for the smallest systems. The flow's systems
+have the right size and intensity at every scale: the mean errors move to
+$(+0.21, -0.24)$, $(-0.15, -0.15)$, and $(-0.14, -0.04)$. These are single
+draws, not an average of draws.
 
-The flow removes the pathology it was trained on. On identical axes
-(Figure~\ref{fig:decomp}B) the band barycenters collapse toward the origin:
-small systems to $(+0.21, -0.24)$, mid to $(-0.15, -0.15)$, large to
-$(-0.14, -0.04)$. Size and intensity are restored at every scale, per draw
---- these are single sharp realizations, not an ensemble mean.
-
-\subsection{The time horizon of each scale}\label{sec:res-horizon}
+\subsection{The horizon of each scale}\label{sec:res-horizon}
 
 Detection decays with lead in every size band, faster for small systems
-(Figure~\ref{fig:horizon}C), and the decay is close to exponential; its
-e-folding time is the horizon of the band. Fitted across the six leads
-(Figure~\ref{fig:horizon}D), the horizon of the flow rises from
-$\tau = 0.83$~h for the smallest resolved systems ($L \approx 30$~km) to
-$10$~h at $170$~km and beyond a day above $400$~km, and follows a power law
-$T(L) \propto L^{\alpha}$ with $\alpha = 1.63$. The two-head gives
-$\alpha = 1.79$ and persistence $\alpha = 1.41$.
+(Figure~\ref{fig:horizon}C), and the decay is close to exponential. Its
+e-folding time $\tau(L)$ is the horizon of the band
+(Figure~\ref{fig:horizon}D). For the flow, $\tau$ rises from $0.8$~h at
+$L \approx 30$~km to $2.1$~h at $60$~km, $10$~h at $170$~km, and $49$~h at
+$340$~km. The U-Net's horizon is shorter in every band, $0.55$, $1.4$,
+$7.3$, and $32$~h at the same sizes; the flow's is $1.3$ to $1.5$ times
+the U-Net's from $30$ to $340$~km.
 
-The null orders the three forecasts. The two-head and persistence curves
-cross near $L \approx 100$~km: above it the model separates cleanly from
-the null, below it persistence wins ($\tau = 0.84$~h vs $1.10$~h at
-$42$~km) --- small, short-lived convection is where the deterministic
-forecast has nothing to add over the observation that storms briefly
-persist. The flow removes the crossover. Its $\tau(L)$ is above the
-two-head's in every band the six leads constrain and at or above
-persistence's in every band
-($0.83$~h vs $0.55$ and $0.53$~h at $30$~km; the two are tied at $60$~km,
-$2.09$ vs $2.11$~h), making it the first forecast in this study that the
-nested null does not beat at any scale.
+Between $59$ and $336$~km the three horizons follow power laws,
+$T(L) \propto L^{\alpha}$. For persistence $\alpha = 0.97 \pm 0.07$ (95\%
+interval), and $L/\tau$ is $7.5$ to $8.4$~m\,s$^{-1}$ in all six bands:
+persistence loses a system once the system has moved its own size at
+about $8$~m\,s$^{-1}$, the advection anchor of the introduction. The U-Net and the flow have the same exponent,
+$1.77 \pm 0.23$ and $1.78 \pm 0.33$: the flow lengthens the horizon by a
+constant factor and does not change its dependence on size. The two
+trained models are steeper than persistence, so they gain more on large
+systems than on small ones. Their lines cross persistence: the U-Net is
+below persistence up to about $100$~km ($2.3$ against $3.1$~h at $84$~km)
+and above it beyond; the flow is at or above persistence in every band
+($0.83$ against $0.53$~h at $30$~km, a tie at $60$~km, $9.9$ against
+$5.8$~h at $170$~km).
 
-Because the flow's gain is largest at small scales, the measured exponent
-\emph{flattens}, from $1.79$ to $1.63$: $\alpha$ measures how horizon is
-shared between large and small systems, not how much of it there is, and
-the deterministic model's excess slope was the blur taxing small systems
---- estimator artifact, not atmosphere.
+Outside the fitted window the horizons leave the power laws in two ways.
+Below $59$~km all three forecasts lose systems in $0.5$ to $1.2$~h, less
+than the $1$ to $1.5$~h it would take the wind to move them their own
+size: these systems are one or two pixels wide and end before they are
+displaced. Above $336$~km the fitted $\tau$ exceeds the $6$~h covered by
+the leads, $26$~h and more; detection has barely decayed at $6$~h and
+these values are extrapolations. The three largest bands of
+Figure~\ref{fig:horizon}D are shown but not fitted.
 
-\subsection{The same lens on operational AI forecasts}\label{sec:res-wb2}
+\subsection{Operational AI forecasts}\label{sec:res-wb2}
 
 \begin{figure}
 \centering
@@ -683,41 +683,38 @@ $0.25^{\circ}$ the rate is recoverable, the boundaries are not.}
 \label{fig:wb2clouds}
 \end{figure}
 
-The evaluation transfers unchanged to WeatherBench~2
+The same evaluation applies to the WeatherBench~2 forecasts
 (Figures~\ref{fig:wb2maps}--\ref{fig:wb2clouds}): GraphCast, FuXi, GenCast,
-and FGN against ERA5 over the same tropical belt, at rate-equivalent thresholds
-($2.4$~mm per $6$~h $=$ the km-scale $0.1$~mm per $15$~min). This part is an
-outlook, not a ranking against LatentSky --- different data, resolution, and
-leads. Three observations carry it.
+and FGN against ERA5 over the same tropical belt, with the rain threshold
+converted to the same rate ($2.4$~mm per $6$~h for $0.1$~mm per $15$~min).
+This is an outlook. The data, the resolution of the rain, and the leads
+differ from those of our models, and we do not rank the two sets against
+each other.
 
-First, the identical scale story: POD rises monotonically with $L$ for every
-model, and below $L \approx 60$~km every model --- deterministic or generative
---- sits at $\mathrm{POD} \le 0.13$ at $+6$ and $+12$~h, already a medium lead
-for convection. Second, sampling helps where the models are competent:
-at $+12$~h a single GenCast member gives the highest POD of any forecast from
-${\approx}240$~km up ($0.78$--$0.82$ vs GraphCast's $0.68$--$0.73$), at a FAR
-cost ($0.32$ vs $0.17$), while the GenCast ensemble mean falls back into the
-deterministic pack --- the per-draw scoring rule matters as much for
-operational models as for ours. Third, over a full month of matched systems
-(${\sim}8{,}000$ pairs per model), the deterministic models carry a systematic
-too-weak bias worst at small scales ($\mathrm{d}\ln\rho$ barycenters $-0.24$,
-$-0.17$, $-0.06$ from small to large bands), and the diffusion member erases it
-at every scale ($-0.06$, $-0.03$, $+0.01$). The error clouds are wide in
-$\mathrm{d}\ln A$ and narrow in $\mathrm{d}\ln\rho$ --- the reverse of the
-km-scale clouds: at $0.25^{\circ}$ the rain rate is recoverable but the system
-boundaries are not.
+Three results carry over. First, detection depends on size in the same
+way: for every model it rises with $L$, and below $60$~km every model,
+deterministic or generative, detects $13\%$ of the systems or fewer at
+$+6$ and $+12$~h. Second, a single sample beats the mean. At $+12$~h one
+GenCast member detects more systems than any other forecast from about
+$240$~km up ($0.78$--$0.82$ against GraphCast's $0.68$--$0.73$), at a
+false-alarm ratio of $0.32$ against $0.17$; the GenCast ensemble mean
+falls back among the deterministic models. Third, the deterministic models
+are too weak. Over a month of matched systems (about $8{,}000$ per model)
+their mean intensity error is $-0.24$, $-0.17$, and $-0.06$ from the
+smallest to the largest band, and the GenCast member's is $-0.06$, $-0.03$,
+and $+0.01$. The error clouds are wide in area and narrow in intensity, the
+reverse of the kilometer-scale clouds: at $0.25^{\circ}$ the rain rate is
+recovered and the boundaries of the systems are not.
 
-The small-system floor itself, however, is not an indictment of resolution
-alone --- our own scaling law prices the lead. With
-$\tau(30~\mathrm{km}) \approx 0.8$~h even for the flow at kilometer scale, a
-$+6$~h forecast asks for detection seven e-folding times past the horizon: no
-model, at any resolution, should find a $30$-km system at $+6$ or $+12$~h.
-The two arguments therefore compose rather than compete. Kilometer-scale data
-is necessary for small systems to be \emph{representable} at all, and
-sub-hour forecast cadence is necessary to catch them \emph{within their
-horizon}; operational systems stepping at $6$~h fail both conditions at once,
-and fixing the resolution without the cadence would move nothing below
-${\sim}60$~km.
+The floor below $60$~km is not only a matter of resolution. Our own
+horizons price the lead: even for the flow, $\tau(30~\mathrm{km})
+\approx 0.8$~h, so a $+6$~h forecast asks for detection seven e-folding
+times past the horizon. No model at any resolution should find a $30$-km
+system at $+6$ or $+12$~h. Small systems need kilometer-scale data to be
+present in the forecast at all, and a forecast cadence below one hour to
+be caught before they are gone. Operational systems stepping at $6$~h
+satisfy neither condition; resolution alone would change nothing below
+$60$~km.
 
 %% ===================== 5. DISCUSSION =======================================
 \section{Discussion and outlook}\label{sec:discussion}
@@ -756,29 +753,25 @@ $\mathrm{POD}_0$ but leave $\tau$, and hence $\alpha$, unchanged. If instead
 $\tau$ moves, the horizon is partly informational, not intrinsic --- either
 outcome is instructive.
 
-The exponent itself deserves a careful reading, because the natural
-intuition --- a better model should have a larger $\alpha$ --- is wrong.
-$\alpha = \mathrm{d}\ln\tau / \mathrm{d}\ln L$ measures how horizon is
-\emph{distributed} between large and small systems; skill lives in the level
-of $\tau(L)$, which the flow raises at every scale. The measured values then
-order themselves physically. Detection dies when the position error of a
-system becomes comparable to its own size, so if that error grows as
-$t^{p}$, then $\alpha = 1/p$. Persistence ($\alpha = 1.41$,
-$p \approx 0.7$) is close to pure advection: the storm is simply carried away. The
-trained models know the steering flow, remove the coherent part of the
-displacement error, and leave a residual wander between advective and
-diffusive ($\alpha = 1.63$, $p \approx 0.6$; pure diffusion would give
-$\alpha = 2$). The deterministic model's steeper $1.79$ is this intrinsic
-slope plus a blur tax that falls hardest on small systems; the flow removes
-the tax and recovers ${\approx}1.6$, our best estimate of the intrinsic
-exponent. Lorenz's dry-cascade value, $\tau \propto \ell^{2/3}$
-\cite{lorenz1969}, sits far below all of these --- detection of intermittent
-precipitation objects dies by displacement against size, not by
-inertial-range error saturation. The reading is falsifiable with the tables
-already in hand: the centroid separations of matched pairs should grow as
-$t^{1/\alpha}$ with each forecast's own exponent, and the flow's extra
-small-system matches should come through size and shape, not through better
-centroids.
+The exponent deserves a careful reading, because the natural intuition,
+that a better model should have a larger $\alpha$, is wrong.
+$\alpha = \mathrm{d}\ln\tau / \mathrm{d}\ln L$ measures how the horizon is
+distributed between large and small systems; skill is the level of
+$\tau(L)$, which the flow raises at every size while leaving $\alpha$
+unchanged. The values order themselves physically. Detection ends when the
+position error of a system becomes comparable to its size, so if that
+error grows as $t^{p}$, then $\alpha = 1/p$. Persistence has $\alpha = 1$,
+$p = 1$: the error grows linearly in time, the system is carried away at a
+constant speed, and the $8$~m\,s$^{-1}$ we measure is that speed. The
+trained models know the steering flow and remove the coherent part of the
+displacement; what remains grows as $t^{0.56}$ ($\alpha \approx 1.8$),
+between the linear growth of advection and the $t^{1/2}$ of a random walk,
+which would give $\alpha = 2$. Lorenz's dry-cascade value,
+$\tau \propto \ell^{2/3}$ \cite{lorenz1969}, is far from all of these:
+detection of rain systems is lost by displacement against size, not by the
+saturation of inertial-range error. The reading is testable with the
+matched-pair tables in hand: the centroid separation of matched pairs
+should grow as $t^{1/\alpha}$ with each forecast's own exponent.
 
 Several limitations bound the claims. The record is one 40-day tropical
 summer of a single kilometer-scale model, and MPAS overestimates deep
