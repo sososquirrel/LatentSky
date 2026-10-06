@@ -18,28 +18,28 @@ OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 def title(ax, letter, text):
     ax.text(0.0, 1.03, letter, transform=ax.transAxes, fontsize=9, fontfamily="cmr10",
             ha="left", va="bottom")
-    ax.text(0.12, 1.03, text, transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
+    ax.text(0.085, 1.03, text, transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
 
 
 def main():
     plt.rcParams.update(PAPER_FONT)
     d = compute()
-    fig = plt.figure(figsize=(W2, W2 * 0.78))
-    # top: two squares the size of the Fig. 3 panels, centred
-    zw, zh = 0.285, 0.285 * W2 / (W2 * 0.78)
-    gap = 0.06
-    x0 = 0.5 - zw - gap / 2
-    ax_z = [fig.add_axes([x0 + k * (zw + gap), 0.60, zw, zh]) for k in (0, 1)]
+    FH = W2 * 0.92
+    fig = plt.figure(figsize=(W2, FH))
+    # top: two squares exactly as wide as the skill panels below them
+    XL, XR, PW = 0.075, 0.585, 0.40
+    zh = PW * W2 / FH
+    ax_z = [fig.add_axes([x, 0.975 - zh, PW, zh]) for x in (XL, XR)]
     for k, ax in enumerate(ax_z):
         draw_zoom(ax, d, k)
     title(ax_z[0], "(a)", "Truth (ERA5), one 128-pixel block")
     title(ax_z[1], "(b)", "GraphCast, +6 h, same block")
-    ax_z[1].text(0.0, -0.04, f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
+    ax_z[0].text(0.0, -0.035, f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
                  f"black: missed truth systems in (a), false alarms in (b)",
                  transform=ax_z[0].transAxes, ha="left", va="top", fontsize=6.5, color="0.35")
     # bottom: detection and false alarms by size
-    ax_pod = fig.add_axes([0.075, 0.095, 0.40, 0.40])
-    ax_far = fig.add_axes([0.585, 0.095, 0.40, 0.40])
+    ax_pod = fig.add_axes([XL, 0.075, PW, 0.355])
+    ax_far = fig.add_axes([XR, 0.075, PW, 0.355])
     plot_podfar(ax_pod, ax_far, series())
     # bottom-row letters: (c), (d)
     for ax, letter in ((ax_pod, "(c)"), (ax_far, "(d)")):
