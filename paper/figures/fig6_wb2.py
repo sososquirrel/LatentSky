@@ -18,30 +18,31 @@ OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 def title(ax, letter, text):
     ax.text(0.0, 1.03, letter, transform=ax.transAxes, fontsize=9, fontfamily="cmr10",
             ha="left", va="bottom")
-    dx = 0.085 if ax.get_position().width > 0.3 else 0.145    # the letter's width in axis units
+    dx = 0.085 if ax.get_position().width > 0.35 else 0.12    # the letter's width in axis units
     ax.text(dx, 1.03, text, transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
 
 
 def main():
     plt.rcParams.update(PAPER_FONT)
     d = compute()
-    FH = W2 * 0.78
+    FH = W2 * 0.80
     fig = plt.figure(figsize=(W2, FH))
-    # top: two small squares (the Fig. 3 panel size), well apart, centred on the columns below
-    XL, XR, PW = 0.075, 0.565, 0.42          # the skill panels
-    zw = 0.25
+    # bottom: two skill panels spanning the text width; top: two maps the size of the
+    # Fig. 3 panels, centred on the columns below
+    XL, XR, PW = 0.065, 0.575, 0.42
+    zw = 0.30
     zh = zw * W2 / FH
-    ax_z = [fig.add_axes([x + (PW - zw) / 2, 0.97 - zh, zw, zh]) for x in (XL, XR)]
+    ax_z = [fig.add_axes([x + (PW - zw) / 2, 0.965 - zh, zw, zh]) for x in (XL, XR)]
     for k, ax in enumerate(ax_z):
         draw_zoom(ax, d, k)
     title(ax_z[0], "(a)", "Truth (ERA5), one 128-pixel block")
     title(ax_z[1], "(b)", "GraphCast, +6 h, same block")
-    fig.text(0.5, 0.97 - zh - 0.025, f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
+    fig.text(0.5, 0.965 - zh - 0.022, f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
              f"black: missed truth systems in (a), false alarms in (b)",
              ha="center", va="top", fontsize=6.5, color="0.35")
     # bottom: detection and false alarms by size
-    ax_pod = fig.add_axes([XL, 0.085, PW, 0.46])
-    ax_far = fig.add_axes([XR, 0.085, PW, 0.46])
+    ax_pod = fig.add_axes([XL, 0.085, PW, 0.40])
+    ax_far = fig.add_axes([XR, 0.085, PW, 0.40])
     plot_podfar(ax_pod, ax_far, series())
     # bottom-row letters: (c), (d)
     for ax, letter in ((ax_pod, "(c)"), (ax_far, "(d)")):
