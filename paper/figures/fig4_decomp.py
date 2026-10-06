@@ -163,16 +163,15 @@ def main_density():
     density_panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "B.",
                   "Flow, per draw")
     axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
-    cax = fig.add_axes([0.30, 0.135, 0.40, 0.018])
+    cax = fig.add_axes([0.30, 0.125, 0.40, 0.018])
     cb = fig.colorbar(im, cax=cax, orientation="horizontal")
     cb.set_label("matched pairs per bin (0.08 by 0.08)", fontsize=7.5)
     cb.ax.tick_params(labelsize=7, length=2, width=0.5)
     cb.outline.set_linewidth(0.5)
-    handles = [Line2D([], [], color=c, lw=1.2, marker="o", ms=4.5, mfc=c, mec="white", label=name)
-               for _, _, name, c in BANDS]
+    handles = [Line2D([], [], color=c, lw=1.2, marker="o", ms=4.5, mfc=c, mec="white",
+                      label="mean error, " + name) for _, _, name, c in BANDS]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
-               columnspacing=2.0, handlelength=1.6, bbox_to_anchor=(0.54, 0.0),
-               title="rain-weighted mean error", title_fontsize=7)
+               columnspacing=1.6, handlelength=1.6, bbox_to_anchor=(0.54, -0.005))
     fig.savefig(OUT / "fig4_decomp_density.pdf")
     print("saved fig4_decomp_density.pdf")
 
