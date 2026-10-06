@@ -49,9 +49,9 @@ def panel(ax, df, letter, label):
     ax.axhline(0, color="0.75", lw=0.5, zorder=1)
     ax.axvline(0, color="0.75", lw=0.5, zorder=1)
     xs = np.array([-LIM, LIM])
-    ax.plot(xs, -xs, color="0.45", lw=0.6, ls=(0, (1, 2)), zorder=1)
-    ax.text(1.72, -1.60, r"$\mathrm{d}\ln P = 0$", color="0.4", fontsize=6.5,
-            rotation=-45, ha="center", va="center")
+    ax.plot(xs, -xs, color="0.3", lw=0.7, ls=(0, (1, 2)), zorder=10)   # on top of the regions
+    ax.text(1.72, -1.60, r"$\mathrm{d}\ln P = 0$", color="0.3", fontsize=6.5,
+            rotation=-45, ha="center", va="center", zorder=10)
     def density(b):
         h, _, _ = np.histogram2d(b.dlnA, b.dlnrho, bins=[EDGES, EDGES])
         return gaussian_filter(h.T, 3.5)              # removes the pixel-count striping in dlnA
@@ -114,7 +114,7 @@ def main():
     axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
                 va="top", rotation=90, fontsize=6.5, color="0.4")
     handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
-    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="region holding half of the band's pairs"),
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where half of the band's pairs lie"),
                 Patch(fc="0.90", ec="0.72", label="90% of all pairs"),
                 Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
                        label="rain-weighted mean error")]
