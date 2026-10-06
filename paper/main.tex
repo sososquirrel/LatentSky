@@ -389,34 +389,22 @@ out, the velocity, of either sign. It is the tendency term of a numerical
 model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned
 rather than derived.
 
-\textit{Equations.} A training pair is a starting point and an end point:
-the forecast plus noise, $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ with
-$\varepsilon \sim \mathcal{N}(0, I)$, and the true field $x_1$ at the same
-valid time. The straight line between them is
-$x_s = (1 - s)\,x_0 + s\,x_1$, and its velocity,
-$\mathrm{d}x_s/\mathrm{d}s = x_1 - x_0$, is constant along the line.
-Different pairs pass through the same point $x$ at the same time $s$ with
-different velocities; the velocity network is trained, by least squares,
-to return their average,
+\textit{Equations.} Let $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$,
+$\varepsilon \sim \mathcal{N}(0, I)$, be the noised forecast, $x_1$ the
+truth, and $x_s = (1 - s)\,x_0 + s\,x_1$ the straight line between them.
+The velocity network is the least-squares fit of
 \begin{equation}
-v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] ,
+v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] .
 \label{eq:velocity}
 \end{equation}
-which is the direction toward the realistic fields that are consistent
-with the current field and the inputs. A draw is the integral of that
-velocity from the starting point,
+A draw is
 \begin{equation}
 x_1 = x_0 + \int_0^1 v_s(x_s, c)\,\mathrm{d}s ,
 \label{eq:flow}
 \end{equation}
-computed with $32$ steps of Heun's method, the second-order
-predictor--corrector ($63$ evaluations of the network per draw), and
-transformed back to mm. The noise amplitude $\sigma$ is not tuned: it is
-the root-mean-square error of the U-Net on the wet pixels of the training
-set, in $z$, at that lead ($0.10$ to $0.20$ from $15$~min to $6$~h). The
-noise is the only source of randomness; with $\sigma = 0$ the flow is a
-deterministic correction. Optimizer, batches, and stopping rule are those
-of the U-Net (Text~S2).
+integrated with $32$ Heun steps. $\sigma$ is the root-mean-square error of
+the U-Net on wet pixels at that lead, in $z$: $0.10$ at $15$~min to $0.20$
+at $6$~h. Optimizer and stopping rule are those of the U-Net (Text~S2).
 
 \textit{Scoring.} All statistics of the flow are computed on one draw per
 block and frame, with a fixed seed, and never on an average of draws: the
