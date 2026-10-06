@@ -463,13 +463,12 @@ the truth on the left, the two forecasts on the right). Top: the rain
 fields of the truth (A), the two-head U-Net (B), and one flow draw (C), on
 one log color scale. Bottom: the outcome of the matching (systems
 $>0.1$~mm, 8-connected; greedy one-to-one, $\mathrm{IoU} \ge 0.1$). D.~The
-$120$ truth systems: green if found by at least one model, grey if missed
-by both ($92$). E.--F.~For each forecast, its matched systems (green), its
-misses (truth systems it did not find, grey), and its false alarms
-(forecast systems matching nothing, red). On this frame $11$ systems are
-matched by both models, $6$ by the two-head only, $11$ by the flow only,
-and $92$, overwhelmingly the smallest, by neither. The flow's extra matches
-come with many small false alarms, $106$ against $5$. Figure~S3 shows the
+$120$ truth systems, colored by which model found them: both ($11$,
+green), the two-head only ($6$, blue), the flow only ($11$, purple), or
+neither ($92$, grey, overwhelmingly the smallest). E.--F.~For each
+forecast, its matched systems (green) and its false alarms (forecast
+systems matching nothing, red). The flow's extra matches come with many
+small false alarms, $106$ against $5$. Figure~S3 shows the
 matched pairs one by one.}
 \label{fig:pairs}
 \end{figure}
