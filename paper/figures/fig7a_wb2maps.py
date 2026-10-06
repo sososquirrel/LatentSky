@@ -22,7 +22,7 @@ sys.path.insert(0, str(REPO / "wb2_benchmark"))
 from pairs_graphcast import CACHE, IOU_MIN, THR, get_landmask, lut  # noqa: E402
 
 sys.path.insert(0, str(REPO / "docs"))
-from make_data_overview_assets import grid_lines  # noqa: E402
+from make_data_overview_assets import NC, NR  # noqa: E402
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 
@@ -154,7 +154,10 @@ def main():
         ax.set_yticklabels([r"$40^{\circ}$S", r"$20^{\circ}$S", r"$0^{\circ}$", r"$20^{\circ}$N",
                             r"$40^{\circ}$N"])
         ax.tick_params(axis="both", labelsize=7, length=2.5, width=0.5)
-        grid_lines(ax)                      # the 22 evaluation blocks, as in Fig. 1
+        for rr_ in range(NR + 1):           # the block grid of Fig. 1 (lines only: the WB2
+            ax.axhline(rr_ * P, color="0.15", lw=0.6)   # matching covers the whole belt)
+        for cc_ in range(NC + 1):
+            ax.axvline(cc_ * P, color="0.15", lw=0.6)
         for sp in ax.spines.values():
             sp.set_linewidth(0.5)
         if k == 1:
