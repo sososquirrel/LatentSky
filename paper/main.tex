@@ -432,6 +432,17 @@ sensitivity in Text~S3.
 \subsection{Evaluation: systems and their matching}
 \label{sec:evaluation}
 
+The question of the paper is how far ahead rain systems of a given size
+can be predicted. A score computed pixel by pixel cannot answer it: it
+does not know what a system is, and it penalizes a correct system drawn a
+few pixels away as much as a missing one. We therefore evaluate on
+systems. The evaluation must do three things: identify the systems in the
+truth and in the forecast and give each a size; decide, for each truth
+system, whether the forecast found it; and, when it did, say whether the
+forecast drew it with the right area and the right intensity. Detection
+by size, followed over lead time, gives the horizon; area and intensity
+errors give the bias.
+
 \textit{Systems.} In the truth and in each forecast, a system is an
 8-connected set of pixels with rain above $0.1$~mm per $15$~min. Pixel
 areas follow the cosine of latitude. A system has an area $A$ (km$^2$), a
@@ -446,7 +457,13 @@ a neural network. It has clear limits. A single threshold cuts a stratiform
 shield and its embedded convective cores into one system or several
 depending on where the $0.1$~mm contour falls; two neighboring cells
 touching at one pixel become one system; and a system is identified at one
-instant, with no memory of what it was. Methods built for mesoscale
+instant, with no memory of what it was. The low threshold also
+over-segments: light rain breaks into many one- and two-pixel systems
+that dominate the counts of the smallest band, and a sharp forecast whose
+rain is more broken than the truth's is cut into several systems where the
+truth has one, each fragment beyond the first counting as a false alarm.
+Part of the false-alarm ratio of the sharp forecasts in this paper is this
+fragmentation, not rain placed where there is none (Text~S4). Methods built for mesoscale
 convective systems do better on all three counts, with brightness
 temperature and rain thresholds chosen for convection, area and duration
 criteria, and tracking across frames \cite{fiolleau2013, feng2023,
