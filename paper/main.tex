@@ -457,13 +457,17 @@ a neural network. It has clear limits. A single threshold cuts a stratiform
 shield and its embedded convective cores into one system or several
 depending on where the $0.1$~mm contour falls; two neighboring cells
 touching at one pixel become one system; and a system is identified at one
-instant, with no memory of what it was. The low threshold also
-over-segments: light rain breaks into many one- and two-pixel systems
-that dominate the counts of the smallest band, and a sharp forecast whose
-rain is more broken than the truth's is cut into several systems where the
-truth has one, each fragment beyond the first counting as a false alarm.
-Part of the false-alarm ratio of the sharp forecasts in this paper is this
-fragmentation, not rain placed where there is none (Text~S4). Methods built for mesoscale
+instant, with no memory of what it was. Two risks follow, in opposite directions. The low
+threshold can over-segment: a sharp field whose rain is more broken than
+the truth's is cut into several systems where the truth has one, and each
+fragment beyond the first counts as a false alarm. Conversely, a smooth
+field connects neighboring systems into one. The second is a bias of the
+deterministic model, not of the method: merging two storms into one
+envelope is a wrong forecast, and the segmentation should not be made
+tolerant enough to excuse it. Nor are the smallest systems noise: one
+pixel is $28$~km, the size of a convective cell cluster, and a one-pixel
+system is counted as a system. How much of the false alarms is
+fragmentation is taken up in the discussion and in Text~S4. Methods built for mesoscale
 convective systems do better on all three counts, with brightness
 temperature and rain thresholds chosen for convection, area and duration
 criteria, and tracking across frames \cite{fiolleau2013, feng2023,
