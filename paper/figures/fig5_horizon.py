@@ -55,6 +55,13 @@ def pod_decay():
     return out
 
 
+def log_ticks(axis, ticks):
+    """Numbered ticks, and hence grid lines, at the given values of a log axis."""
+    axis.set_major_locator(plt.FixedLocator(ticks))
+    axis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:g}"))
+    axis.set_minor_locator(plt.NullLocator())
+
+
 def title(ax, letter, text):
     """Panel letter and a short title above the axes, as in Figs. 2 and 5."""
     ax.text(0.0, 1.02, letter, transform=ax.transAxes, ha="left", va="bottom",
@@ -85,6 +92,7 @@ def main():
     for ax, ylab in [(ax_pod, "Probability of Detection (POD)"), (ax_far, "False-Alarm Ratio (FAR)")]:
         ax.set_xscale("log")
         ax.set_xlim(25, 620)
+        log_ticks(ax.xaxis, [30, 50, 100, 200, 400])
         ax.set_ylim(0, 1.02)
         ax.set_xlabel(r"system scale $L = \sqrt{A}$ (km)")
         ax.set_ylabel(ylab)
@@ -137,6 +145,8 @@ def main():
                        linewidths=1.0, zorder=3)
     ax_tau.set_xscale("log")
     ax_tau.set_yscale("log")
+    log_ticks(ax_tau.xaxis, [30, 50, 100, 200, 400, 800])
+    log_ticks(ax_tau.yaxis, [0.5, 1, 2, 5, 10, 20, 50, 100])
     ax_tau.set_xlim(25, 800)
     ax_tau.set_ylim(0.3, 110)
     ax_tau.set_xlabel("system scale L (km)")
