@@ -393,8 +393,9 @@ rather than derived.
 forecast $z_{\mathrm{fc}}$, and true rain $z$, both in the log space, the
 noised forecast is $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ with
 $\varepsilon \sim \mathcal{N}(0, I)$, the truth is $x_1 = z$, and the line
-between them is $x_s = (1 - s)\,x_0 + s\,x_1$ for $0 \le s \le 1$. Over
-all training samples, the velocity network is the least-squares fit of
+between them is $x_s = (1 - s)\,x_0 + s\,x_1$ for $0 \le s \le 1$ (every
+point of the line is a training example, so one pair yields many; this is
+a form of data augmentation). Over all training samples, the velocity network is the least-squares fit of
 \begin{equation}
 v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] .
 \label{eq:velocity}
