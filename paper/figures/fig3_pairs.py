@@ -23,9 +23,9 @@ sys.path.insert(0, str(REPO / "docs"))
 from make_flow_pairs_panel import (  # noqa: E402
     INPUT_VARS, IOU_MIN, P, PIECES, RUNS, SCALE, THR)
 
-# a West African test frame (block (1, 0): 0-32E, 8S-24N) with several bow-shaped squall
-# lines over the Sahel; chosen among the test frames with a clear detection gain of the flow
-PIECE, FRAME, BLOCK = 29, 48, (1, 0)
+# a West African test frame (block (1, 0): 0-32E, 8S-24N) where the flow's gain is large:
+# in the full-record tables the two-head matches 10 of 59 truth systems and the flow 20
+PIECE, FRAME, BLOCK = 35, 60, (1, 0)
 # FIG3_EXAMPLE="piece,row,col,frame[,outfile]" tries another frame without editing the script
 import os  # noqa: E402
 if os.environ.get("FIG3_EXAMPLE"):
