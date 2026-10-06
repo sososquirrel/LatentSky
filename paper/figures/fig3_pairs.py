@@ -190,14 +190,24 @@ def main():
     for ax, (letter, name, f) in zip(ax_rain, fields):
         im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
         title(ax, letter, name)
-    for tid in truth_match:                        # the pairs: one colour per truth system
+    import matplotlib.patheffects as pe
+
+    def number(ax, x, y, tid):                     # the pair's number, with a white halo
+        ax.text(x, y, str(num_of[tid]), fontsize=5.5, fontweight="bold", color="0.05",
+                ha="center", va="center", zorder=8,
+                path_effects=[pe.withStroke(linewidth=1.6, foreground="white")])
+
+    for tid in truth_match:                        # the pairs: one colour and number per truth system
         outline(ax_rain[0], lt, tid, color_of[tid], lw=1.1)
+        rrow = tt.set_index("label").loc[tid]
+        number(ax_rain[0], rrow["col"], rrow["row"], tid)
     for ax, model in zip(ax_rain[1:], ("two-head", "flow draw")):
         mm = matches[model]
         for _, rr in mm[mm.role == "match"].iterrows():
             tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
             pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
             outline(ax, labels[model], pid, color_of[tid], lw=1.1)
+            number(ax, rr["col_p"], rr["row_p"], tid)
     # 500 km scale bar on the truth (pixel width by cos(lat))
     ybar = 8
     latbar = -40 + 0.25 * (r * P + ybar)
@@ -256,7 +266,7 @@ def main():
     cb.outline.set_linewidth(0.5)
     from matplotlib.patches import Patch
     handles = [
-        Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour in A to C"),
+        Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour and number in A to C"),
         Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
         Patch(fc=UNET, alpha=0.65, ec=UNET, lw=0.9, label="missed by the U-Net only (in D)"),
         Patch(fc=FLOW, alpha=0.65, ec=FLOW, lw=0.9, label="missed by the flow only (in D)"),
