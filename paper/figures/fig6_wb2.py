@@ -18,33 +18,37 @@ OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 def title(ax, letter, text):
     ax.text(0.0, 1.03, letter, transform=ax.transAxes, fontsize=9, fontfamily="cmr10",
             ha="left", va="bottom")
-    dx = 0.085 if ax.get_position().width > 0.35 else 0.12    # the letter's width in axis units
+    dx = 0.085 if ax.get_position().width > 0.35 else 0.13    # the letter's width in axis units
     ax.text(dx, 1.03, text, transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
 
 
 def main():
     plt.rcParams.update(PAPER_FONT)
     d = compute()
-    # the width and column layout of Fig. 5: two columns, square maps above, skill panels below
-    WF = 0.84 * W2
-    XL, XR, PW = 0.09, 0.57, 0.42           # Fig. 5 columns
-    zh_cm = PW * WF                          # square maps as wide as the columns
-    FH = 2 * zh_cm + 1.75                    # maps + skill panels + titles, note and axis labels (inches)
+    # sizes borrowed from the other figures: the maps are Fig. 3 panels, the skill panels
+    # are Fig. 4 panels; the figure is text width like both
+    WF = W2
+    map_cm = 0.285 * W2                       # Fig. 3 panel (inches)
+    skill_w = 0.41 * W2                       # Fig. 4 panel width
+    skill_h = 0.392 * W2                      # Fig. 4 panel height
+    FH = map_cm + skill_h + 1.85              # + titles, note, axis labels (inches)
     fig = plt.figure(figsize=(WF, FH))
-    zh = zh_cm / FH
-    ax_z = [fig.add_axes([x, 0.97 - zh, PW, zh]) for x in (XL, XR)]
+    XL, XR = 0.075, 0.985 - skill_w / WF      # Fig. 4 column positions
+    PW = skill_w / WF
+    zw, zh = map_cm / WF, map_cm / FH
+    ax_z = [fig.add_axes([x + (PW - zw) / 2, 0.965 - zh, zw, zh]) for x in (XL, XR)]
     for k, ax in enumerate(ax_z):
         draw_zoom(ax, d, k)
     title(ax_z[0], "(a)", "Truth (ERA5), one 128-pixel block")
     title(ax_z[1], "(b)", "GraphCast, +6 h, same block")
-    fig.text(0.5 * (XL + XR + PW), 0.97 - zh - 0.02,
+    fig.text(0.5 * (XL + XR + PW), 0.965 - zh - 0.02,
              f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
              f"black: missed truth systems in (a), false alarms in (b)",
              ha="center", va="top", fontsize=6.5, color="0.35")
     # bottom: detection and false alarms by size
-    sh = zh_cm / FH
-    ax_pod = fig.add_axes([XL, 0.085, PW, sh])
-    ax_far = fig.add_axes([XR, 0.085, PW, sh])
+    sh = skill_h / FH
+    ax_pod = fig.add_axes([XL, 0.08, PW, sh])
+    ax_far = fig.add_axes([XR, 0.08, PW, sh])
     plot_podfar(ax_pod, ax_far, series())
     # bottom-row letters: (c), (d)
     for ax, letter in ((ax_pod, "(c)"), (ax_far, "(d)")):
