@@ -170,6 +170,9 @@ def main():
     ax_sys = [fig.add_subplot(gs[1, c]) for c in cols]
     for ax in ax_rain + ax_sys:
         ax.contour(coast, levels=[0.5], colors=["0.35"], linewidths=0.5, zorder=2.5)
+        for v in (32, 64, 96):                      # a light grid every 8 degrees (32 pixels)
+            ax.axhline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
+            ax.axvline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
         ax.set_xticks([])
         ax.set_yticks([])
         for sp in ax.spines.values():
