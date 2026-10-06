@@ -18,7 +18,8 @@ OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 def title(ax, letter, text):
     ax.text(0.0, 1.03, letter, transform=ax.transAxes, fontsize=9, fontfamily="cmr10",
             ha="left", va="bottom")
-    ax.text(0.085, 1.03, text, transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
+    dx = 0.085 if ax.get_position().width > 0.3 else 0.145    # the letter's width in axis units
+    ax.text(dx, 1.03, text, transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
 
 
 def main():
