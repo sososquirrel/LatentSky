@@ -2,7 +2,7 @@
 
 (A) two-head U-Net, (B) flow per draw, in the (dlnA, dlnrho) plane, same axes.
 For each of three size bands: the region holding half of the matched pairs
-(shaded) and 90 % of them (line), from a smoothed 2-D histogram, and the
+(shaded), from a smoothed 2-D histogram, and the
 rain-weighted barycenter joined to the origin (the mean bias of the band).
 
 Caption sentence: the deterministic model sits in the compensating quadrant
@@ -25,10 +25,12 @@ EVAL = Path("/glade/derecho/scratch/sabramian/latentsky/eval_method")
 OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 
 LIM = 2.4
-# three size bands, small to large, in three muted colours
-BANDS = [(0, 65, r"small, $<$ 65 km", "#c8843c"),
-         (65, 200, "medium, 65 to 200 km", "#4f8f86"),
-         (200, 1e9, r"large, $>$ 200 km", "#2f4868")]
+# three size bands, small to large, on the scale colours of the other figures
+# (viridis: purple = small, green-yellow = large)
+_v = plt.get_cmap("viridis")
+BANDS = [(0, 65, r"small, $<$ 65 km", _v(0.08)),
+         (65, 200, "medium, 65 to 200 km", _v(0.52)),
+         (200, 1e9, r"large, $>$ 200 km", _v(0.88))]
 EDGES = np.linspace(-3.2, 3.2, 129)
 MIDS = 0.5 * (EDGES[1:] + EDGES[:-1])
 
@@ -52,12 +54,10 @@ def panel(ax, df, letter, label):
         b = m[(m.scale >= lo) & (m.scale < hi)]
         h, _, _ = np.histogram2d(b.dlnA, b.dlnrho, bins=[EDGES, EDGES])
         h = gaussian_filter(h.T, 3.5)                 # removes the pixel-count striping in dlnA
-        l90, l50 = hdr_levels(h, (0.9, 0.5))
-        ax.contourf(MIDS, MIDS, h, levels=[l50, h.max() * 1.01], colors=[col], alpha=0.32,
+        (l50,) = hdr_levels(h, (0.5,))
+        ax.contourf(MIDS, MIDS, h, levels=[l50, h.max() * 1.01], colors=[col], alpha=0.35,
                     zorder=2 + z)
         ax.contour(MIDS, MIDS, h, levels=[l50], colors=[col], linewidths=0.9, zorder=2.5 + z)
-        ax.contour(MIDS, MIDS, h, levels=[l90], colors=[col], linewidths=0.6,
-                   linestyles=[(0, (4, 2))], zorder=2.5 + z)
     for lo, hi, _, col in BANDS:                      # barycentres on top: the mean bias
         b = m[(m.scale >= lo) & (m.scale < hi)]
         bx = np.average(b.dlnA, weights=b.P_t)
@@ -103,8 +103,7 @@ def main():
     axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
                 va="top", rotation=90, fontsize=6.5, color="0.4")
     handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
-    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="half of the pairs"),
-                Line2D([], [], color="0.3", lw=0.6, ls=(0, (4, 2)), label="90% of the pairs"),
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="region holding half of the pairs"),
                 Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
                        label="rain-weighted mean error")]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
