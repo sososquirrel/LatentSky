@@ -21,6 +21,9 @@ REPO = Path("/glade/u/home/sabramian/LatentSky")
 sys.path.insert(0, str(REPO / "wb2_benchmark"))
 from pairs_graphcast import CACHE, IOU_MIN, THR, get_landmask, lut  # noqa: E402
 
+sys.path.insert(0, str(REPO / "docs"))
+from make_data_overview_assets import grid_lines  # noqa: E402
+
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 
 OUT = REPO / "paper" / "figures"
@@ -43,12 +46,18 @@ def main():
     misses = mm[mm.role == "miss"]
     fas = mm[mm.role == "false_alarm"]
 
-    # one colour per outcome, as in Fig. 3: matched green, missed grey, false alarm red
-    HIT, MISS, FA = (0.165, 0.498, 0.384), (0.30, 0.30, 0.30), (0.69, 0.227, 0.18)
-    color_of_t = {lut_t[(round(rr["row"], 6), round(rr["col"], 6))]: HIT
-                  for _, rr in matches.iterrows()}
-    color_of_p = {lut_p[(round(rr["row_p"], 6), round(rr["col_p"], 6))]: HIT
-                  for _, rr in matches.iterrows()}
+    # matched pairs share a colour across the two maps; missed grey, false alarm red
+    MISS, FA = (0.30, 0.30, 0.30), (0.69, 0.227, 0.18)
+    pair_colors = [tuple(int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)) for h in
+                   ("#1f78b4", "#33a02c", "#e6ab02", "#7570b3", "#e7298a", "#66a61e",
+                    "#a6761d", "#1b9e77", "#d95f02", "#386cb0", "#f0027f", "#bf5b17",
+                    "#8da0cb", "#fc8d62", "#a6d854", "#ffd92f")]
+    order = matches.sort_values("A_t", ascending=False)
+    color_of_t, color_of_p = {}, {}
+    for k, (_, rr) in enumerate(order.iterrows()):
+        col = pair_colors[k % len(pair_colors)]
+        color_of_t[lut_t[(round(rr["row"], 6), round(rr["col"], 6))]] = col
+        color_of_p[lut_p[(round(rr["row_p"], 6), round(rr["col_p"], 6))]] = col
     miss_ids = {lut_t[(round(r["row"], 6), round(r["col"], 6))]
                 for _, r in misses.iterrows()}
     fa_ids = {lut_p[(round(r["row"], 6), round(r["col"], 6))]
@@ -64,7 +73,7 @@ def main():
         rgba = np.zeros((*lab.shape, 4), np.float32)
         for lid, col in color_of.items():
             m = lab == lid
-            rgba[m] = (*col[:3], 0.50)
+            rgba[m] = (*col[:3], 0.55)
             rgba[m & edge] = (*col[:3], 1.0)
         for lid in other_ids:
             m = lab == lid
@@ -145,7 +154,7 @@ def main():
         ax.set_yticklabels([r"$40^{\circ}$S", r"$20^{\circ}$S", r"$0^{\circ}$", r"$20^{\circ}$N",
                             r"$40^{\circ}$N"])
         ax.tick_params(axis="both", labelsize=7, length=2.5, width=0.5)
-        ax.grid(True, color="0.5", lw=0.3, alpha=0.5)
+        grid_lines(ax)                      # the 22 evaluation blocks, as in Fig. 1
         for sp in ax.spines.values():
             sp.set_linewidth(0.5)
         if k == 1:
@@ -183,7 +192,8 @@ def main():
 
     from matplotlib.patches import Patch
     handles = [
-        Patch(fc=(*HIT, 0.5), ec=HIT, lw=1.0, label=f"matched: found by the forecast ({len(matches)})"),
+        Patch(fc=(*pair_colors[0], 0.55), ec=pair_colors[0], lw=1.0,
+              label=f"matched pair: same colour in both maps ({len(matches)})"),
         Patch(fc=(*MISS, 0.45), ec=MISS, lw=1.0, label=f"missed: truth system not found ({len(misses)})"),
         Patch(fc=(*FA, 0.45), ec=FA, lw=1.0,
               label=f"false alarm: forecast system matching nothing ({len(fas)})")]
