@@ -164,7 +164,7 @@ def main():
     # two rows (rain fields; matched systems), the truth set apart from the two forecasts
     fig = plt.figure(figsize=(W2, W2 * 0.78))
     gs = fig.add_gridspec(2, 4, width_ratios=[1, 0.10, 1, 1], left=0.005, right=0.945,
-                          top=0.905, bottom=0.12, wspace=0.05, hspace=0.32)
+                          top=0.905, bottom=0.14, wspace=0.05, hspace=0.32)
     cols = [0, 2, 3]
     ax_rain = [fig.add_subplot(gs[0, c]) for c in cols]
     ax_sys = [fig.add_subplot(gs[1, c]) for c in cols]
@@ -211,9 +211,18 @@ def main():
         ax.set_xlim(ax_rain[0].get_xlim())
         ax.set_ylim(ax_rain[0].get_ylim())
         ax.set_aspect("equal")
-    title(ax_sys[0], "D.", "Truth systems", f"{len(tt)}, of which {neither} missed by both")
-    for tid in truth_match:
-        matched(ax_sys[0], lt, tid, tid)
+    # D: who missed what. Found by both: green; missed by one model only: that model's colour
+    # (slate for the U-Net, plum for the flow, as in Fig. 2); missed by both: dark grey.
+    UNET, FLOW = "#35526e", "#6f4a86"
+    title(ax_sys[0], "D.", "Truth systems",
+          f"{len(tt)}: {neither} missed by both, {nC} by the U-Net only, {nB} by the flow only")
+    for tid, found in truth_match.items():
+        if len(found) == 2:
+            matched(ax_sys[0], lt, tid, tid)
+        else:
+            col = UNET if "flow draw" in found else FLOW      # the model that missed it
+            fill(ax_sys[0], lt, tid, col, 0.55)
+            outline(ax_sys[0], lt, tid, col, lw=0.8)
     mm = matches["two-head"]
     for _, rr in mm[mm.role == "miss"].iterrows():
         tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
@@ -249,12 +258,14 @@ def main():
     handles = [
         Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour in A to C"),
         Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
-        Patch(fc="0.15", alpha=0.55, ec="0.05", lw=0.7, label="missed by both models (in D)"),
+        Patch(fc=UNET, alpha=0.55, ec=UNET, lw=0.8, label="missed by the U-Net only (in D)"),
+        Patch(fc=FLOW, alpha=0.55, ec=FLOW, lw=0.8, label="missed by the flow only (in D)"),
+        Patch(fc="0.15", alpha=0.55, ec="0.05", lw=0.7, label="missed by both (in D)"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
               label="false alarm: forecast system matching nothing"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=7, frameon=False,
-               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.4)
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
+               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.6)
     fig.savefig(OUT_FILE or OUT / "fig3_pairs.pdf", dpi=300)
     print("saved", OUT_FILE or "fig3_pairs.pdf")
 
