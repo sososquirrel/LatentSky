@@ -260,173 +260,215 @@ the U-Net are shown in Figure~S1.}
 \label{fig:arch}
 \end{figure}
 
-The dataset is the DYAMOND MPAS-Atmosphere global cloud-resolving simulation
-\cite{stevens2019}, performed at ${\sim}3.8$~km horizontal resolution with
-15-minute output over a 40-day summer period. MPAS employs a fully
-compressible, nonhydrostatic dynamical core on an unstructured mesh, enabling
-explicit simulation of convective processes; cloud microphysics are
-represented with a double-moment scheme for cloud and rain hydrometeors.
-Global cloud-resolving models explicitly resolve deep convection and cloud
-systems, providing dynamically consistent four-dimensional fields essential
-for process understanding and data-driven modeling \cite{satoh2019}, though
-they remain model-dependent: MPAS reproduces mean precipitation and its
-diurnal cycle within the multi-model range \cite{stevens2019} but
-overestimates tropical mesoscale-convective-system frequency relative to
-IMERG-based tracking \cite{feng2023, feng2025}. For this study the fields are regridded to a regular
-$0.25^{\circ}$ grid (${\approx}28$~km) over the tropical belt
-$40^{\circ}$S--$40^{\circ}$N: 40 days of $96$ frames on a $320 \times 1440$
-grid. The kilometer-scale origin of the data matters more than the evaluation
-grid: the target field contains the sharp, small, short-lived systems that
-parameterized or coarse reanalysis products smooth away --- precisely the
-systems whose predictability we want to measure.
+The data are the DYAMOND MPAS-Atmosphere simulation \cite{stevens2019}: a
+global storm-resolving run at ${\sim}3.8$~km with output every $15$~min
+over a 40-day summer period. Deep convection is resolved by the dynamics
+and the cloud microphysics (a double-moment scheme for cloud and rain),
+not by a convection scheme. MPAS reproduces the mean precipitation and its
+diurnal cycle within the DYAMOND range \cite{stevens2019} but produces more
+tropical mesoscale convective systems than IMERG-based tracking finds
+\cite{feng2023, feng2025}; the horizons below are therefore horizons of a
+simulated atmosphere, measured against the model's own rain. We regrid
+the fields to a regular $0.25^{\circ}$ grid (${\approx}28$~km) over
+$40^{\circ}$S--$40^{\circ}$N: $320 \times 1440$ pixels, $96$ frames per
+day, $40$ days. The rain on this grid is the average of resolved
+convection, which keeps the small and short-lived systems that a
+parameterization at this resolution does not produce. Nothing below one
+pixel is evaluated.
 
-Both models receive the identical ten input channels: precipitable water, 2-m
-temperature, top-of-atmosphere outgoing longwave radiation, moist static energy
-and horizontal winds at 850 and 500~hPa, and the current rain field itself
-(log-transformed). The last channel is a deliberate design choice, not leakage:
-every model is handed the persistence forecast as an input, so the persistence
-null is nested --- any skill above it is information the model added. The
-target is the raw rain field (mm per 15~min) at one of six trained leads,
-$0.25$, $0.5$, $1$, $2$, $3$, and $6$~h; one model is trained per lead. Training
-operates on $128 \times 128$ non-overlapping patches ($22$ blocks per frame).
-The train/validation/test split assigns each of the $880$ (block, day) units to
-one split for all $96$ frames of its day ($70/15/15$; $132$ test blocks), which
-closes both spatial and temporal-autocorrelation leakage; construction details
-and the residual-risk analysis are in Supporting Information Text~S1.
+Each frame is tiled into $22$ blocks of $128 \times 128$ pixels
+($2 \times 11$; the last $64$ rows and $32$ columns are left out,
+Figure~\ref{fig:data}). The unit of the data split is the block-day: one
+block location on one day, with all its $96$ frames. The $880$ block-days
+are shuffled with a fixed seed and cut into $616$ for training, $132$ for
+validation, and $132$ for testing. Blocks do not overlap and a block-day
+is never split across sets, so neither a pixel nor the 15-minute
+autocorrelation at a fixed location can leak between training and test.
+A storm straddling two adjacent blocks in different sets is the residual
+risk; the evaluation counts a system in the set of the block that holds
+its centroid. An earlier split by day leaked through the autocorrelation
+and was discarded; no result here uses it (Text~S1).
 
-\subsection{Deterministic model: a two-head U-Net}\label{sec:unet}
+Every model takes the same ten input fields at time $t$: precipitable
+water, 2-m temperature, outgoing longwave radiation at the top of the
+atmosphere, moist static energy and both horizontal wind components at
+$850$ and $500$~hPa, and the rain at $t$. Each input is standardized to
+zero mean and unit variance with one mean and one standard deviation per
+field over the whole record; the rain is transformed to $\ln(1 + R)$
+before standardization, $R$ in mm per $15$~min. Giving the model the
+current rain means giving it the persistence forecast, so persistence is
+nested in every model: any skill above it is skill the model added. The
+target is the rain accumulated over $15$~min at $t + \Delta t$, in mm
+and not standardized, for $\Delta t = 0.25, 0.5, 1, 2, 3$, and $6$~h.
+One model is trained per lead. The models see one $128 \times 128$ block
+at a time; nothing outside the block is given to them.
 
-The deterministic forecast is a U-Net (125~M parameters; five encoder--decoder
-stages, $64$ to $1024$ channels, $2048$-channel bottleneck) with two parallel
-output heads: a non-negative rain-intensity head and a wet/dry classification
-head. The loss combines a masked intensity MSE on wet pixels, a
-binary cross-entropy on the wet/dry head over the full field, and a
-differentiable fractions-skill-score term evaluated at six kernel sizes chosen
-to coincide with the $L$ bins of the evaluation ($28$--$900$~km), so the
-training loss and the verification share one scale vocabulary. A FiLM layer
-conditions the bottleneck on the patch's OLR statistics, a proxy for the
-convective regime. Architecture, loss weights, and training schedule are given
-in Text~S2.
+\subsection{Models}\label{sec:unet}
 
-Trained with MSE on intensity, this model returns the conditional mean of the
-predictive distribution. As lead grows the distribution widens and the mean
-blurs: this is not a defect of the architecture but a property of the loss, and
-it is the specific pathology the evaluation of Section~\ref{sec:evaluation}
-isolates and the model of Section~\ref{sec:flow} corrects. The wet/dry head
-fails in the same direction for the same reason (Figure~S1C):
-under uncertainty the loss-minimizing answer is the hedge, and since some
-rain somewhere is almost always true at kilometer scale, the head flags wet
-nearly everywhere --- it takes no risk. Neither head is broken; both are
-doing risk minimization exactly as trained. Producing a realistic
-precipitation map requires a component willing to take risk --- to commit to
-one sharp realization --- and the false-alarm ratio is, literally, the price
-of that risk.
+We train two models per lead. The first is deterministic and returns one
+rain field; the second is generative, starts from the first's field, and
+returns as many different rain fields as one asks for.
 
-\subsection{Generative model: flow matching}\label{sec:flow}
+\textit{The deterministic U-Net.} It maps the ten input fields to the rain
+at $t + \Delta t$ (Figure~\ref{fig:arch}B). It is a U-Net of $125$~M
+parameters (Text~S2): five encoder stages, each two $3 \times 3$
+convolutions with group normalization and ReLU, from $64$ channels at
+$128^2$ pixels to $1024$ at $8^2$; a $2048$-channel bottleneck at $4^2$; a
+mirrored decoder with skip connections; and two $1 \times 1$ output
+heads. The rain head has a softplus activation, so the rain is
+non-negative; the wet/dry head returns logits. The bottleneck is
+modulated by the mean and minimum outgoing longwave radiation of the
+block through a small network that returns a scale and a shift per
+channel (FiLM), which gives the network the convective regime of the block
+in one number pair. The loss is
+$\mathrm{MSE}_{\mathrm{wet}} + \mathrm{BCE} + 0.25\,\mathrm{FSS}$: the
+mean-square error of the rain on the wet pixels of the truth, the binary
+cross-entropy of the wet/dry logits against the truth being wet
+($R > 0$) on all pixels, and a differentiable fractions skill score at
+kernel sizes of $1, 3, 5, 11, 19$, and $33$ pixels ($28$ to $920$~km),
+which penalizes rain placed at the wrong scale. Training uses AdamW
+(learning rate $10^{-3}$, weight decay $10^{-5}$), batches of $64$
+blocks, a learning rate halved every $8$ epochs, and early stopping after
+$10$ epochs without improvement of the validation loss ($51$ to $82$
+epochs depending on the lead), on one A100 per lead.
 
-The deterministic U-Net returns one field, the mean. To obtain realistic
-fields we add a second model, trained by flow matching
-\cite{lipman2023, liu2023} (Figure~\ref{fig:arch}C). Flow matching is a
-method, not an architecture. It moves a field continuously from a starting
-point to an end point. Here the starting point is the U-Net forecast plus
-noise, and the end point is a realistic rain field. The move takes place
-in a fictitious time $s$, from $s = 0$ to $s = 1$, which is not the
-physical time $t$.
+A model trained with a mean-square error returns the conditional mean of
+the target. For rain this mean is smooth: it spreads each uncertain
+system over the area where it might be and lowers its intensity, more so
+as the lead grows. The wet/dry head hedges in the same way: because some
+rain is present almost everywhere in a $15$-minute kilometer-scale field,
+the loss-minimizing answer is to call almost every pixel wet, and it does
+(Figure~S1C). Neither head is faulty; both answer the question the loss
+asks. The evaluation uses the rain head alone, thresholded, and the
+generative model is added to obtain fields that commit to one outcome.
 
-\textit{The two end points.} Fields are handled in log space,
-$z = \ln(1 + R)/2$, with $R$ the rain in mm per $15$~min. The starting
-point is
+\textit{The generative model, in words.} The U-Net has already placed the
+rain; what it cannot do is choose between the outcomes it averages over.
+The generative model makes that choice. It takes the U-Net forecast,
+adds a little noise to it, and then sharpens the noisy field step by step
+into one realistic rain field. Which realistic field comes out depends on
+the noise: a different noise gives a different field, and all of them are
+consistent with the same smooth forecast and the same inputs. The
+sharpening is learned from the training data with flow matching
+\cite{lipman2023, liu2023}: a method, not an architecture, that moves a
+field continuously from a starting point to an end point in a fictitious
+time $s$ from $0$ to $1$ (Figure~\ref{fig:arch}C). The U-Net is trained
+first and frozen; the generative model is trained on its forecasts for the
+same lead.
+
+\textit{Inputs and outputs.} The generative model works in the log space
+$z = \ln(1 + R)/2$. Its input is the U-Net forecast for the block,
+$z_{\mathrm{fc}}$, together with the same ten input fields $c$ that the
+U-Net saw. Its output is one rain field, a draw, with the shape and units
+of the target. Inside, the model is a second U-Net, the velocity network
+$\hat{v}(x_s, s, c)$, with the same trunk as the first and a comparable
+number of parameters. Its input has eleven channels, the current field
+$x_s$ stacked on the ten input fields, plus the time $s$, which scales and
+shifts the features at every stage; its output is one field, the velocity,
+of either sign: the direction in which each pixel must change at that
+moment. It plays the role of the tendency term of a numerical model,
+$\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned from data
+instead of derived from equations.
+
+\textit{The two end points.} The starting point is the forecast plus
+noise,
 \begin{equation}
 x_0 = z_{\mathrm{fc}} + \sigma\,\varepsilon, \qquad
 \varepsilon \sim \mathcal{N}(0, I),
 \end{equation}
-where $z_{\mathrm{fc}}$ is the U-Net forecast. The amplitude $\sigma$ is not
-tuned: it is the measured root-mean-square error of the forecast on wet
-pixels at that lead, from $0.10$ at $+15$~min to $0.20$ at $+6$~h. The end
-point $x_1$ is the true rain field at the same valid time.
+with $\varepsilon$ a field of independent Gaussian numbers. The amplitude
+$\sigma$ is not tuned: it is the root-mean-square error of the U-Net
+forecast on the wet pixels of the training set, in $z$, at that lead
+($0.10, 0.12, 0.15, 0.17, 0.19$, and $0.20$ for the six leads). The end
+point $x_1$ is the true field at the same valid time.
 
-\textit{The velocity network.} At each time $s$, the method needs to know
-in which direction each pixel of the field must change. This is a velocity
-field, with the same shape as the rain field. Computing it is an
-image-to-image problem, and we use a second U-Net for it, the velocity
-network $\hat{v}(x_s, s, c)$. It has the same trunk as the deterministic
-U-Net and a comparable size. Its input has eleven channels: the current
-field $x_s$ and the ten input fields $c$. The time $s$ modulates the
-features at every stage of the network. Its output is one field, the
-velocity, which can be positive or negative. The velocity network plays the
-role of the tendency term in a numerical model: it returns
-$\mathrm{d}x/\mathrm{d}s$ from the current state. It is learned from data
-instead of derived from equations.
-
-\textit{Training.} For each training example we draw a noise field
-$\varepsilon$ and a time $s$ uniformly between $0$ and $1$, and take the
-point on the straight line between the two end points,
+\textit{Training.} For each example we draw $\varepsilon$ and a time $s$
+uniform in $[0, 1]$, and form the point on the straight line between the
+end points,
 \begin{equation}
 x_s = (1 - s)\,x_0 + s\,x_1 .
 \end{equation}
-Along this line the velocity is constant and equal to $x_1 - x_0$. The
-network is trained to return it, by minimizing the mean-square difference
+Along this line the velocity is constant, $x_1 - x_0$, and the network is
+trained to return it:
 \begin{equation}
 \mathcal{L} = \big\langle\, \| \hat{v}(x_s, s, c) - (x_1 - x_0) \|^2
 \,\big\rangle .
 \end{equation}
 Each forecast is paired with its own truth, so the lines are short: the
 network learns a correction to the forecast, not a rain field from pure
-noise.
+noise. Optimizer, batches, and stopping rule are those of the U-Net.
 
-\textit{Sampling.} To produce one draw we draw a noise field, form $x_0$,
-and integrate
-\begin{equation}
-\frac{\mathrm{d}x}{\mathrm{d}s} = \hat{v}(x_s, s, c)
-\end{equation}
-from $s = 0$ to $s = 1$. Nothing is learned at this stage. We use $32$ steps
-of Heun's method, the second-order Runge--Kutta predictor--corrector: a
-trial Euler step with the velocity at the current state, then an update with
-the average of the velocities at the current and trial states. The network
-is queried at $s = 0, 1/32, \ldots, 31/32$, and the final step is a plain
-Euler step, so one draw costs $63$ evaluations of the network. The field
-reached at $s = 1$ is the draw.
+\textit{Sampling.} To produce one draw we draw $\varepsilon$, form $x_0$,
+and integrate $\mathrm{d}x/\mathrm{d}s = \hat{v}(x_s, s, c)$ from $s = 0$
+to $1$ with $32$ steps of Heun's method, the second-order
+predictor--corrector: a trial Euler step with the velocity at the current
+state, then the update with the mean of the velocities at the current and
+trial states. The network is evaluated at $s = 0, 1/32, \ldots, 31/32$,
+twice per step except the last, which is a plain Euler step: $63$
+evaluations per draw. The field at $s = 1$, transformed back to mm, is the
+draw. Nothing is learned at this stage.
 
-\textit{The role of the noise.} The noise is the only source of randomness.
-With $\sigma = 0$ the flow reduces to a deterministic correction of the
-forecast. Each new $\varepsilon$ gives a different sharp field consistent
-with the same smooth forecast (Figure~\ref{fig:arch}C, draws A to C).
+\textit{Noise and scoring.} The noise is the only source of randomness;
+with $\sigma = 0$ the flow is a deterministic correction. Each
+$\varepsilon$ gives a different sharp field consistent with the same
+smooth forecast (Figure~\ref{fig:arch}C). All statistics of the flow in
+this paper are computed on one draw per block and frame, with a fixed
+seed, and never on an average of draws: the average of draws is again an
+estimate of the mean and would remove the difference we measure. A
+denoising diffusion model started from the same forecast was also tested;
+its small-scale variance saturates at $0.80$--$0.85$ of the truth's,
+because it is trained to denoise noised truth and applied to noised
+forecasts, and it is reported as a sensitivity in Text~S3.
 
-\textit{Scoring.} All metrics of the generative model are computed for each
-draw and then averaged over draws. They are never computed on the average
-of the draws: that average is again an estimate of the mean, and scoring it
-would remove the difference we measure. A denoising diffusion model started
-from the same forecast was also tested as a sensitivity. Its small-scale
-power saturates at $0.80$--$0.85$ of the truth, because it is trained on
-noised truth and applied to noised forecasts; it is reported in Text~S3.
-
-\subsection{Evaluation: the $\rho A$ decomposition on matched pairs}
+\subsection{Evaluation: systems, matching, and the horizon}
 \label{sec:evaluation}
 
-Systems are detected independently in the truth and forecast fields as
-8-connected components above $0.1$~mm, with all areas latitude-weighted. Each
-system carries $A$ (area, km$^2$), $P$ (total precipitation, mm\,km$^2$),
-$\rho = P/A$ (area-weighted intensity, which makes $P = \rho A$ exact), and its
-scale $L = \sqrt{A}$.
+\textit{Systems.} In the truth and in each forecast, a system is an
+8-connected set of pixels with rain above $0.1$~mm per $15$~min. Pixel
+areas follow the cosine of latitude. A system has an area $A$ (km$^2$), a
+total rain $P$ (mm\,km$^2$), a mean intensity $\rho = P/A$, so that
+$P = \rho A$ exactly, and a size $L = \sqrt{A}$. One pixel is $L \approx
+28$~km; the smallest systems evaluated are one pixel.
 
-Matching is by spatial overlap within each frame: intersection-over-union is
-computed between every truth--forecast pair of systems, and pairs are accepted
-greedily in descending IoU order, one-to-one, down to $\mathrm{IoU} \ge 0.1$.
-Every system then has a role: \emph{matched} (both sides exist), \emph{missed}
-(truth system with no counterpart), or \emph{false alarm} (forecast system with
-no counterpart). Misses and false alarms give the probability of detection
-(POD) and false-alarm ratio (FAR) per log-spaced $L$ bin; matched pairs give
-the log-additive error decomposition
-$\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho$, in which negative
-means underestimated and the log form weighs a $+50\%$ error identically on a
-$30$-km cell and a $400$-km mesoscale system. The horizon is then defined per
-scale band as the e-folding time of detection,
-$\mathrm{POD}(t; L) = \mathrm{POD}_0(L)\, e^{-t/\tau(L)}$, fitted across all
-six leads. Persistence is evaluated under the identical detection, matching,
-and fitting; because long-lived storms still overlap their past selves at loose
-IoU, persistence is a genuinely strong null for detection, and every
-sensitivity of the matching (IoU threshold, rain threshold, many-to-one
-matching) is reported in Text~S4.
+\textit{Matching.} Within each frame, the intersection over union (IoU) is
+computed between every truth system and every forecast system. Pairs are
+accepted in decreasing order of IoU, each system at most once, down to
+$\mathrm{IoU} = 0.1$. Every system then has one of three roles: matched,
+missed (a truth system without partner), or false alarm (a forecast system
+without partner). In each size band, the probability of detection is
+$\mathrm{POD} = \mathrm{matched}/(\mathrm{matched} + \mathrm{missed})$,
+counted on truth systems, and the false-alarm ratio is $\mathrm{FAR} =
+\mathrm{false\ alarms}/(\mathrm{matched} + \mathrm{false\ alarms})$,
+counted on forecast systems. The bands are ten, log-spaced, from $25$ to
+$600$~km for the curves at one lead (Figure~\ref{fig:horizon}A,B) and
+from $25$ to $800$~km for the horizon (Figure~\ref{fig:horizon}C,D).
+
+\textit{Area and intensity errors.} For a matched pair,
+$\mathrm{d}\ln A = \ln(A_{\mathrm{fc}}/A_{\mathrm{truth}})$ and
+$\mathrm{d}\ln\rho = \ln(\rho_{\mathrm{fc}}/\rho_{\mathrm{truth}})$, so
+that $\mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho$; negative
+means too small or too weak, and a given relative error weighs the same
+on a $30$-km cell and a $400$-km system. Band means are weighted by the
+truth system's rain $P$, in three bands: below $65$~km, $65$ to $200$~km,
+above $200$~km.
+
+\textit{Horizon.} In each size band, $\mathrm{POD}(t)$ is taken at the six
+leads and divided by its value at the shortest lead, $15$~min. The horizon
+$\tau(L)$ is the e-folding time of a least-squares fit of
+$\exp[-(t - 0.25\,\mathrm{h})/\tau]$ to that ratio, with $\tau$ bounded to
+$[0.1, 200]$~h. The power law $T(L) \propto L^{\alpha}$ is fitted by
+unweighted least squares in $\ln\tau$ against $\ln L$ on the six bands
+from $59$ to $336$~km, the same for all forecasts. The two smallest bands
+are left out because their systems are one to two pixels wide, and the
+two largest because their $\tau$ exceeds the $6$~h covered by the leads
+several times over and is an extrapolation.
+
+\textit{The null.} Persistence, the rain at $t$ taken as the forecast for
+$t + \Delta t$, goes through the same detection, matching, bands, and
+fits. It is a strong null for detection at this matching: a long-lived
+system still overlaps its own earlier position at $\mathrm{IoU} \ge 0.1$.
+The sensitivity of every result to the IoU threshold, the rain threshold
+and one-to-one matching is reported in Text~S4.
 
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}

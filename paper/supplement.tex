@@ -55,7 +55,8 @@ sharpness 20. Training: AdamW ($10^{-3}$, weight decay $10^{-5}$), StepLR
 epochs without validation improvement (51--82 epochs per lead), a single
 A100 per run, fixed seed. One model per lead
 ($0.25, 0.5, 1, 2, 3, 6$~h). The flow's velocity network reuses the trunk
-with an eleventh input channel ($x_t$), FiLM conditioning on $t$, and a
+with an eleventh input channel (the flow state $x_s$), FiLM conditioning on
+the flow time $s$, and a
 single unactivated velocity head; the per-lead noise scale $\sigma$ is the
 measured wet-masked forecast error rms in log-rain space
 ($0.102, 0.119, 0.146, 0.171, 0.188, 0.204$ for the six leads).
