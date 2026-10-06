@@ -99,8 +99,7 @@ def main():
     order = sorted(truth_match,
                    key=lambda tid: -tt.set_index("label").loc[tid, "A"])
     pair_colors = ["#1f78b4", "#33a02c", "#e6ab02", "#7570b3", "#e7298a", "#66a61e",
-                   "#a6761d", "#1b9e77", "#d95f02", "#386cb0", "#f0027f", "#bf5b17",
-                   "#666666", "#8da0cb", "#fc8d62", "#a6d854", "#ffd92f", "#e5c494"]
+                   "#1b9e77", "#386cb0", "#f0027f", "#8da0cb", "#a6d854", "#ffd92f", "#e5c494"]
     HIT = "#2a7f62"                 # the outline says "matched"; the fill says which pair
     color_of = {tid: pair_colors[k % len(pair_colors)] for k, tid in enumerate(order)}
     num_of = {tid: k + 1 for k, tid in enumerate(order)}

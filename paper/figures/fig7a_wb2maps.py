@@ -50,8 +50,7 @@ def main():
     MISS, FA = (0.30, 0.30, 0.30), (0.69, 0.227, 0.18)
     pair_colors = [tuple(int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)) for h in
                    ("#1f78b4", "#33a02c", "#e6ab02", "#7570b3", "#e7298a", "#66a61e",
-                    "#a6761d", "#1b9e77", "#d95f02", "#386cb0", "#f0027f", "#bf5b17",
-                    "#8da0cb", "#fc8d62", "#a6d854", "#ffd92f")]
+                    "#1b9e77", "#386cb0", "#f0027f", "#8da0cb", "#a6d854", "#ffd92f")]
     order = matches.sort_values("A_t", ascending=False)
     color_of_t, color_of_p = {}, {}
     for k, (_, rr) in enumerate(order.iterrows()):
