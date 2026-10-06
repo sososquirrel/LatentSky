@@ -46,8 +46,9 @@ def main():
     misses = mm[mm.role == "miss"]
     fas = mm[mm.role == "false_alarm"]
 
-    # matched pairs share a colour across the two maps; missed grey, false alarm red
-    MISS, FA = (0.30, 0.30, 0.30), (0.69, 0.227, 0.18)
+    # matched pairs share a colour across the two maps; misses (truth maps) and false alarms
+    # (forecast maps) are both black: they never appear in the same panel
+    MISS, FA = (0.05, 0.05, 0.05), (0.05, 0.05, 0.05)
     pair_colors = [tuple(int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)) for h in
                    ("#33a02c", "#e6ab02", "#e7298a", "#7570b3", "#1b9e77", "#6a3d9a", "#a6d854", "#f781bf", "#1f78b4", "#ffd92f", "#b2df8a", "#cab2d6")]
     order = matches.sort_values("A_t", ascending=False)
@@ -75,7 +76,7 @@ def main():
             rgba[m & edge] = (*col[:3], 1.0)
         for lid in other_ids:
             m = lab == lid
-            rgba[m] = (*other_col, 0.45)
+            rgba[m] = (*other_col, 0.75)
             rgba[m & edge] = (*other_col, 1.0)
         return rgba
 
@@ -198,10 +199,10 @@ def main():
     handles = [
         Patch(fc=(*pair_colors[0], 0.55), ec=pair_colors[0], lw=1.0,
               label=f"matched pair: same colour in both maps ({len(matches)})"),
-        Patch(fc=(*MISS, 0.45), ec=MISS, lw=1.0, label=f"missed: truth system not found ({len(misses)})"),
-        Patch(fc=(*FA, 0.45), ec=FA, lw=1.0,
-              label=f"false alarm: forecast system matching nothing ({len(fas)})")]
-    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
+        Patch(fc=(*MISS, 0.75), ec=MISS, lw=1.0,
+              label=f"black: missed truth systems in A and C ({len(misses)}), "
+                    f"false alarms in B and D ({len(fas)})")]
+    fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=7, frameon=False,
                bbox_to_anchor=(0.5 + LABW / FW / 2, 0.0), handlelength=1.8, columnspacing=1.6)
 
     fig.savefig(OUT / "fig7a_wb2maps.pdf", dpi=300)
