@@ -113,9 +113,15 @@ def main():
     def fill(ax, lab, lid, color, alpha):
         ax.contourf(lab == lid, levels=[0.5, 1.5], colors=[color], alpha=alpha)
 
-    def matched(ax, lab, lid, tid):  # a system found by the forecast
-        fill(ax, lab, lid, color_of[tid], 0.45)
-        outline(ax, lab, lid, HIT, lw=1.0)
+    def matched(ax, lab, lid, tid):  # a system found by the forecast (row 2: one colour)
+        fill(ax, lab, lid, HIT, 0.30)
+        outline(ax, lab, lid, HIT, lw=0.9)
+
+    def pair(ax, lab, lid, tid, num_xy):  # row 3: the pair's own colour and number
+        fill(ax, lab, lid, color_of[tid], 0.55)
+        outline(ax, lab, lid, color_of[tid], lw=1.1)
+        ax.text(num_xy[0], num_xy[1], str(num_of[tid]), fontsize=5.5, fontweight="bold",
+                color="0.1", ha="center", va="center")
 
     def missed(ax, tid):            # a truth system the forecast did not find
         fill(ax, lt, tid, "0.25", 0.22)
@@ -140,13 +146,14 @@ def main():
                          "mathtext.fontset": "cm", "axes.unicode_minus": False,
                          "axes.formatter.use_mathtext": True})
     # two rows (rain fields; matched systems), the truth set apart from the two forecasts
-    fig = plt.figure(figsize=(W2, W2 * 0.78))
-    gs = fig.add_gridspec(2, 4, width_ratios=[1, 0.10, 1, 1], left=0.005, right=0.945,
-                          top=0.905, bottom=0.12, wspace=0.05, hspace=0.32)
+    fig = plt.figure(figsize=(W2, W2 * 1.12))
+    gs = fig.add_gridspec(3, 4, width_ratios=[1, 0.10, 1, 1], left=0.005, right=0.945,
+                          top=0.935, bottom=0.085, wspace=0.05, hspace=0.30)
     cols = [0, 2, 3]
     ax_rain = [fig.add_subplot(gs[0, c]) for c in cols]
     ax_sys = [fig.add_subplot(gs[1, c]) for c in cols]
-    for ax in ax_rain + ax_sys:
+    ax_pair = [fig.add_subplot(gs[2, c]) for c in cols]
+    for ax in ax_rain + ax_sys + ax_pair:
         ax.set_xticks([])
         ax.set_yticks([])
         for sp in ax.spines.values():
@@ -154,11 +161,11 @@ def main():
             sp.set_color("0.3")
     # the separation: a thin rule between the truth column and the forecasts
     x_sep = 0.5 * (ax_rain[0].get_position().x1 + ax_rain[1].get_position().x0)
-    fig.add_artist(Line2D([x_sep, x_sep], [0.125, 0.985], color="0.6", lw=0.6,
+    fig.add_artist(Line2D([x_sep, x_sep], [0.08, 0.99], color="0.6", lw=0.6,
                           transform=fig.transFigure))
-    fig.text(0.5 * (ax_rain[0].get_position().x0 + ax_rain[0].get_position().x1), 0.985,
+    fig.text(0.5 * (ax_rain[0].get_position().x0 + ax_rain[0].get_position().x1), 0.995,
              "reference", ha="center", va="top", fontsize=8, color="0.35")
-    fig.text(0.5 * (ax_rain[1].get_position().x0 + ax_rain[2].get_position().x1), 0.985,
+    fig.text(0.5 * (ax_rain[1].get_position().x0 + ax_rain[2].get_position().x1), 0.995,
              "forecasts, +3 h", ha="center", va="top", fontsize=8, color="0.35")
 
     # ---- top row: the rain fields ------------------------------------------
@@ -176,16 +183,13 @@ def main():
     ax_rain[0].text(5 + nbar / 2, ybar + 3, "500 km", fontsize=6.5, ha="center", color="0.1")
 
     # ---- bottom row: the systems and their matches, on white (grey = missed) ------
-    for ax in ax_sys:
+    for ax in ax_sys + ax_pair:
         ax.set_xlim(ax_rain[0].get_xlim())
         ax.set_ylim(ax_rain[0].get_ylim())
         ax.set_aspect("equal")
     title(ax_sys[0], "D.", "Truth systems", f"{len(tt)}, of which {neither} missed by both")
     for tid in truth_match:
         matched(ax_sys[0], lt, tid, tid)
-        rrow = tt.set_index("label").loc[tid]
-        ax_sys[0].text(rrow["col"], rrow["row"], str(num_of[tid]), fontsize=5.5,
-                       fontweight="bold", color="0.1", ha="center", va="center")
     mm = matches["two-head"]
     for _, rr in mm[mm.role == "miss"].iterrows():
         tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
@@ -204,11 +208,23 @@ def main():
             tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
             pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
             matched(ax, labels[model], pid, tid)
-            ax.text(rr["col_p"], rr["row_p"], str(num_of[tid]), fontsize=5.5,
-                    fontweight="bold", color="0.1", ha="center", va="center")
         for _, rr in mm[mm.role == "false_alarm"].iterrows():
             pid = luts_p[model][(round(rr["row"], 6), round(rr["col"], 6))]
             false_alarm(ax, labels[model], pid)
+
+    # ---- third row: the matched pairs, one colour and number per pair ------------
+    title(ax_pair[0], "G.", "Matched truth systems", f"{len(truth_match)} found by at least one model")
+    for tid in truth_match:
+        rrow = tt.set_index("label").loc[tid]
+        pair(ax_pair[0], lt, tid, tid, (rrow["col"], rrow["row"]))
+    for ax, letter, model in zip(ax_pair[1:], ("H.", "I."), ("two-head", "flow draw")):
+        mm = matches[model]
+        title(ax, letter, "Two-head U-Net" if model == "two-head" else "Flow, one draw",
+              f"its {int((mm.role == 'match').sum())} matched systems")
+        for _, rr in mm[mm.role == "match"].iterrows():
+            tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
+            pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
+            pair(ax, labels[model], pid, tid, (rr["col_p"], rr["row_p"]))
 
     # rain colorbar to the right of the top row; legend under the whole figure
     p = ax_rain[2].get_position()
@@ -223,15 +239,16 @@ def main():
     cb.outline.set_linewidth(0.5)
     from matplotlib.patches import Patch
     handles = [
-        Patch(fc=pair_colors[0], alpha=0.45, ec=HIT, lw=1.0,
-              label="matched: found by the forecast (fill colour and number identify the pair)"),
+        Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
         Patch(fc="0.25", alpha=0.22, ec="0.1", ls="--", lw=0.6,
               label="missed: truth system not found"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
               label="false alarm: forecast system matching nothing"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
-               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.6)
+    handles.append(Patch(fc=pair_colors[0], alpha=0.55, ec=pair_colors[0], lw=1.1,
+                         label="bottom row: one colour and number per matched pair"))
+    fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=7, frameon=False,
+               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.4)
     fig.savefig(OUT / "fig3_pairs.pdf", dpi=300)
     print("saved fig3_pairs.pdf")
 
