@@ -172,8 +172,8 @@ def main():
     # zoom pair, centred, equal squares
     y_cursor -= TITLE + zoom_w
     x_left = (LABW + (W2 - 2 * zoom_w - 1.0 * CM) / 2) / FW
-    zoom_labels = [f"Truth, one 128-pixel block ({lon0:.0f} to {lon1:.0f}" + r"$^{\circ}$E)",
-                   "GraphCast, same block"]
+    zoom_labels = ["Truth, one 128-pixel block", "GraphCast, same block"]
+    print(f"zoom block: {lon0:.0f} to {lon1:.0f} E")
     for k, (f, ov) in enumerate([(truth, ov_t), (fc, ov_p)]):
         ax = fig.add_axes([x_left + k * (zoom_w + 1.0 * CM) / FW, y_cursor / FH, zoom_w / FW,
                            zoom_w / FH])
