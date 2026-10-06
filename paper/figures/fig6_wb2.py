@@ -25,22 +25,26 @@ def title(ax, letter, text):
 def main():
     plt.rcParams.update(PAPER_FONT)
     d = compute()
-    FH = W2 * 0.86
-    fig = plt.figure(figsize=(W2, FH))
-    # two columns filling the text width; the maps are 3:2 windows, as wide as the skill panels
-    XL, XR, PW = 0.065, 0.575, 0.42
-    zh = PW * W2 * (2 / 3) / FH
-    ax_z = [fig.add_axes([x, 0.965 - zh, PW, zh]) for x in (XL, XR)]
+    # the width and column layout of Fig. 5: two columns, square maps above, skill panels below
+    WF = 0.84 * W2
+    XL, XR, PW = 0.09, 0.57, 0.42           # Fig. 5 columns
+    zh_cm = PW * WF                          # square maps as wide as the columns
+    FH = 2 * zh_cm + 1.75                    # maps + skill panels + titles, note and axis labels (inches)
+    fig = plt.figure(figsize=(WF, FH))
+    zh = zh_cm / FH
+    ax_z = [fig.add_axes([x, 0.97 - zh, PW, zh]) for x in (XL, XR)]
     for k, ax in enumerate(ax_z):
-        draw_zoom(ax, d, k, wide=True)
-    title(ax_z[0], "(a)", "Truth (ERA5), Maritime Continent")
-    title(ax_z[1], "(b)", "GraphCast, +6 h")
-    fig.text(0.5, 0.965 - zh - 0.02, f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
+        draw_zoom(ax, d, k)
+    title(ax_z[0], "(a)", "Truth (ERA5), one 128-pixel block")
+    title(ax_z[1], "(b)", "GraphCast, +6 h, same block")
+    fig.text(0.5 * (XL + XR + PW), 0.97 - zh - 0.02,
+             f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
              f"black: missed truth systems in (a), false alarms in (b)",
              ha="center", va="top", fontsize=6.5, color="0.35")
     # bottom: detection and false alarms by size
-    ax_pod = fig.add_axes([XL, 0.075, PW, 0.43])
-    ax_far = fig.add_axes([XR, 0.075, PW, 0.43])
+    sh = zh_cm / FH
+    ax_pod = fig.add_axes([XL, 0.085, PW, sh])
+    ax_far = fig.add_axes([XR, 0.085, PW, sh])
     plot_podfar(ax_pod, ax_far, series())
     # bottom-row letters: (c), (d)
     for ax, letter in ((ax_pod, "(c)"), (ax_far, "(d)")):
