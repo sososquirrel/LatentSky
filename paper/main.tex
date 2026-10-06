@@ -623,28 +623,22 @@ Figure~\ref{fig:horizon}D are shown but not fitted.
 
 \begin{figure}
 \centering
-\makebox[\textwidth][c]{\includegraphics{figures/fig7a_wb2maps.pdf}}
-\caption{Object matching for GraphCast at a $6$~h lead against ERA5,
-valid 2020-08-15 06 UTC, with systems above $2.4$~mm per $6$~h (the rate
-of the kilometer-scale threshold) and one-to-one matching at
-$\mathrm{IoU} \ge 0.1$. (a, b) The tropical belt on the block grid of
-Figure~\ref{fig:data}; matched pairs share a color across the two maps
-($145$ pairs). (c, d) One $128$-pixel block ($96$--$128^{\circ}$E), with
-the missed truth systems in (c) and the false alarms in (d) shown in black
-($313$ and $90$ over the whole belt).}
-\label{fig:wb2maps}
+\makebox[\textwidth][c]{\includegraphics{figures/fig6_wb2.pdf}}
+\caption{The evaluation on the WeatherBench~2 forecasts. (a, b) Object
+matching for GraphCast at a $6$~h lead against ERA5 on one $128$-pixel
+block of the Maritime Continent ($96$--$128^{\circ}$E), valid 2020-08-15
+06 UTC, with systems above $2.4$~mm per $6$~h (the rate of the
+kilometer-scale threshold) and one-to-one matching at
+$\mathrm{IoU} \ge 0.1$; matched pairs share a color in the two panels,
+the missed truth systems in (a) and the false alarms in (b) are black.
+The full belt is shown in Figure~S3. (c) Probability of detection and (d)
+false-alarm ratio as functions of system size for the WeatherBench~2
+models and persistence at a $12$~h lead (2020-08-15, two initializations),
+with the same threshold and matching; bands with fewer than $20$ systems
+are left blank.}
+\label{fig:wb2}
 \end{figure}
 
-\begin{figure}
-\centering
-\makebox[\textwidth][c]{\includegraphics{figures/fig7b_pod.pdf}}
-\caption{(a) Probability of detection and (b) false-alarm ratio as
-functions of system size for the WeatherBench~2 models and persistence at
-a $12$~h lead (2020-08-15, two initializations), with the threshold and
-matching of Figure~\ref{fig:wb2maps}. Bands with fewer than $20$ systems
-are left blank.}
-\label{fig:wb2pod}
-\end{figure}
 
 \begin{figure}
 \centering
@@ -657,7 +651,7 @@ and size bands of $<100$, $100$--$400$, and $>400$~km.}
 \end{figure}
 
 The same evaluation applies to the WeatherBench~2 forecasts
-(Figures~\ref{fig:wb2maps}--\ref{fig:wb2clouds}): GraphCast, FuXi, GenCast,
+(Figures~\ref{fig:wb2} and~\ref{fig:wb2clouds}): GraphCast, FuXi, GenCast,
 and FGN against ERA5 over the same tropical belt, with the rain threshold
 converted to the same rate ($2.4$~mm per $6$~h for $0.1$~mm per $15$~min).
 This is an outlook. The data, the resolution of the rain, and the leads

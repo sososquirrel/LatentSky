@@ -31,7 +31,8 @@ CM = 1 / 2.54
 W2 = 17.5 * CM
 
 
-def main():
+def compute():
+    """Fields, overlays, zoom window and counts for the GraphCast +6 h frame."""
     ds = xr.open_dataset(CACHE / "wb2_6h_graphcast_2020-08-15.nc")
     truth = ds.truth.values[0] * 1000.0
     fc = ds.forecast.values[0] * 1000.0
@@ -111,6 +112,41 @@ def main():
     cmap.set_under("#ffffff")
     lsm = get_landmask(ds.lat.values, ds.lon.values)
 
+    return dict(ds=ds, truth=truth, fc=fc, ov_t=ov_t, ov_t_belt=ov_t_belt, ov_p=ov_p,
+                ov_p_belt=ov_p_belt, zoom=zoom, i0=i0, j0=j0, lon0=lon0, lon1=lon1, norm=norm,
+                cmap=cmap, lsm=lsm, pair_colors=pair_colors, MISS=MISS, FA=FA,
+                n_match=len(matches), n_miss=len(misses), n_fa=len(fas), P=P, ny=ny, nx=nx)
+
+
+def draw_zoom(ax, d, k):
+    """One zoom panel: k = 0 truth with its misses, k = 1 GraphCast with its false alarms."""
+    f, ov = (d["truth"], d["ov_t"]) if k == 0 else (d["fc"], d["ov_p"])
+    zoom = d["zoom"]
+    ax.imshow(f[zoom], origin="lower", norm=d["norm"], cmap=d["cmap"], interpolation="nearest",
+              aspect="auto")
+    ax.imshow(ov[zoom], origin="lower", interpolation="nearest", aspect="auto")
+    ax.contour(d["lsm"][zoom], levels=[0.5], colors=["0.35"], linewidths=0.5)
+    for v in (32, 64, 96):
+        ax.axhline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
+        ax.axvline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
+    if k == 0:
+        ybar = 10
+        latbar = -40 + 0.25 * (d["i0"] + ybar)
+        nbar = 500.0 / (27.83 * np.cos(np.deg2rad(latbar)))
+        ax.plot([6, 6 + nbar], [ybar, ybar], "-", color="0.1", lw=2.2, solid_capstyle="butt")
+        ax.text(6 + nbar / 2, ybar + 4, "500 km", fontsize=7, ha="center", color="0.1")
+    ax.set_xticks([])
+    ax.set_yticks([])
+    for sp in ax.spines.values():
+        sp.set_linewidth(0.5)
+
+
+def main():
+    d = compute()
+    ds, truth, fc, ov_t_belt, ov_p_belt = d["ds"], d["truth"], d["fc"], d["ov_t_belt"], d["ov_p_belt"]
+    zoom, i0, j0, lon0, lon1, norm, cmap, lsm = (d[k] for k in ("zoom", "i0", "j0", "lon0", "lon1", "norm", "cmap", "lsm"))
+    ov_t, ov_p, pair_colors, MISS, FA, P, ny, nx = (d[k] for k in ("ov_t", "ov_p", "pair_colors", "MISS", "FA", "P", "ny", "nx"))
+    matches, misses, fas = range(d["n_match"]), range(d["n_miss"]), range(d["n_fa"])
     # ---- layout: as Fig. 1, the belts exactly textwidth with latitude labels to the left
     plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
                          "mathtext.fontset": "cm", "axes.unicode_minus": False,
@@ -207,8 +243,8 @@ def main():
     fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=7, frameon=False,
                bbox_to_anchor=(0.5 + LABW / FW / 2, 0.0), handlelength=1.8, columnspacing=1.6)
 
-    fig.savefig(OUT / "fig7a_wb2maps.pdf", dpi=300)
-    print("saved fig7a_wb2maps.pdf")
+    fig.savefig(OUT / "figS_wb2_belts.pdf", dpi=300)
+    print("saved figS_wb2_belts.pdf")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,8 @@ OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
 THR, IOU_MIN = 4.8, 0.1
 
 
-def main():
+def series():
+    """POD and FAR per size band for the five forecasts at +12 h."""
     ds = xr.open_dataset(CACHE / "wb2_12h_models_2020-08-15.nc")
     area_row = cell_area_km2(ds.lat.size, ds.lon.size,
                              lat_extent=(float(ds.lat[0]) - 0.125,
@@ -63,11 +64,15 @@ def main():
                               for i in range(ds.init.size)]),
     }
 
-    NAMES = {"graphcast": "GraphCast", "fuxi": "FuXi", "gencast mean": "GenCast mean",
-             "gencast member": "GenCast member", "persistence": "persistence"}
-    plt.rcParams.update(PAPER_FONT)
-    fig, (ax_pod, ax_far) = plt.subplots(1, 2, figsize=(W2, W2 * 0.46))
-    fig.subplots_adjust(left=0.07, right=0.985, top=0.90, bottom=0.15, wspace=0.22)
+    return series
+
+
+NAMES = {"graphcast": "GraphCast", "fuxi": "FuXi", "gencast mean": "GenCast mean",
+         "gencast member": "GenCast member", "persistence": "persistence"}
+
+
+def plot_podfar(ax_pod, ax_far, series, lead_label="+12 h"):
+    """The two skill panels, on given axes."""
     for ax in (ax_pod, ax_far):
         ax.grid(True, color="0.88", lw=0.4)
         ax.set_axisbelow(True)
@@ -84,11 +89,18 @@ def main():
     ax_pod.set_ylabel("Probability of Detection (POD)")
     ax_far.set_ylabel("False-Alarm Ratio (FAR)")
     ax_pod.legend(fontsize=7.5, loc="upper left")
-    for ax, letter, text in ((ax_pod, "(a)", "Detection by system size, +12 h"),
-                             (ax_far, "(b)", "False alarms by system size, +12 h")):
+    for ax, letter, text in ((ax_pod, "(a)", f"Detection by system size, {lead_label}"),
+                             (ax_far, "(b)", f"False alarms by system size, {lead_label}")):
         ax.text(0.0, 1.03, letter, transform=ax.transAxes, ha="left", va="bottom", fontsize=9,
                 fontfamily="cmr10")
         ax.text(0.10, 1.03, text, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
+
+
+def main():
+    plt.rcParams.update(PAPER_FONT)
+    fig, (ax_pod, ax_far) = plt.subplots(1, 2, figsize=(W2, W2 * 0.46))
+    fig.subplots_adjust(left=0.07, right=0.985, top=0.90, bottom=0.15, wspace=0.22)
+    plot_podfar(ax_pod, ax_far, series())
     fig.savefig(OUT / "fig7b_pod.pdf")
     print("saved fig7b_pod.pdf")
 
