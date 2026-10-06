@@ -403,7 +403,12 @@ Over all training samples, the velocity network is the least-squares fit of
 v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] .
 \label{eq:velocity}
 \end{equation}
-A draw starts from a new noised forecast $y_0 = z_{\mathrm{fc}} + \sigma\varepsilon$
+In words: take all the training samples whose line passes through the
+field $x$ at time $s$, for the same inputs $c$; each of them points toward
+its own truth; $v_s$ is the average of these directions. A single sample
+would give a direction toward one particular truth; the average gives the
+direction toward what is realistic, given everything the field and the
+inputs say. A draw starts from a new noised forecast $y_0 = z_{\mathrm{fc}} + \sigma\varepsilon$
 and follows the learned velocity,
 \begin{equation}
 y_1 = y_0 + \int_0^1 v_s(y_s, c)\,\mathrm{d}s ,
