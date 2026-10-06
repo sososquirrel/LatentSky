@@ -161,12 +161,7 @@ def main():
     cols = [0, 2, 3]
     ax_rain = [fig.add_subplot(gs[0, c]) for c in cols]
     ax_sys = [fig.add_subplot(gs[1, c]) for c in cols]
-    # the matched pairs, one colour per pair: a separate figure for the supplement
-    fig_p = plt.figure(figsize=(W2, W2 * 0.42))
-    gs_p = fig_p.add_gridspec(1, 4, width_ratios=[1, 0.10, 1, 1], left=0.005, right=0.995,
-                              top=0.86, bottom=0.03, wspace=0.05)
-    ax_pair = [fig_p.add_subplot(gs_p[0, c]) for c in cols]
-    for ax in ax_rain + ax_sys + ax_pair:
+    for ax in ax_rain + ax_sys:
         ax.contour(coast, levels=[0.5], colors=["0.35"], linewidths=0.5, zorder=2.5)
         ax.set_xticks([])
         ax.set_yticks([])
@@ -188,6 +183,14 @@ def main():
     for ax, (letter, name, f) in zip(ax_rain, fields):
         im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
         title(ax, letter, name)
+    for tid in truth_match:                        # the pairs: one colour per truth system
+        outline(ax_rain[0], lt, tid, color_of[tid], lw=1.1)
+    for ax, model in zip(ax_rain[1:], ("two-head", "flow draw")):
+        mm = matches[model]
+        for _, rr in mm[mm.role == "match"].iterrows():
+            tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
+            pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
+            outline(ax, labels[model], pid, color_of[tid], lw=1.1)
     # 500 km scale bar on the truth (pixel width by cos(lat))
     ybar = 8
     latbar = -40 + 0.25 * (r * P + ybar)
@@ -197,7 +200,7 @@ def main():
     ax_rain[0].text(5 + nbar / 2, ybar + 3, "500 km", fontsize=6.5, ha="center", color="0.1")
 
     # ---- bottom row: the systems and their matches, on white (grey = missed) ------
-    for ax in ax_sys + ax_pair:
+    for ax in ax_sys:
         ax.set_xlim(ax_rain[0].get_xlim())
         ax.set_ylim(ax_rain[0].get_ylim())
         ax.set_aspect("equal")
@@ -226,20 +229,6 @@ def main():
             pid = luts_p[model][(round(rr["row"], 6), round(rr["col"], 6))]
             false_alarm(ax, labels[model], pid)
 
-    # ---- third row: the matched pairs, one colour and number per pair ------------
-    title(ax_pair[0], "A.", "Matched truth systems", f"{len(truth_match)} found by at least one model")
-    for tid in truth_match:
-        rrow = tt.set_index("label").loc[tid]
-        pair(ax_pair[0], lt, tid, tid, (rrow["col"], rrow["row"]))
-    for ax, letter, model in zip(ax_pair[1:], ("B.", "C."), ("two-head", "flow draw")):
-        mm = matches[model]
-        title(ax, letter, "Two-head U-Net" if model == "two-head" else "Flow, one draw",
-              f"its {int((mm.role == 'match').sum())} matched systems")
-        for _, rr in mm[mm.role == "match"].iterrows():
-            tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
-            pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
-            pair(ax, labels[model], pid, tid, (rr["col_p"], rr["row_p"]))
-
     # rain colorbar to the right of the top row; legend under the whole figure
     p = ax_rain[2].get_position()
     cax = fig.add_axes([p.x1 + 0.012, p.y0, 0.012, p.y1 - p.y0])
@@ -253,18 +242,17 @@ def main():
     cb.outline.set_linewidth(0.5)
     from matplotlib.patches import Patch
     handles = [
+        Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour in A to C"),
         Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
         Patch(fc="0.25", alpha=0.22, ec="0.1", ls="--", lw=0.6,
               label="missed: truth system not found"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
               label="false alarm: forecast system matching nothing"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
-               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.6)
+    fig.legend(handles=handles, loc="lower center", ncol=4, fontsize=7, frameon=False,
+               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.4)
     fig.savefig(OUT / "fig3_pairs.pdf", dpi=300)
     print("saved fig3_pairs.pdf")
-    fig_p.savefig(OUT / "figS3_pairs_colours.pdf", dpi=300)
-    print("saved figS3_pairs_colours.pdf")
 
 
 if __name__ == "__main__":
