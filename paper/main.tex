@@ -429,15 +429,30 @@ $0.80$--$0.85$ of the truth's, because it is trained to denoise noised
 truth and applied to noised forecasts, and it is reported as a
 sensitivity in Text~S3.
 
-\subsection{Evaluation: systems, matching, and the horizon}
+\subsection{Evaluation: systems and their matching}
 \label{sec:evaluation}
 
 \textit{Systems.} In the truth and in each forecast, a system is an
 8-connected set of pixels with rain above $0.1$~mm per $15$~min. Pixel
 areas follow the cosine of latitude. A system has an area $A$ (km$^2$), a
 total rain $P$ (mm\,km$^2$), a mean intensity $\rho = P/A$, so that
-$P = \rho A$ exactly, and a size $L = \sqrt{A}$. One pixel is $L \approx
-28$~km; the smallest systems evaluated are one pixel.
+$P = \rho A$ exactly, and a size $L = \sqrt{A}$. One pixel is
+$L \approx 28$~km; the smallest systems evaluated are one pixel.
+
+This segmentation is simple on purpose: one threshold, one connectivity
+rule, no tracking in time, so that the same operation applies to every
+field, at kilometer scale or at $0.25^{\circ}$, from a numerical model or
+a neural network. It has clear limits. A single threshold cuts a stratiform
+shield and its embedded convective cores into one system or several
+depending on where the $0.1$~mm contour falls; two neighboring cells
+touching at one pixel become one system; and a system is identified at one
+instant, with no memory of what it was. Methods built for mesoscale
+convective systems do better on all three counts, with brightness
+temperature and rain thresholds chosen for convection, area and duration
+criteria, and tracking across frames \cite{fiolleau2013, feng2023,
+prein2023, feng2025}. The present method is a first, uniform instrument;
+replacing it by one of these trackers is the natural next step, and the
+matching and the decomposition below apply to any segmentation.
 
 \textit{Matching.} Within each frame, the intersection over union (IoU) is
 computed between every truth system and every forecast system. Pairs are
@@ -461,23 +476,12 @@ on a $30$-km cell and a $400$-km system. Band means are weighted by the
 truth system's rain $P$, in three bands: below $65$~km, $65$ to $200$~km,
 above $200$~km.
 
-\textit{Horizon.} In each size band, $\mathrm{POD}(t)$ is taken at the six
-leads and divided by its value at the shortest lead, $15$~min. The horizon
-$\tau(L)$ is the e-folding time of a least-squares fit of
-$\exp[-(t - 0.25\,\mathrm{h})/\tau]$ to that ratio, with $\tau$ bounded to
-$[0.1, 200]$~h. The power law $T(L) \propto L^{\alpha}$ is fitted by
-unweighted least squares in $\ln\tau$ against $\ln L$ on the six bands
-from $59$ to $336$~km, the same for all forecasts. The two smallest bands
-are left out because their systems are one to two pixels wide, and the
-two largest because their $\tau$ exceeds the $6$~h covered by the leads
-several times over and is an extrapolation.
-
 \textit{The null.} Persistence, the rain at $t$ taken as the forecast for
-$t + \Delta t$, goes through the same detection, matching, bands, and
-fits. It is a strong null for detection at this matching: a long-lived
-system still overlaps its own earlier position at $\mathrm{IoU} \ge 0.1$.
-The sensitivity of every result to the IoU threshold, the rain threshold
-and one-to-one matching is reported in Text~S4.
+$t + \Delta t$, goes through the same detection, matching, and bands. It
+is a strong null for detection at this matching: a long-lived system still
+overlaps its own earlier position at $\mathrm{IoU} \ge 0.1$. The
+sensitivity of every result to the IoU threshold, the rain threshold, and
+one-to-one matching is reported in Text~S4.
 
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}
@@ -597,9 +601,18 @@ draws, not an average of draws.
 \subsection{The horizon of each scale}\label{sec:res-horizon}
 
 Detection decays with lead in every size band, faster for small systems
-(Figure~\ref{fig:horizon}C), and the decay is close to exponential. Its
-e-folding time $\tau(L)$ is the horizon of the band
-(Figure~\ref{fig:horizon}D). For the flow, $\tau$ rises from $0.8$~h at
+(Figure~\ref{fig:horizon}C), and the decay is close to exponential. We
+define the horizon of a band as the e-folding time of its detection: in
+each band, $\mathrm{POD}$ at the six leads is divided by its value at the
+shortest lead, $15$~min, and $\exp[-(t - 0.25\,\mathrm{h})/\tau]$ is
+fitted to the ratio by least squares, with $\tau$ bounded to
+$[0.1, 200]$~h (Figure~\ref{fig:horizon}D). The power law
+$T(L) \propto L^{\alpha}$ is then fitted by unweighted least squares of
+$\ln\tau$ on $\ln L$ over the six bands from $59$ to $336$~km, the same
+for the three forecasts; the two smallest bands are left out because
+their systems are one to two pixels wide, the two largest because their
+$\tau$ exceeds the $6$~h covered by the leads several times over. For
+the flow, $\tau$ rises from $0.8$~h at
 $L \approx 30$~km to $2.1$~h at $60$~km, $10$~h at $170$~km, and $49$~h at
 $340$~km. The U-Net's horizon is shorter in every band, $0.55$, $1.4$,
 $7.3$, and $32$~h at the same sizes; the flow's is $1.3$ to $1.5$ times
