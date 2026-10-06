@@ -221,9 +221,9 @@ def main():
         ax.set_xlim(ax_rain[0].get_xlim())
         ax.set_ylim(ax_rain[0].get_ylim())
         ax.set_aspect("equal")
-    # D: who missed what. Found by both: green; missed by the U-Net only: amber; missed by
-    # the flow only: violet; missed by both: black. Three hues far apart, none used elsewhere.
-    UNET, FLOW = "#e0a020", "#7b3294"
+    # D: who missed what. Found by both: green; missed by the U-Net only: blue; missed by
+    # the flow only: purple; missed by both: black.
+    UNET, FLOW = "tab:blue", "tab:purple"
     title(ax_sys[0], "D.", "Truth systems",
           f"missed: {neither} by both, {nC} U-Net only, {nB} flow only")
     for tid, found in truth_match.items():
