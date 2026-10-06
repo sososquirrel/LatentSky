@@ -2,7 +2,7 @@
 
 (A) two-head U-Net, (B) flow per draw, in the (dlnA, dlnrho) plane, same axes.
 Behind, in grey, the region holding 90 % of all matched pairs. For each of
-three size bands: the region holding half of the band's pairs (shaded; from a
+three size bands: the region holding 75 % of the band's pairs (shaded; from a
 2-D histogram with 0.05 bins smoothed by a Gaussian of 3.5 bins), and the
 rain-weighted barycenter of the raw pairs joined to the origin (the mean
 bias of the band).
@@ -65,10 +65,10 @@ def panel(ax, df, letter, label):
     for z, (lo, hi, _, col) in enumerate(BANDS):
         b = m[(m.scale >= lo) & (m.scale < hi)]
         h = density(b)
-        (l50,) = hdr_levels(h, (0.5,))
-        ax.contourf(MIDS, MIDS, h, levels=[l50, h.max() * 1.01], colors=[col], alpha=0.35,
+        (l75,) = hdr_levels(h, (0.75,))
+        ax.contourf(MIDS, MIDS, h, levels=[l75, h.max() * 1.01], colors=[col], alpha=0.35,
                     zorder=2 + z)
-        ax.contour(MIDS, MIDS, h, levels=[l50], colors=[col], linewidths=0.9, zorder=2.5 + z)
+        ax.contour(MIDS, MIDS, h, levels=[l75], colors=[col], linewidths=0.9, zorder=2.5 + z)
     for lo, hi, _, col in BANDS:                      # barycentres on top: the mean bias
         b = m[(m.scale >= lo) & (m.scale < hi)]
         bx = np.average(b.dlnA, weights=b.P_t)
@@ -114,7 +114,7 @@ def main():
     axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
                 va="top", rotation=90, fontsize=6.5, color="0.4")
     handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
-    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where half of the band's pairs lie"),
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where three quarters of the band's pairs lie"),
                 Patch(fc="0.90", ec="0.72", label="90% of all pairs"),
                 Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
                        label="rain-weighted mean error")]
