@@ -41,12 +41,9 @@ def main():
                    extent=[0, W, 0, H])
     add_coastlines(ax)
     grid_lines(ax)
-    # the two example blocks: Fig. 2 (West Pacific warm pool) and Fig. 3 (West Africa)
-    for (r, c), col, name in ((BLOCK, "#b2182b", "Fig. 2"), ((1, 0), "#6f4a86", "Fig. 3")):
-        ax.add_patch(Rectangle((c * P, r * P), P, P, fill=False, ec=col, lw=2.0))
-        ax.text(c * P + P / 2, r * P + P - 6, name, ha="center", va="top", fontsize=8,
-                color=col, fontweight="bold",
-                bbox=dict(fc="white", ec="none", alpha=0.75, pad=1.2))
+    r, c = BLOCK
+    ax.add_patch(Rectangle((c * P, r * P), P, P, fill=False, ec="#b2182b",
+                           lw=2.0))
     ax.set_xticks([0, 360, 720, 1080, 1440])
     ax.set_xticklabels(["0°", "90°E", "180°", "90°W", "0°"])
     ax.set_yticks([0, 160, 320])

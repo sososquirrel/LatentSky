@@ -224,9 +224,9 @@ standardized dataset-wide) over the tropical belt ($40^{\circ}$S--$40^{\circ}$N,
 $0.25^{\circ}$, one 15-min frame of the 40-day DYAMOND MPAS record), tiled
 into the $2 \times 11 = 22$ blocks per day on which all training,
 evaluation, and splitting operate; gray strips never enter the pipeline.
-The red box marks the example block of
-Figure~\ref{fig:arch}, over the Maritime Continent / West Pacific warm pool;
-the purple box the West African block of Figure~\ref{fig:pairs}. Over the 40 days the $880$ (block, day) units are
+The red box marks the example block used in
+Figures~\ref{fig:arch} and~\ref{fig:pairs}, over the Maritime Continent /
+West Pacific warm pool. Over the 40 days the $880$ (block, day) units are
 split $616/132/132$ into train/val/test (Text~S1).}
 \label{fig:data}
 \end{figure}
@@ -458,19 +458,18 @@ Whether it is skill, and at which scales, is the next question.
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig3_pairs.pdf}}
-\caption{\textbf{The instrument on one frame} ($+3$~h; a West African test
-frame, $0$--$32^{\circ}$E, $8^{\circ}$S--$24^{\circ}$N; the truth on the
-left, the two forecasts on the right). Top: the rain fields of the truth
-(A), the two-head U-Net (B), and one flow draw (C), on one log color scale,
-with the matched pairs outlined: one color per truth system, the same in
-every panel where a model found it. Bottom: the outcome of the matching
-(systems $>0.1$~mm, 8-connected; greedy one-to-one, $\mathrm{IoU} \ge 0.1$).
-D.~The $59$ truth systems: green if found by at least one model, dark grey
-if missed by both ($41$, overwhelmingly the smallest). E.--F.~For each
-forecast, its matched systems (green) and its false alarms (forecast
-systems matching nothing, red). The flow finds $17$ systems where the U-Net
-finds $10$, among them the squall lines of the central and eastern part of
-the frame, and produces many more small false alarms, $57$ against $5$.}
+\caption{\textbf{The instrument on one frame} ($+3$~h, the standard example
+block over the Maritime Continent; the truth on the left, the two forecasts
+on the right). Top: the rain fields of the truth (A), the two-head U-Net
+(B), and one flow draw (C), on one log color scale, with the matched pairs
+outlined: one color per truth system, the same in every panel where a model
+found it. Bottom: the outcome of the matching (systems $>0.1$~mm,
+8-connected; greedy one-to-one, $\mathrm{IoU} \ge 0.1$). D.~The $120$ truth
+systems: green if found by at least one model, dark grey if missed by both
+($92$, overwhelmingly the smallest). E.--F.~For each forecast, its matched
+systems (green) and its false alarms (forecast systems matching nothing,
+red). The flow finds $22$ systems where the U-Net finds $17$, and produces
+many more small false alarms, $106$ against $5$.}
 \label{fig:pairs}
 \end{figure}
 
@@ -492,10 +491,10 @@ longest trained lead and is an extrapolation of the exponential fit.}
 \label{fig:horizon}
 \end{figure}
 
-Figure~\ref{fig:pairs} shows the instrument at work on one frame over West
-Africa: of $59$ truth systems the two-head matches $10$ and the flow draw
-$17$, at the price of $57$ false alarms against $5$, and the $41$ systems
-found by neither are overwhelmingly the smallest. The statistics that follow
+Figure~\ref{fig:pairs} shows the instrument at work on one frame: of $120$
+truth systems the two-head matches $17$ and the flow draw $22$, at the price
+of $106$ false alarms against $5$, and the $92$ systems found by neither are
+overwhelmingly the smallest. The statistics that follow
 pool ${\sim}10^6$ such systems per model and lead over the full held-out
 record ($132$ test blocks $\times$ $40$ days).
 
