@@ -242,7 +242,7 @@ def draw():
     ax.text(xc0 + 1.2, yt - 0.5, "the ten input fields", ha="left", va="top", fontsize=5.5,
             color=GRAY)
     arrow((xv1 - 3.5, yv1 + 3.3), (xv + 3.5, yv1 + 3.3), color=ORANGE, lw=0.8, ms=6, rad=0.4)
-    ax.text((xv + xv1) / 2, yv1 + 6.6, r"$x_s \leftarrow x_s + \hat{v}\,\delta$,  32 times",
+    ax.text((xv + xv1) / 2, yv1 + 6.6, r"$x_s \leftarrow x_s + v_s\,\delta$,  32 times",
             ha="center", va="bottom", fontsize=6.5)
     # three draws, three noise seeds: one line out of the network, split at right angles
     xdr = 91.2

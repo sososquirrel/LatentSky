@@ -389,16 +389,17 @@ out, the velocity, of either sign. It is the tendency term of a numerical
 model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned
 rather than derived.
 
-\textit{Equations.} The starting point is the forecast plus noise,
-$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ with
-$\varepsilon \sim \mathcal{N}(0, I)$, and the end point $x_1$ is the true
-field at the same valid time. The straight line between them,
-$x_s = (1 - s)\,x_0 + s\,x_1$, has the constant velocity
-$\hat{v} = x_1 - x_0$. Many pairs pass near the same point at the same
-time, each with its own $\hat{v}$; the velocity network is trained, by
-least squares, to return their average,
+\textit{Equations.} A training pair is a starting point and an end point:
+the forecast plus noise, $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ with
+$\varepsilon \sim \mathcal{N}(0, I)$, and the true field $x_1$ at the same
+valid time. The straight line between them is
+$x_s = (1 - s)\,x_0 + s\,x_1$, and its velocity,
+$\mathrm{d}x_s/\mathrm{d}s = x_1 - x_0$, is constant along the line.
+Different pairs pass through the same point $x$ at the same time $s$ with
+different velocities; the velocity network is trained, by least squares,
+to return their average,
 \begin{equation}
-v_s(x, c) = \mathbb{E}\big[\,\hat{v} \;\big|\; x_s = x,\, c\,\big] ,
+v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] ,
 \label{eq:velocity}
 \end{equation}
 which is the direction toward the realistic fields that are consistent
