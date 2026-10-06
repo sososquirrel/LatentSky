@@ -49,8 +49,7 @@ def main():
     # matched pairs share a colour across the two maps; missed grey, false alarm red
     MISS, FA = (0.30, 0.30, 0.30), (0.69, 0.227, 0.18)
     pair_colors = [tuple(int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)) for h in
-                   ("#1f78b4", "#33a02c", "#e6ab02", "#7570b3", "#e7298a", "#66a61e",
-                    "#1b9e77", "#386cb0", "#f0027f", "#8da0cb", "#a6d854", "#ffd92f")]
+                   ("#33a02c", "#e6ab02", "#e7298a", "#7570b3", "#1b9e77", "#6a3d9a", "#a6d854", "#f781bf", "#1f78b4", "#ffd92f", "#b2df8a", "#cab2d6")]
     order = matches.sort_values("A_t", ascending=False)
     color_of_t, color_of_p = {}, {}
     for k, (_, rr) in enumerate(order.iterrows()):
