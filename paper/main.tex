@@ -363,8 +363,8 @@ generative model is added to obtain fields that commit to one outcome.
 
 \textit{In words.} The U-Net places the rain but cannot choose between
 the outcomes it averages over. The generative model makes that choice. It
-takes a field and returns the change that brings it closer to a realistic
-one; applied repeatedly to its own output, it carries the U-Net forecast
+takes a field and returns the small change that brings it a little closer
+to a realistic one; applied repeatedly to its own output, it carries the U-Net forecast
 step by step into one sharp rain field. The change is learned by flow
 matching \cite{lipman2023, liu2023}: in training, each U-Net forecast is
 joined to its own truth by a straight line in a fictitious time $s$ from
