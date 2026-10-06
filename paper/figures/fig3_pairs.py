@@ -191,16 +191,9 @@ def main():
         ax.set_xlim(ax_rain[0].get_xlim())
         ax.set_ylim(ax_rain[0].get_ylim())
         ax.set_aspect("equal")
-    UNET, FLOW = "#35526e", "#6f4a86"       # the two model colours of Fig. 2
-    title(ax_sys[0], "D.", "Truth systems",
-          f"found by both {nA}, U-Net only {nB}, flow only {nC}, neither {neither}")
-    for tid, found in truth_match.items():
-        if len(found) == 2:
-            matched(ax_sys[0], lt, tid, tid)
-        else:
-            col = UNET if "two-head" in found else FLOW
-            fill(ax_sys[0], lt, tid, col, 0.45)
-            outline(ax_sys[0], lt, tid, col, lw=0.9)
+    title(ax_sys[0], "D.", "Truth systems", f"{len(tt)}, of which {neither} missed by both")
+    for tid in truth_match:
+        matched(ax_sys[0], lt, tid, tid)
     mm = matches["two-head"]
     for _, rr in mm[mm.role == "miss"].iterrows():
         tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
@@ -212,7 +205,9 @@ def main():
         n_miss = int((mm.role == "miss").sum())
         n_fa = int((mm.role == "false_alarm").sum())
         title(ax, letter, "Two-head U-Net" if model == "two-head" else "Flow, one draw",
-              f"{n_match} matched, {n_fa} false alarms")
+              f"{n_match} matched, {n_miss} missed, {n_fa} false alarms")
+        for _, rr in mm[mm.role == "miss"].iterrows():
+            missed(ax, lut_t[(round(rr["row"], 6), round(rr["col"], 6))])
         for _, rr in mm[mm.role == "match"].iterrows():
             tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
             pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
@@ -248,14 +243,14 @@ def main():
     cb.outline.set_linewidth(0.5)
     from matplotlib.patches import Patch
     handles = [
-        Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="found (by both models, in D)"),
-        Patch(fc=UNET, alpha=0.45, ec=UNET, lw=0.9, label="found by the U-Net only"),
-        Patch(fc=FLOW, alpha=0.45, ec=FLOW, lw=0.9, label="found by the flow only"),
-        Patch(fc="0.25", alpha=0.22, ec="0.1", ls="--", lw=0.6, label="missed by both"),
-        Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6, label="false alarm"),
+        Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
+        Patch(fc="0.25", alpha=0.22, ec="0.1", ls="--", lw=0.6,
+              label="missed: truth system not found"),
+        Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
+              label="false alarm: forecast system matching nothing"),
     ]
-    fig.legend(handles=handles, loc="lower center", ncol=5, fontsize=7, frameon=False,
-               bbox_to_anchor=(0.475, 0.0), handlelength=1.6, columnspacing=1.3)
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
+               bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.6)
     fig.savefig(OUT / "fig3_pairs.pdf", dpi=300)
     print("saved fig3_pairs.pdf")
     fig_p.savefig(OUT / "figS3_pairs_colours.pdf", dpi=300)
