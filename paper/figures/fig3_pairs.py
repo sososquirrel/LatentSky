@@ -27,7 +27,6 @@ from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noq
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
 from latentsky.models.flow import RectifiedFlow  # noqa: E402
 
-matplotlib.rcParams["savefig.bbox"] = "tight"
 OUT = REPO / "paper" / "figures"
 
 
@@ -87,8 +86,9 @@ def main():
             truth_match.setdefault(tid, {})[n] = rr
     order = sorted(truth_match,
                    key=lambda tid: -tt.set_index("label").loc[tid, "A"])
-    _t20 = plt.get_cmap("tab20")
-    pair_colors = [_t20(i) for i in range(20) if i not in (6, 7)]
+    pair_colors = ["#1f78b4", "#33a02c", "#e6ab02", "#7570b3", "#e7298a", "#66a61e",
+                   "#a6761d", "#1b9e77", "#d95f02", "#386cb0", "#f0027f", "#bf5b17",
+                   "#666666", "#8da0cb", "#fc8d62", "#a6d854", "#ffd92f", "#e5c494"]
     color_of = {tid: pair_colors[k % len(pair_colors)]
                 for k, tid in enumerate(order)}
     num_of = {tid: k + 1 for k, tid in enumerate(order)}
@@ -97,77 +97,117 @@ def main():
     vmax = max(truth.max(), det.max(), flow.max(), 0.5)
     norm = LogNorm(vmin=THR, vmax=vmax)
     cmap = plt.get_cmap("Blues").copy()
-    cmap.set_under("#f7f9fb")
+    cmap.set_under("#ffffff")
+    cmap.set_bad("#ffffff")
+    FA = "#b03a2e"
+    nA = sum(1 for d in truth_match.values() if len(d) == 2)
+    nB = sum(1 for d in truth_match.values() if list(d) == ["two-head"])
+    nC = sum(1 for d in truth_match.values() if list(d) == ["flow draw"])
+    print(f"truth systems {len(tt)}; matched by both {nA}, two-head only {nB}, "
+          f"flow only {nC}, neither {neither}")
 
-    def outline(ax, lab, lid, color, ls="-", lw=1.4):
+    def outline(ax, lab, lid, color, ls="-", lw=1.2):
         ax.contour(lab == lid, levels=[0.5], colors=[color], linewidths=lw,
                    linestyles=ls)
 
-    fig, axes = plt.subplots(1, 3, figsize=(W2, W2 * 0.48))
-    fig.subplots_adjust(left=0.002, right=0.998, top=0.92, bottom=0.24,
-                        wspace=0.03)
-    panels = [("A. truth", truth, None),
-              ("B. two-head", det, "two-head"),
-              ("C. flow draw", flow, "flow draw")]
-    im = None
-    for ax, (lab, f, model) in zip(axes, panels):
-        im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap,
-                       interpolation="nearest")
+    def title(ax, letter, text):
+        ax.text(0.0, 1.03, letter, transform=ax.transAxes, fontsize=9,
+                fontfamily="cmb10", ha="left", va="bottom")
+        ax.text(0.10, 1.03, text, transform=ax.transAxes, fontsize=8.5,
+                ha="left", va="bottom")
+
+    # the paper's text font
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
+    # two rows (rain fields; matched systems), the truth set apart from the two forecasts
+    fig = plt.figure(figsize=(W2, W2 * 0.80))
+    gs = fig.add_gridspec(2, 4, width_ratios=[1, 0.10, 1, 1], left=0.005, right=0.995,
+                          top=0.905, bottom=0.165, wspace=0.05, hspace=0.24)
+    cols = [0, 2, 3]
+    ax_rain = [fig.add_subplot(gs[0, c]) for c in cols]
+    ax_sys = [fig.add_subplot(gs[1, c]) for c in cols]
+    for ax in ax_rain + ax_sys:
         ax.set_xticks([])
         ax.set_yticks([])
-        ax.text(0.0, 1.02, lab, transform=ax.transAxes, fontsize=8,
-                fontweight="bold", ha="left", va="bottom")
-        if model is None:
-            # 500 km scale bar (block rows start at r*P; pixel width by cos(lat))
-            ybar = 8
-            latbar = -40 + 0.25 * (r * P + ybar)
-            px_km = 27.83 * np.cos(np.deg2rad(latbar))
-            nbar = 500.0 / px_km
-            ax.plot([5, 5 + nbar], [ybar, ybar], "-", color="0.1", lw=2.2,
-                    solid_capstyle="butt", zorder=6)
-            ax.text(5 + nbar / 2, ybar + 3, "500 km", fontsize=6.5,
-                    ha="center", color="0.1", zorder=6)
-            for tid in truth_match:
-                outline(ax, lt, tid, color_of[tid], lw=1.6)
-                rrow = tt.set_index("label").loc[tid]
-                ax.text(rrow["col"], rrow["row"], str(num_of[tid]),
-                        fontsize=5.5, fontweight="bold", color="0.1",
-                        ha="center", va="center")
-            mm = matches["two-head"]
-            for _, rr in mm[mm.role == "miss"].iterrows():
-                tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
-                if tid not in truth_match:
-                    outline(ax, lt, tid, "0.05", ls="--", lw=0.7)
-        else:
-            mm = matches[model]
-            for _, rr in mm[mm.role == "match"].iterrows():
-                tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
-                pid = luts_p[model][(round(rr["row_p"], 6),
-                                    round(rr["col_p"], 6))]
-                outline(ax, labels[model], pid, color_of[tid], lw=1.6)
-                ax.text(rr["col_p"], rr["row_p"], str(num_of[tid]),
-                        fontsize=5.5, fontweight="bold", color="0.1",
-                        ha="center", va="center")
-            for _, rr in mm[mm.role == "false_alarm"].iterrows():
-                pid = luts_p[model][(round(rr["row"], 6),
-                                    round(rr["col"], 6))]
-                outline(ax, labels[model], pid, "#d62728", ls="--", lw=0.8)
+        for sp in ax.spines.values():
+            sp.set_linewidth(0.5)
+            sp.set_color("0.3")
+    # the separation: a thin rule between the truth column and the forecasts
+    x_sep = 0.5 * (ax_rain[0].get_position().x1 + ax_rain[1].get_position().x0)
+    fig.add_artist(Line2D([x_sep, x_sep], [0.16, 0.985], color="0.6", lw=0.6,
+                          transform=fig.transFigure))
+    fig.text(0.5 * (ax_rain[0].get_position().x0 + ax_rain[0].get_position().x1), 0.985,
+             "reference", ha="center", va="top", fontsize=8, color="0.35")
+    fig.text(0.5 * (ax_rain[1].get_position().x0 + ax_rain[2].get_position().x1), 0.985,
+             "forecasts, +3 h", ha="center", va="top", fontsize=8, color="0.35")
 
-    handles = [
-        Line2D([], [], color=pair_colors[0], lw=1.6,
-               label="matched truth system (same color and number)"),
-        Line2D([], [], color="0.05", lw=0.8, ls="--",
-               label=f"missed by both ({neither})"),
-        Line2D([], [], color="#d62728", lw=0.8, ls="--",
-               label="false alarm"),
-    ]
-    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7.5,
-               frameon=False, bbox_to_anchor=(0.5, -0.01))
-    cax = fig.add_axes([0.12, 0.155, 0.76, 0.022])
+    # ---- top row: the rain fields ------------------------------------------
+    fields = [("A.", "Truth", truth), ("B.", "Two-head U-Net", det), ("C.", "Flow, one draw", flow)]
+    im = None
+    for ax, (letter, name, f) in zip(ax_rain, fields):
+        im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
+        title(ax, letter, name)
+    # 500 km scale bar on the truth (pixel width by cos(lat))
+    ybar = 8
+    latbar = -40 + 0.25 * (r * P + ybar)
+    nbar = 500.0 / (27.83 * np.cos(np.deg2rad(latbar)))
+    ax_rain[0].plot([5, 5 + nbar], [ybar, ybar], "-", color="0.1", lw=2.0,
+                    solid_capstyle="butt", zorder=6)
+    ax_rain[0].text(5 + nbar / 2, ybar + 3, "500 km", fontsize=6.5, ha="center", color="0.1")
+
+    # ---- bottom row: the systems and their matches, on a faint rain background --
+    faint = plt.get_cmap("Greys").copy()
+    faint.set_under("#ffffff")
+    for ax, (letter, name, f) in zip(ax_sys, fields):
+        ax.imshow(f, origin="lower", norm=LogNorm(THR, vmax * 12), cmap=faint,
+                  interpolation="nearest")
+    title(ax_sys[0], "D.", f"Systems in the truth ({len(tt)})")
+    for tid in truth_match:
+        outline(ax_sys[0], lt, tid, color_of[tid], lw=1.3)
+        rrow = tt.set_index("label").loc[tid]
+        ax_sys[0].text(rrow["col"], rrow["row"], str(num_of[tid]), fontsize=5.5,
+                       fontweight="bold", color="0.1", ha="center", va="center")
+    mm = matches["two-head"]
+    for _, rr in mm[mm.role == "miss"].iterrows():
+        tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
+        if tid not in truth_match:
+            outline(ax_sys[0], lt, tid, "0.1", ls="--", lw=0.6)
+    for ax, letter, model in zip(ax_sys[1:], ("E.", "F."), ("two-head", "flow draw")):
+        mm = matches[model]
+        n_match = int((mm.role == "match").sum())
+        n_fa = int((mm.role == "false_alarm").sum())
+        title(ax, letter, f"Matched {n_match}, false alarms {n_fa}")
+        for _, rr in mm[mm.role == "match"].iterrows():
+            tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
+            pid = luts_p[model][(round(rr["row_p"], 6), round(rr["col_p"], 6))]
+            outline(ax, labels[model], pid, color_of[tid], lw=1.3)
+            ax.text(rr["col_p"], rr["row_p"], str(num_of[tid]), fontsize=5.5,
+                    fontweight="bold", color="0.1", ha="center", va="center")
+        for _, rr in mm[mm.role == "false_alarm"].iterrows():
+            pid = luts_p[model][(round(rr["row"], 6), round(rr["col"], 6))]
+            outline(ax, labels[model], pid, FA, ls="--", lw=0.7)
+
+    # rain colorbar under the top row's forecasts; legend under the bottom row
+    p1, p2 = ax_rain[1].get_position(), ax_rain[2].get_position()
+    cax = fig.add_axes([p1.x0 + 0.05 * (p2.x1 - p1.x0), 0.075, 0.90 * (p2.x1 - p1.x0), 0.018])
     cb = fig.colorbar(im, cax=cax, orientation="horizontal")
-    cb.set_label("rain (mm)", fontsize=8)
-    cb.ax.tick_params(labelsize=7, length=2, width=0.6)
+    cb.set_label("rain in 15 min (mm)", fontsize=8)
+    ticks = [0.1, 1, 10]
+    cb.set_ticks([t for t in ticks if t <= vmax])
+    cb.set_ticklabels([f"{t:g}" for t in ticks if t <= vmax])
+    cb.ax.minorticks_off()
+    cb.ax.tick_params(labelsize=7, length=2, width=0.5)
     cb.outline.set_linewidth(0.5)
+    handles = [
+        Line2D([], [], color=pair_colors[0], lw=1.3,
+               label="matched system: same colour and number in every panel"),
+        Line2D([], [], color="0.1", lw=0.6, ls="--", label=f"missed by both models ({neither})"),
+        Line2D([], [], color=FA, lw=0.7, ls="--", label="false alarm"),
+    ]
+    p0 = ax_rain[0].get_position()
+    fig.legend(handles=handles, loc="lower left", ncol=1, fontsize=7, frameon=False,
+               bbox_to_anchor=(p0.x0 - 0.005, 0.02), handlelength=2.0)
     fig.savefig(OUT / "fig3_pairs.pdf", dpi=300)
     print("saved fig3_pairs.pdf")
 

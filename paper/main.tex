@@ -457,16 +457,19 @@ Whether it is skill, and at which scales, is the next question.
 
 \begin{figure}
 \centering
-\includegraphics[width=\textwidth]{figures/fig3_pairs.pdf}
-\caption{\textbf{The instrument on one frame} ($+3$~h, standard test frame,
-$120$ truth systems). Detected systems ($>0.1$~mm, 8-connected) in the truth,
-the two-head forecast, and one flow draw; a matched truth system (greedy
-one-to-one $\mathrm{IoU} \ge 0.1$) keeps the same color and number in every
-panel where a model found it, black dashes are the systems missed by both
-models, red dashes each panel's false alarms. On this frame $11$ systems are
-matched by both models, $6$ by the two-head only, $11$ by the flow only, and
-$92$ --- overwhelmingly the smallest --- by neither; the flow's extra matches
-come with the visible sprinkle of small false alarms that prices them.}
+\makebox[\textwidth][c]{\includegraphics{figures/fig3_pairs.pdf}}
+\caption{\textbf{The instrument on one frame} ($+3$~h, standard test frame).
+Top: the rain fields of the truth (A), the two-head U-Net (B), and one flow
+draw (C), on one log color scale. Bottom: the systems detected in each
+field ($>0.1$~mm, 8-connected) and their matching (greedy one-to-one,
+$\mathrm{IoU} \ge 0.1$). D.~The $120$ truth systems: a system matched by at
+least one model is outlined in color and numbered, and keeps that color
+and number in every panel where a model found it; systems missed by both
+models are dashed black. E.--F.~The matched systems of each forecast, with
+its false alarms dashed red. On this frame $11$ systems are matched by both
+models, $6$ by the two-head only, $11$ by the flow only, and $92$,
+overwhelmingly the smallest, by neither. The flow's extra matches come
+with many small false alarms, $106$ against $5$.}
 \label{fig:pairs}
 \end{figure}
 
