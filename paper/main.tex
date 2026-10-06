@@ -389,17 +389,19 @@ out, the velocity, of either sign. It is the tendency term of a numerical
 model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned
 rather than derived.
 
-\textit{Equations.} Let $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$,
-$\varepsilon \sim \mathcal{N}(0, I)$, be the noised forecast, $x_1$ the
-truth, and $x_s = (1 - s)\,x_0 + s\,x_1$ the straight line between them.
-The velocity network is the least-squares fit of
+\textit{Equations.} A training pair is a noised forecast
+$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, $\varepsilon \sim \mathcal{N}(0, I)$,
+and its truth $x_1$, joined by the straight line
+$x_s = (1 - s)\,x_0 + s\,x_1$. Over all training pairs, the velocity
+network is the least-squares fit of
 \begin{equation}
 v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] .
 \label{eq:velocity}
 \end{equation}
-A draw is
+A draw starts from a new noised forecast $y_0 = z_{\mathrm{fc}} + \sigma\varepsilon$
+and follows the learned velocity,
 \begin{equation}
-x_1 = x_0 + \int_0^1 v_s(x_s, c)\,\mathrm{d}s ,
+y_1 = y_0 + \int_0^1 v_s(y_s, c)\,\mathrm{d}s ,
 \label{eq:flow}
 \end{equation}
 integrated with $32$ Heun steps. $\sigma$ is the root-mean-square error of
