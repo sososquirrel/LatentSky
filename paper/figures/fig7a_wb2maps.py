@@ -181,6 +181,9 @@ def main():
                   aspect="auto")
         ax.imshow(ov[zoom], origin="lower", interpolation="nearest", aspect="auto")
         ax.contour(lsm[zoom], levels=[0.5], colors=["0.35"], linewidths=0.5)
+        for v in (32, 64, 96):                  # a light grid every 8 degrees, as in Fig. 3
+            ax.axhline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
+            ax.axvline(v - 0.5, color="0.55", lw=0.3, alpha=0.6, zorder=1.2)
         if k == 0:
             ybar = 10
             latbar = -40 + 0.25 * (i0 + ybar)
