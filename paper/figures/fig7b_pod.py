@@ -63,9 +63,9 @@ def main():
         ax.plot(MIDS, pod, ls, color=COLW[name], marker="o", ms=3.5,
                 lw=1.5, label=NAMES[name])
     ax.set_xscale("log")
-    ax.set_xlim(30, 3000)      # the bands run from 38 to 2380 km; margins on both sides
+    ax.set_xlim(30, 1300)      # plotted bands run from 38 to 950 km; margins on both sides
     ax.set_ylim(0, 1.04)
-    log_ticks(ax.xaxis, [30, 50, 100, 200, 500, 1000, 2000])
+    log_ticks(ax.xaxis, [30, 50, 100, 200, 500, 1000])
     ax.set_xlabel(r"system scale $L = \sqrt{A}$ (km)")
     ax.set_ylabel("Probability of Detection (POD)")
     ax.legend(fontsize=7.5, loc="upper left")
