@@ -413,7 +413,12 @@ y_1 = y_0 + \int_0^1 v_s(y_s, c)\,\mathrm{d}s ,
 \end{equation}
 integrated with $32$ Heun steps. $\sigma$ is the root-mean-square error of
 the U-Net on wet pixels at that lead, in $z$: $0.10$ at $15$~min to $0.20$
-at $6$~h. Optimizer and stopping rule are those of the U-Net (Text~S2).
+at $6$~h. The noise does two things. It is the source of the different
+draws. And it spreads the starting points of the training lines around
+each forecast, so that the lines cover a neighborhood of the forecasts and
+not only the forecasts themselves: a new forecast then starts where
+training lines have passed, and the velocity it follows was learned
+there rather than extrapolated. Optimizer and stopping rule are those of the U-Net (Text~S2).
 
 \textit{Scoring.} All statistics of the flow are computed on one draw per
 block and frame, with a fixed seed, and never on an average of draws: the
