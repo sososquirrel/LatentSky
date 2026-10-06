@@ -148,8 +148,8 @@ def draw():
                                     fc=fc, ec=ec, lw=0.5, zorder=1))
 
     def panel(x, letter, title):
-        ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=9, fontfamily="cmb10")
-        ax.text(x + 2.6, 52.4, title, ha="left", va="bottom", fontsize=8)
+        ax.text(x, 52.4, letter, ha="left", va="bottom", fontsize=9, fontfamily="cmr10")
+        ax.text(x + 3.3, 52.4, title, ha="left", va="bottom", fontsize=8)
 
     YM = 31.5   # the level of the main row: inputs join -> U-Net -> forecast -> flow
 
@@ -202,7 +202,7 @@ def draw():
               extent=(xr, xr + S_IN, yr, yr + S_IN), interpolation="nearest", zorder=3)
     ax.add_patch(Rectangle((xr, yr), S_IN, S_IN, fill=False, ec=BLUE, lw=1.2, zorder=4))
     ax.text(xr + S_IN / 2, yr - 0.6, "rain at time $t$", ha="center", va="top", fontsize=6.5)
-    panel(-1.2, "A.", "Inputs")
+    panel(-1.2, "(a)", "Inputs")
     # the two inputs join and enter the U-Net
     xj, y_st = 15.6, 37.0
     st_right = 0.6 + 0.5 * (len(state) - 1) + S_IN
@@ -214,7 +214,7 @@ def draw():
     y0 = YM - S / 2
     xu = 18.6
     xu1, _ = unet(xu, YM, BLUE, BLUE_BG, "U-Net", 10, 2)
-    panel(xu, "B.", r"U-Net: rain at $t + \Delta t$")
+    panel(xu, "(b)", r"U-Net: rain at $t + \Delta t$")
     arrow((xj, YM), (xu, YM))
     xf = xu1 + 3.0
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
@@ -224,7 +224,7 @@ def draw():
     # ---------------- flow matching -------------------------------------------
     xc0 = xf + S + 2.5
     frame(xc0, 11.5, 99.6 - xc0, 40.0, ORANGE, "none")
-    panel(xc0, "C.", "Flow matching: forecast + noise $\\rightarrow$ draws")
+    panel(xc0, "(c)", "Flow matching: forecast + noise $\\rightarrow$ draws")
     x0s = xc0 + 1.6
     rain(d["path"][0], x0s, y0, S, "$x_0$")
     ax.text(x0s + S / 2, y0 - 0.6, r"forecast $+\,\sigma\varepsilon$", ha="center",

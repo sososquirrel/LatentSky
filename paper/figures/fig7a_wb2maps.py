@@ -125,9 +125,9 @@ def main():
     lon, lat = ds.lon.values, ds.lat.values
 
     def title(ax, letter, text):
-        ax.text(0.0, 1.02, letter, transform=ax.transAxes, fontsize=9, fontfamily="cmb10",
+        ax.text(0.0, 1.02, letter, transform=ax.transAxes, fontsize=9, fontfamily="cmr10",
                 ha="left", va="bottom")
-        ax.text(0.045 if ax.get_position().width > 0.6 else 0.12, 1.02, text,
+        ax.text(0.055 if ax.get_position().width > 0.6 else 0.15, 1.02, text,
                 transform=ax.transAxes, fontsize=8.5, ha="left", va="bottom")
 
     def lon_index(v):
@@ -165,7 +165,7 @@ def main():
             xl = ax.get_xticklabels()
             xl[0].set_ha("left")
             xl[-1].set_ha("right")
-        title(ax, "AB"[k] + ".", labels[k])
+        title(ax, "(" + "ab"[k] + ")", labels[k])
         axes.append(ax)
         y_cursor -= GAP
     y_cursor -= TICK
@@ -195,14 +195,14 @@ def main():
         ax.set_yticks([])
         for sp in ax.spines.values():
             sp.set_linewidth(0.5)
-        title(ax, "CD"[k] + ".", zoom_labels[k])
+        title(ax, "(" + "cd"[k] + ")", zoom_labels[k])
 
     from matplotlib.patches import Patch
     handles = [
         Patch(fc=(*pair_colors[0], 0.55), ec=pair_colors[0], lw=1.0,
               label=f"matched pair: same colour in both maps ({len(matches)})"),
         Patch(fc=(*MISS, 0.75), ec=MISS, lw=1.0,
-              label=f"black, zoom only: missed truth systems in C, false alarms in D "
+              label=f"black, zoom only: missed truth systems in (c), false alarms in (d) "
                     f"({len(misses)} and {len(fas)} over the belt)")]
     fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=7, frameon=False,
                bbox_to_anchor=(0.5 + LABW / FW / 2, 0.0), handlelength=1.8, columnspacing=1.6)

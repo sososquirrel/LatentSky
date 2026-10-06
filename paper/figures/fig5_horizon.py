@@ -65,8 +65,8 @@ def log_ticks(axis, ticks):
 def title(ax, letter, text):
     """Panel letter and a short title above the axes, as in Figs. 2 and 5."""
     ax.text(0.0, 1.02, letter, transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=9, fontfamily="cmb10")
-    ax.text(0.085, 1.02, text, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=9, fontfamily="cmr10")
+    ax.text(0.10, 1.02, text, transform=ax.transAxes, ha="left", va="bottom",
             fontsize=8.5)
 
 
@@ -97,8 +97,8 @@ def main():
         ax.set_xlabel(r"system scale $L = \sqrt{A}$ (km)")
         ax.set_ylabel(ylab)
     ax_pod.legend(loc="center left", fontsize=8)
-    title(ax_pod, "A.", "Detection by system size, +3 h")
-    title(ax_far, "B.", "False alarms by system size, +3 h")
+    title(ax_pod, "(a)", "Detection by system size, +3 h")
+    title(ax_far, "(b)", "False alarms by system size, +3 h")
 
     # --- (c) POD decay per band --------------------------------------------
     decay = pod_decay()
@@ -114,7 +114,7 @@ def main():
     ax_dec.plot([], [], "-", color="0.3", lw=1.5, label="flow")
     ax_dec.plot([], [], ":", color="0.3", lw=1.2, label="two-head")
     ax_dec.legend(loc="center", bbox_to_anchor=(0.72, 0.55), fontsize=7.5)
-    title(ax_dec, "C.", "Detection against lead time, per size band")
+    title(ax_dec, "(c)", "Detection against lead time, per size band")
 
     # --- (d) tau(L) scaling -------------------------------------------------
     df = pd.read_csv(ASSETS / "tau_fullrecord.csv")
@@ -152,7 +152,7 @@ def main():
     ax_tau.set_xlabel("system scale L (km)")
     ax_tau.set_ylabel(r"detection horizon $\tau(L)$ (h)")
     ax_tau.legend(loc="upper left", fontsize=7.5)
-    title(ax_tau, "D.", "Horizon against system size")
+    title(ax_tau, "(d)", "Horizon against system size")
     # colorbar below panel D, without shrinking the panel itself: give it an
     # explicit axis so D stays the same size as the POD panel
     fig.subplots_adjust(left=0.075, right=0.985, top=0.965,

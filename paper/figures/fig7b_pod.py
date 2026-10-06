@@ -84,11 +84,11 @@ def main():
     ax_pod.set_ylabel("Probability of Detection (POD)")
     ax_far.set_ylabel("False-Alarm Ratio (FAR)")
     ax_pod.legend(fontsize=7.5, loc="upper left")
-    for ax, letter, text in ((ax_pod, "A.", "Detection by system size, +12 h"),
-                             (ax_far, "B.", "False alarms by system size, +12 h")):
+    for ax, letter, text in ((ax_pod, "(a)", "Detection by system size, +12 h"),
+                             (ax_far, "(b)", "False alarms by system size, +12 h")):
         ax.text(0.0, 1.03, letter, transform=ax.transAxes, ha="left", va="bottom", fontsize=9,
-                fontfamily="cmb10")
-        ax.text(0.085, 1.03, text, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
+                fontfamily="cmr10")
+        ax.text(0.10, 1.03, text, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
     fig.savefig(OUT / "fig7b_pod.pdf")
     print("saved fig7b_pod.pdf")
 

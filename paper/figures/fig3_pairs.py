@@ -148,8 +148,8 @@ def main():
     def title(ax, letter, text, sub=None):
         y = 1.10 if sub else 1.03      # with a second line of counts, the title moves up
         ax.text(0.0, y, letter, transform=ax.transAxes, fontsize=9,
-                fontfamily="cmb10", ha="left", va="bottom")
-        ax.text(0.10, y, text, transform=ax.transAxes, fontsize=8.5,
+                fontfamily="cmr10", ha="left", va="bottom")
+        ax.text(0.115, y, text, transform=ax.transAxes, fontsize=8.5,
                 ha="left", va="bottom")
         if sub:
             ax.text(0.0, 1.03, sub, transform=ax.transAxes, fontsize=6.5,
@@ -186,7 +186,7 @@ def main():
              "forecasts, +3 h", ha="center", va="top", fontsize=8, color="0.35")
 
     # ---- top row: the rain fields ------------------------------------------
-    fields = [("A.", "Truth", truth), ("B.", "Two-head U-Net", det), ("C.", "Flow, one draw", flow)]
+    fields = [("(a)", "Truth", truth), ("(b)", "Two-head U-Net", det), ("(c)", "Flow, one draw", flow)]
     im = None
     for ax, (letter, name, f) in zip(ax_rain, fields):
         im = ax.imshow(f, origin="lower", norm=norm, cmap=cmap, interpolation="nearest")
@@ -225,7 +225,7 @@ def main():
     # D: who missed what. Found by both: green; missed by the U-Net only: blue; missed by
     # the flow only: purple; missed by both: black.
     UNET, FLOW = "tab:blue", "tab:purple"
-    title(ax_sys[0], "D.", "Truth systems",
+    title(ax_sys[0], "(d)", "Truth systems",
           f"missed: {neither} by both, {nC} U-Net only, {nB} flow only")
     for tid, found in truth_match.items():
         if len(found) == 2:
@@ -239,7 +239,7 @@ def main():
         tid = lut_t[(round(rr["row"], 6), round(rr["col"], 6))]
         if tid not in truth_match:
             missed(ax_sys[0], tid)
-    for ax, letter, model in zip(ax_sys[1:], ("E.", "F."), ("two-head", "flow draw")):
+    for ax, letter, model in zip(ax_sys[1:], ("(e)", "(f)"), ("two-head", "flow draw")):
         mm = matches[model]
         n_match = int((mm.role == "match").sum())
         n_miss = int((mm.role == "miss").sum())
@@ -267,11 +267,11 @@ def main():
     cb.outline.set_linewidth(0.5)
     from matplotlib.patches import Patch
     handles = [
-        Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour and number in A to C"),
+        Line2D([], [], color=pair_colors[0], lw=1.1, label="top: matched pair, same colour and number in (a) to (c)"),
         Patch(fc=HIT, alpha=0.30, ec=HIT, lw=0.9, label="matched: found by the forecast"),
-        Patch(fc=UNET, alpha=0.65, ec=UNET, lw=0.9, label="missed by the U-Net only (in D)"),
-        Patch(fc=FLOW, alpha=0.65, ec=FLOW, lw=0.9, label="missed by the flow only (in D)"),
-        Patch(fc="0.05", alpha=0.8, ec="0.0", lw=0.7, label="missed by both (in D)"),
+        Patch(fc=UNET, alpha=0.65, ec=UNET, lw=0.9, label="missed by the U-Net only, in (d)"),
+        Patch(fc=FLOW, alpha=0.65, ec=FLOW, lw=0.9, label="missed by the flow only, in (d)"),
+        Patch(fc="0.05", alpha=0.8, ec="0.0", lw=0.7, label="missed by both, in (d)"),
         Patch(fc=FA, alpha=0.35, ec=FA, lw=0.6,
               label="false alarm: forecast system matching nothing"),
     ]

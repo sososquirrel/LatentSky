@@ -113,8 +113,8 @@ def decomposition_panel(ax, m, bands, lim, letter, label, sigma=3.5, bin_width=0
     ax.text(1.0, -0.10, r"too large $\rightarrow$", transform=ax.transAxes, ha="right",
             va="top", fontsize=6.5, color="0.4")
     ax.text(0.0, 1.03, letter, transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=9, fontfamily="cmb10")
-    ax.text(0.075, 1.03, label, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
+            fontsize=9, fontfamily="cmr10")
+    ax.text(0.095, 1.03, label, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
     ax.text(1.0, 1.03, f"${len(m):,}$ matched pairs".replace(",", r"\,"), transform=ax.transAxes,
             ha="right", va="bottom", fontsize=7, color="0.4")
 
@@ -153,8 +153,8 @@ def axes_style(ax, letter, label, n):
     ax.text(1.0, -0.10, r"too large $\rightarrow$", transform=ax.transAxes, ha="right",
             va="top", fontsize=6.5, color="0.4")
     ax.text(0.0, 1.03, letter, transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=9, fontfamily="cmb10")
-    ax.text(0.075, 1.03, label, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
+            fontsize=9, fontfamily="cmr10")
+    ax.text(0.095, 1.03, label, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
     ax.text(1.0, 1.03, f"${n:,}$ matched pairs".replace(",", r"\,"), transform=ax.transAxes,
             ha="right", va="bottom", fontsize=7, color="0.4")
 
@@ -191,9 +191,9 @@ def main_density():
     WF = 0.84 * W2
     fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.66), sharey=True)
     fig.subplots_adjust(left=0.09, right=0.99, top=0.935, bottom=0.30, wspace=0.08)
-    im = density_panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "A.",
+    im = density_panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "(a)",
                        "Two-head U-Net")
-    density_panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "B.",
+    density_panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "(b)",
                   "Flow, per draw")
     axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
     cax = fig.add_axes([0.30, 0.15, 0.40, 0.016])
@@ -217,8 +217,8 @@ def main():
     WF = 0.84 * W2
     fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.60), sharey=True)
     fig.subplots_adjust(left=0.09, right=0.99, top=0.93, bottom=0.25, wspace=0.08)
-    panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "A.", "Two-head U-Net")
-    panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "B.", "Flow, per draw")
+    panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "(a)", "Two-head U-Net")
+    panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "(b)", "Flow, per draw")
     axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
     axs[0].text(-0.125, 0.0, r"$\leftarrow$ too weak", transform=axs[0].transAxes, ha="center",
                 va="bottom", rotation=90, fontsize=6.5, color="0.4")

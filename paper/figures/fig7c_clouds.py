@@ -33,7 +33,7 @@ def main():
     fig, axs = plt.subplots(2, 2, figsize=(WF, WF * 1.10), sharex=True, sharey=True)
     fig.subplots_adjust(left=0.09, right=0.99, top=0.955, bottom=0.145, wspace=0.10,
                         hspace=0.30)
-    for ax, letter, (key, name) in zip(axs.ravel(), ("A.", "B.", "C.", "D."), MODELS):
+    for ax, letter, (key, name) in zip(axs.ravel(), ("(a)", "(b)", "(c)", "(d)"), MODELS):
         # fewer pairs than at km scale: a slightly wider smoothing, and bands need 20 pairs
         decomposition_panel(ax, df[df.model == key], BANDS, LIM, letter, name, sigma=4.0,
                             n_min=20)
