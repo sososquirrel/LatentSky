@@ -21,8 +21,7 @@ REPO = Path("/glade/u/home/sabramian/LatentSky")
 sys.path.insert(0, str(REPO / "wb2_benchmark"))
 from pairs_graphcast import CACHE, IOU_MIN, THR, get_landmask, lut  # noqa: E402
 
-sys.path.insert(0, str(REPO / "docs"))
-from make_data_overview_assets import NC, NR  # noqa: E402
+NR, NC = 2, 11   # the 2 x 11 block grid of Fig. 1 (320 x 1440 pixels, 128-pixel blocks)
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 
