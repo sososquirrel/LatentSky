@@ -33,15 +33,18 @@ def main():
     skill_h = 0.392 * W2                      # Fig. 4 panel height
     FH = map_cm + skill_h + 1.85              # + titles, note, axis labels (inches)
     fig = plt.figure(figsize=(WF, FH))
-    XL, XR = 0.075, 0.985 - skill_w / WF      # Fig. 4 column positions
-    PW = skill_w / WF
+    # both rows span the same width: the maps sit at the two ends of the span, the skill
+    # panels fill it with one gap between them
+    S0, S1, GAP = 0.13, 0.95, 0.08
     zw, zh = map_cm / WF, map_cm / FH
-    ax_z = [fig.add_axes([x + (PW - zw) / 2, 0.965 - zh, zw, zh]) for x in (XL, XR)]
+    PW = (S1 - S0 - GAP) / 2
+    XL, XR = S0, S1 - PW
+    ax_z = [fig.add_axes([x, 0.965 - zh, zw, zh]) for x in (S0, S1 - zw)]
     for k, ax in enumerate(ax_z):
         draw_zoom(ax, d, k)
     title(ax_z[0], "(a)", "Truth (ERA5), one 128-pixel block")
     title(ax_z[1], "(b)", "GraphCast, +6 h, same block")
-    fig.text(0.5 * (XL + XR + PW), 0.965 - zh - 0.02,
+    fig.text(0.5 * (S0 + S1), 0.965 - zh - 0.02,
              f"{d['n_match']} matched pairs over the belt, same colour in (a) and (b); "
              f"black: missed truth systems in (a), false alarms in (b)",
              ha="center", va="top", fontsize=6.5, color="0.35")
