@@ -1,0 +1,241 @@
+"""Paper Fig 5 — the error decomposition on matched pairs (+3 h, full record).
+
+(A) two-head U-Net, (B) flow per draw, in the (dlnA, dlnrho) plane, same axes.
+Behind, in grey, the region holding 95 % of all matched pairs. For each of
+three size bands: the region holding 75 % of the band's pairs (shaded; from a
+2-D histogram with 0.05 bins smoothed by a Gaussian of 3.5 bins), and the
+rain-weighted barycenter of the raw pairs joined to the origin (the mean
+bias of the band).
+
+Caption sentence: the deterministic model sits in the compensating quadrant
+(too large, too weak, worst for small systems); the flow's barycenters
+collapse toward the origin at every scale. CPU ~1 min.
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
+from paperfig import W2
+from scipy.ndimage import gaussian_filter
+
+EVAL = Path("/glade/derecho/scratch/sabramian/latentsky/eval_method")
+OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
+
+LIM = 2.4
+# three size bands, small to large, on the scale colours of the other figures
+# (viridis: purple = small, green-yellow = large)
+_v = plt.get_cmap("viridis")
+BANDS = [(0, 65, r"small, $<$ 65 km", _v(0.08)),
+         (65, 200, "medium, 65 to 200 km", _v(0.52)),
+         (200, 1e9, r"large, $>$ 200 km", _v(0.88))]
+
+
+def hdr_levels(h, fracs):
+    """Density levels whose super-level sets hold the given fractions of the mass."""
+    v = np.sort(h.ravel())[::-1]
+    c = np.cumsum(v) / v.sum()
+    return [v[np.searchsorted(c, f)] for f in fracs]
+
+
+def panel(ax, df, letter, label):
+    """The paper's decomposition panel: the three LatentSky size bands at +-LIM."""
+    decomposition_panel(ax, df[df.role == "match"], BANDS, LIM, letter, label)
+
+
+def decomposition_panel(ax, m, bands, lim, letter, label, sigma=3.5, bin_width=0.05,
+                        n_min=0):
+    """Regions holding 75 % of each band's matched pairs (shaded by density), the 95 %
+    outline of all pairs, and each band's rain-weighted mean error joined to the origin."""
+    edges = np.arange(-lim - 0.8, lim + 0.8 + 1e-9, bin_width)
+    mids = 0.5 * (edges[1:] + edges[:-1])
+    ax.grid(True, color="0.88", lw=0.4, zorder=0)
+    ax.set_axisbelow(True)
+    ax.axhline(0, color="0.65", lw=0.6, zorder=1)
+    ax.axvline(0, color="0.65", lw=0.6, zorder=1)
+    xs = np.array([-lim, lim])
+    ax.plot(xs, -xs, color="0.3", lw=0.7, ls=(0, (1, 2)), zorder=10)   # on top of the regions
+    ax.text(0.72 * lim, -0.67 * lim, r"$\mathrm{d}\ln P = 0$", color="0.3", fontsize=6.5,
+            rotation=-45, ha="center", va="center", zorder=10)
+    def density(b):
+        h, _, _ = np.histogram2d(b.dlnA, b.dlnrho, bins=[edges, edges])
+        return gaussian_filter(h.T, sigma)            # removes the pixel-count striping in dlnA
+
+    # behind everything, a grey outline: where 95 % of all matched pairs lie
+    h = density(m)
+    (l95,) = hdr_levels(h, (0.95,))
+    ax.contour(mids, mids, h, levels=[l95], colors=["0.55"], linewidths=0.6, zorder=1.6)
+    # per band, small drawn first so that medium and large sit on top
+    for z, (lo, hi, _, col) in enumerate(bands):
+        b = m[(m.scale >= lo) & (m.scale < hi)]
+        if len(b) < max(n_min, 2):
+            continue
+        h = density(b)
+        (l75,) = hdr_levels(h, (0.75,))
+        # inside the 75 % region the shading follows the density: faint at the edge, strong at the peak
+        rgba = mcolors.to_rgba(col)
+        cm_band = mcolors.LinearSegmentedColormap.from_list(
+            "band", [(*rgba[:3], 0.12), (*rgba[:3], 0.75)])
+        inside = np.ma.masked_less(h, l75)
+        ax.imshow(inside, origin="lower", extent=(edges[0], edges[-1], edges[0], edges[-1]),
+                  cmap=cm_band, vmin=l75, vmax=h.max(), interpolation="bilinear", aspect="auto",
+                  zorder=2 + z)
+        ax.contour(mids, mids, h, levels=[l75], colors=[col], linewidths=0.9, zorder=2.5 + z)
+    for lo, hi, _, col in bands:                      # barycentres on top: the mean bias
+        b = m[(m.scale >= lo) & (m.scale < hi)]
+        if len(b) < max(n_min, 2):
+            continue
+        bx = np.average(b.dlnA, weights=b.P_t)
+        by = np.average(b.dlnrho, weights=b.P_t)
+        ax.plot([0, bx], [0, by], color=col, lw=1.2, zorder=8, solid_capstyle="round")
+        ax.plot(bx, by, "o", ms=5.5, mfc=col, mec="white", mew=0.9, zorder=9)
+    ax.plot(0, 0, "+", ms=5, color="0.2", mew=0.7, zorder=7)
+    ax.set_xlim(-lim, lim)
+    ax.set_ylim(-lim, lim)
+    ax.set_aspect("equal")
+    step = 1 if lim > 1.8 else 0.5
+    ticks = np.arange(-np.floor(lim / step) * step, lim + 1e-9, step)
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
+    ax.tick_params(length=2.5, width=0.5, labelsize=7.5)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    for sp in ("left", "bottom"):
+        ax.spines[sp].set_linewidth(0.5)
+    ax.set_xlabel(r"area error  $\mathrm{d}\ln A$", fontsize=8.5, labelpad=3)
+    ax.text(0.0, -0.10, r"$\leftarrow$ too small", transform=ax.transAxes, ha="left",
+            va="top", fontsize=6.5, color="0.4")
+    ax.text(1.0, -0.10, r"too large $\rightarrow$", transform=ax.transAxes, ha="right",
+            va="top", fontsize=6.5, color="0.4")
+    ax.text(0.0, 1.03, letter, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=9, fontfamily="cmr10")
+    ax.text(0.095, 1.03, label, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
+    ax.text(1.0, 1.03, f"${len(m):,}$ matched pairs".replace(",", r"\,"), transform=ax.transAxes,
+            ha="right", va="bottom", fontsize=7, color="0.4")
+
+
+PAPER_FONT = {"font.family": "serif", "font.serif": ["cmr10"], "mathtext.fontset": "cm",
+              "axes.unicode_minus": False, "axes.formatter.use_mathtext": True}
+
+
+def legend_handles(bands):
+    handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in bands]
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5,
+                      label="where three quarters of the band's pairs lie (darker: denser)"),
+                Line2D([], [], color="0.55", lw=0.6, label="95% of all pairs"),
+                Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
+                       label="rain-weighted mean error")]
+    return handles
+
+
+def axes_style(ax, letter, label, n):
+    """Shared frame of the two figures: limits, ticks, grid, labels, title."""
+    ax.set_xlim(-LIM, LIM)
+    ax.set_ylim(-LIM, LIM)
+    ax.set_aspect("equal")
+    ax.set_xticks(range(-2, 3))
+    ax.set_yticks(range(-2, 3))
+    ax.grid(True, color="0.88", lw=0.4, zorder=0)
+    ax.set_axisbelow(True)
+    ax.tick_params(length=2.5, width=0.5, labelsize=7.5)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    for sp in ("left", "bottom"):
+        ax.spines[sp].set_linewidth(0.5)
+    ax.set_xlabel(r"area error  $\mathrm{d}\ln A$", fontsize=8.5, labelpad=3)
+    ax.text(0.0, -0.10, r"$\leftarrow$ too small", transform=ax.transAxes, ha="left",
+            va="top", fontsize=6.5, color="0.4")
+    ax.text(1.0, -0.10, r"too large $\rightarrow$", transform=ax.transAxes, ha="right",
+            va="top", fontsize=6.5, color="0.4")
+    ax.text(0.0, 1.03, letter, transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=9, fontfamily="cmr10")
+    ax.text(0.095, 1.03, label, transform=ax.transAxes, ha="left", va="bottom", fontsize=8.5)
+    ax.text(1.0, 1.03, f"${n:,}$ matched pairs".replace(",", r"\,"), transform=ax.transAxes,
+            ha="right", va="bottom", fontsize=7, color="0.4")
+
+
+def density_panel(ax, df, letter, label):
+    """The raw 2-D histogram of all matched pairs (0.08 bins, log colour), with the band means."""
+    m = df[df.role == "match"]
+    edges = np.arange(-LIM, LIM + 1e-9, 0.08)
+    h, _, _ = np.histogram2d(m.dlnA, m.dlnrho, bins=[edges, edges])
+    h = np.ma.masked_equal(h.T, 0)
+    from matplotlib.colors import LogNorm
+    im = ax.pcolormesh(edges, edges, h, cmap="Blues", norm=LogNorm(1, h.max()), rasterized=True,
+                       zorder=1.5)
+    xs = np.array([-LIM, LIM])
+    ax.plot(xs, -xs, color="0.3", lw=0.7, ls=(0, (1, 2)), zorder=10)
+    ax.text(1.72, -1.60, r"$\mathrm{d}\ln P = 0$", color="0.3", fontsize=6.5,
+            rotation=-45, ha="center", va="center", zorder=10)
+    ax.axhline(0, color="#7a7a7a", lw=0.5, zorder=2)
+    ax.axvline(0, color="#7a7a7a", lw=0.5, zorder=2)
+    for lo, hi, _, col in BANDS:
+        b = m[(m.scale >= lo) & (m.scale < hi)]
+        bx = np.average(b.dlnA, weights=b.P_t)
+        by = np.average(b.dlnrho, weights=b.P_t)
+        ax.plot([0, bx], [0, by], color=col, lw=1.2, zorder=8, solid_capstyle="round")
+        ax.plot(bx, by, "o", ms=5.5, mfc=col, mec="white", mew=0.9, zorder=9)
+    axes_style(ax, letter, label, len(m))
+    return im
+
+
+def main_density():
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
+    WF = 0.84 * W2
+    fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.66), sharey=True)
+    fig.subplots_adjust(left=0.09, right=0.99, top=0.935, bottom=0.30, wspace=0.08)
+    im = density_panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "(a)",
+                       "Two-head U-Net")
+    density_panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "(b)",
+                  "Flow, per draw")
+    axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
+    cax = fig.add_axes([0.30, 0.15, 0.40, 0.016])
+    cb = fig.colorbar(im, cax=cax, orientation="horizontal")
+    cb.set_label("matched pairs per bin (0.08 by 0.08)", fontsize=7.5)
+    cb.ax.tick_params(labelsize=7, length=2, width=0.5)
+    cb.outline.set_linewidth(0.5)
+    handles = [Line2D([], [], color=c, lw=1.2, marker="o", ms=4.5, mfc=c, mec="white",
+                      label="mean error, " + name) for _, _, name, c in BANDS]
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
+               columnspacing=1.6, handlelength=1.6, bbox_to_anchor=(0.54, -0.005))
+    fig.savefig(OUT / "fig4_decomp_density.pdf")
+    print("saved fig4_decomp_density.pdf")
+
+
+def main():
+    # the paper's text font
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
+    WF = 0.84 * W2
+    fig, axs = plt.subplots(1, 2, figsize=(WF, WF * 0.60), sharey=True)
+    fig.subplots_adjust(left=0.09, right=0.99, top=0.93, bottom=0.25, wspace=0.08)
+    panel(axs[0], pd.read_csv(EVAL / "systems_alltest_lead3h.csv.gz"), "(a)", "Two-head U-Net")
+    panel(axs[1], pd.read_csv(EVAL / "systems_alltest_flow_lead3h.csv.gz"), "(b)", "Flow, per draw")
+    axs[0].set_ylabel(r"intensity error  $\mathrm{d}\ln\rho$", fontsize=8.5, labelpad=3)
+    axs[0].text(-0.125, 0.0, r"$\leftarrow$ too weak", transform=axs[0].transAxes, ha="center",
+                va="bottom", rotation=90, fontsize=6.5, color="0.4")
+    axs[0].text(-0.125, 1.0, r"too strong $\rightarrow$", transform=axs[0].transAxes, ha="center",
+                va="top", rotation=90, fontsize=6.5, color="0.4")
+    handles = [Patch(fc=c, ec=c, alpha=0.6, label=name) for _, _, name, c in BANDS]
+    handles += [Patch(fc="0.6", ec="0.3", alpha=0.5, label="where three quarters of the band's pairs lie (darker: denser)"),
+                Line2D([], [], color="0.55", lw=0.6, label="95% of all pairs"),
+                Line2D([], [], color="0.3", lw=1.2, marker="o", ms=4.5, mfc="0.3", mec="white",
+                       label="rain-weighted mean error")]
+    fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
+               columnspacing=2.2, handlelength=1.6, handletextpad=0.6,
+               bbox_to_anchor=(0.54, 0.0))
+    fig.savefig(OUT / "fig4_decomp.pdf")
+    print("saved fig4_decomp.pdf")
+
+
+if __name__ == "__main__":
+    import sys
+    main_density() if "--density" in sys.argv else main()

@@ -1,0 +1,9 @@
+main.pdf
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.soc
+compile.log
+supplement.pdf
