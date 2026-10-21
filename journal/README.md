@@ -1,6 +1,6 @@
 # Journal
 
-One file per day: `journal/YYYY-MM-DD.md`. Written by Claude at the end of every working
+One file per day: `journal/YYYY-MM-DD.md`. Written by Claude and Sophie at the end of every working
 session (and on request with `/journal`), read at the start of the next one.
 
 Purpose: a lab notebook. Someone opening the repo in six months — Sophie, a collaborator,
