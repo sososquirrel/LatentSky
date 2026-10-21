@@ -42,3 +42,23 @@ def test_sample_runs_with_real_backbone_and_noise():
     o1 = rf.sample(net, torch.zeros(1, 3, 16, 16), torch.zeros(1, 1, 16, 16), 4, g1)
     o2 = rf.sample(net, torch.zeros(1, 3, 16, 16), torch.zeros(1, 1, 16, 16), 4, g2)
     assert not torch.allclose(o1, o2)
+
+
+def test_sample_path_ends_at_sample():
+    torch.manual_seed(0)
+    net = ConditionalDiffusionUNet(cond_ch=10, base_ch=8, depth=2, time_emb_dim=16).eval()
+    zf = torch.rand(1, 1, 16, 16)
+    cond = torch.rand(1, 10, 16, 16)
+    rf = RectifiedFlow(sigma=0.1)
+    x1 = rf.sample(net, cond, zf, n_steps=4, generator=torch.Generator().manual_seed(3))
+    path = rf.sample_path(net, cond, zf, n_steps=4, snap_at=(0.0, 0.5, 1.0),
+                          generator=torch.Generator().manual_seed(3))
+    assert set(path) == {0.0, 0.5, 1.0}
+    assert torch.allclose(path[1.0], x1)
+
+
+def test_flow_config_reads_experiment():
+    from latentsky.models.flow import flow_config
+    c3 = flow_config(3)
+    assert c3["sigma"] == 0.1876 and c3["n_steps"] == 32 and c3["target_offset"] == 13
+    assert flow_config(6)["sigma"] == 0.204

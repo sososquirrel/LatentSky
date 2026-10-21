@@ -15,6 +15,7 @@ import pandas as pd
 import xarray as xr
 
 from latentsky.metrics import cell_area_km2, match_systems
+from latentsky.comparison.wb2 import to_mm
 
 CACHE = pathlib.Path("/glade/derecho/scratch/sabramian/wb2_eval")
 OUT = pathlib.Path("/glade/u/home/sabramian/LatentSky/wb2_benchmark")
@@ -24,8 +25,6 @@ MODELS = {"graphcast": "2020-08", "fuxi": "2020-08", "gencast": "2020-08",
           "fgn": "2022-08"}
 
 
-def to_mm(a):
-    return a * 1000.0 if float(np.nanmax(a)) < 2.0 else a
 
 
 def counts(df):

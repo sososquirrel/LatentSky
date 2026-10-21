@@ -113,7 +113,6 @@ def main():
         ax.set_xlabel("dlnA  (area error)")
         ax.set_title(title, fontsize=9.5)
     axs[0].set_ylabel(r"dln$\rho$  (intensity error)")
-    from matplotlib.lines import Line2D
     axs[0].legend(handles=[
         Line2D([], [], marker="X", ls="none", ms=9, mfc=vir(cn(l)), mec="0.1",
                label=b) for b, _, _, l in BANDS],

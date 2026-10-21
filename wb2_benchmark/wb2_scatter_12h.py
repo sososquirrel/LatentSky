@@ -18,6 +18,7 @@ import xarray as xr
 from matplotlib.colors import LogNorm
 
 from latentsky.metrics import cell_area_km2, match_systems
+from latentsky.comparison.wb2 import to_mm
 
 CACHE = pathlib.Path("/glade/derecho/scratch/sabramian/wb2_eval")
 REPO = pathlib.Path("/glade/u/home/sabramian/LatentSky")
@@ -31,8 +32,6 @@ NAMES = {"graphcast": "graphcast", "fuxi": "fuxi",
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 
 
-def to_mm(a):
-    return a * 1000.0 if float(np.nanmax(a)) < 2.0 else a
 
 
 def main():

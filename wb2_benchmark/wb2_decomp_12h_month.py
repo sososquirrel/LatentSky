@@ -17,6 +17,7 @@ import pandas as pd
 import xarray as xr
 
 from latentsky.metrics import cell_area_km2, match_systems
+from latentsky.comparison.wb2 import crop
 
 CACHE = pathlib.Path("/glade/derecho/scratch/sabramian/wb2_eval")
 REPO = pathlib.Path("/glade/u/home/sabramian/LatentSky")
@@ -30,14 +31,6 @@ SO = {"token": "anon"}
 LEAD = np.timedelta64(12, "h")
 
 
-def crop(da):
-    ren = {k: v for k, v in {"latitude": "lat", "longitude": "lon"}.items()
-           if k in da.coords}
-    if ren:
-        da = da.rename(ren)
-    if da.lat.values[0] > da.lat.values[-1]:
-        da = da.sortby("lat")
-    return da.sel(lat=slice(-40, 40))
 
 
 def cached(name, build):

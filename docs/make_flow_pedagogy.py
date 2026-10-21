@@ -24,6 +24,7 @@ import torch
 from matplotlib.colors import LogNorm
 
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.layout import rain_from_z
 from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
@@ -121,8 +122,6 @@ def real_figures():
     net.eval()
     rf = RectifiedFlow(sigma=SIGMA)
 
-    def to_rain(z):
-        return np.clip(np.expm1(SCALE * np.clip(z, 0, 2.5)), 0, None)
 
     with torch.no_grad():
         det_t, _ = twohead(cond)
@@ -137,9 +136,9 @@ def real_figures():
         v_pred = net(x_t, cond, tt * (T_EMB_RANGE - 1)).numpy()[0, 0]
 
         # --- B: one training pair
-        rain_panels = [("two-head forecast", to_rain(zf.numpy()[0, 0])),
-                       ("source  x₀ = forecast + σ·ε", to_rain(x0.numpy()[0, 0])),
-                       ("midpoint  x_t  (t = 0.5)", to_rain(x_t.numpy()[0, 0])),
+        rain_panels = [("two-head forecast", rain_from_z(zf.numpy()[0, 0])),
+                       ("source  x₀ = forecast + σ·ε", rain_from_z(x0.numpy()[0, 0])),
+                       ("midpoint  x_t  (t = 0.5)", rain_from_z(x_t.numpy()[0, 0])),
                        ("truth  x₁", truth)]
         vmax = max(truth.max(), 1.0)
         norm = LogNorm(vmin=0.1, vmax=vmax)
@@ -192,7 +191,7 @@ def real_figures():
                     snaps[mark] = xcur.numpy()[0, 0].copy()
         fig, axs = plt.subplots(1, 6, figsize=(15.2, 3.0))
         for ax, tmark in zip(axs[:5], sorted(snaps)):
-            im = ax.imshow(to_rain(snaps[tmark]), origin="lower", norm=norm,
+            im = ax.imshow(rain_from_z(snaps[tmark]), origin="lower", norm=norm,
                            cmap=cmap, interpolation="nearest")
             ax.set_title(f"t = {tmark:g}" + ("  (source)" if tmark == 0 else
                                              "  (final draw)" if tmark == 1 else ""),
@@ -207,7 +206,7 @@ def real_figures():
         fig.savefig(OUT / "flow_sampling_path.png", dpi=140, bbox_inches="tight")
         plt.close(fig)
         print("saved flow_sampling_path.png  draw max",
-              round(float(to_rain(snaps[1.0]).max()), 1), "truth max",
+              round(float(rain_from_z(snaps[1.0]).max()), 1), "truth max",
               round(float(truth.max()), 1))
 
 

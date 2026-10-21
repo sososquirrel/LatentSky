@@ -13,22 +13,16 @@ import numpy as np
 from matplotlib.colors import LogNorm
 from matplotlib.patches import Patch, Rectangle
 
+from latentsky.evaluation.maps import add_coastlines, grid_lines  # noqa: F401  (re-exported)
+from latentsky.layout import (  # noqa: F401  (re-exported for deck/ and docs/)
+    EXAMPLE_BLOCK, EXAMPLE_FRAME, EXAMPLE_PIECE, H, INPUT_VARS, P, PIECES, W, load_frame)
 from latentsky.training.patch_split import compute_patch_grid, make_patch_split
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-PIECES = Path("/glade/derecho/scratch/sabramian/latentsky_pieces")
 OUT = REPO / "docs" / "assets_model_reference"
 
-INPUT_VARS = [
-    "precipw", "t2m", "olrtoa", "mse_500hPa", "mse_850hPa",
-    "uzonal_500hPa", "uzonal_850hPa", "umeridional_500hPa",
-    "umeridional_850hPa", "rain_log1p",
-]
-P = 128
-PIECE, FRAME = 8, 64          # same case as the model example
-BLOCK = (1, 4)
+PIECE, FRAME, BLOCK = EXAMPLE_PIECE, EXAMPLE_FRAME, EXAMPLE_BLOCK
 DELTA = 13                    # 3 h, matching the example
-H, W = 320, 1440
 NR, NC = compute_patch_grid(H, W, P)  # 2 x 11
 COL = {"train": "#e9edf1", "val": "#e08214", "test": "#2166ac"}
 
@@ -36,24 +30,7 @@ plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 
 
 def load(var, t=FRAME, pid=PIECE):
-    return np.asarray(np.load(PIECES / f"{var}_piece{pid:02d}.npy", mmap_mode="r")[t],
-                      dtype=np.float32)
-
-
-def add_coastlines(ax, color="0.1", lw=0.6):
-    mask = np.load(REPO / "data/eval_legacy/_landmask_320x1440_-40_40_50m.npy")
-    ax.contour(mask.astype(float), levels=[0.5], colors=color, linewidths=lw,
-               extent=[0, W, 0, H], origin="lower")
-
-
-def grid_lines(ax):
-    for r in range(NR + 1):
-        ax.axhline(r * P, color="0.15", lw=0.7)
-    for c in range(NC + 1):
-        ax.axvline(c * P, color="0.15", lw=0.7)
-    # unused remainder strips
-    ax.axhspan(NR * P, H, color="0.5", alpha=0.45, lw=0)
-    ax.axvspan(NC * P, W, color="0.5", alpha=0.45, lw=0)
+    return load_frame(var, t, pid)
 
 
 def fig_domain():

@@ -68,7 +68,6 @@ def test_many_to_one_merges_fragments():
 
 def test_summarize_by_scale_pod_far():
     h, w = 64, 128
-    area_row = cell_area_km2(h, w)
     truth = _disk(h, w, 20, 30, 8, 1.0) + _disk(h, w, 40, 90, 8, 1.0)
     pred = _disk(h, w, 20, 30, 8, 1.0)  # one hit, one miss, no false alarm
     tbl = system_table(truth[None], pred[None], threshold=0.1, add_geo=False)

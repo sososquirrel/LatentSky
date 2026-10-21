@@ -21,41 +21,27 @@ import torch
 from matplotlib.colors import LogNorm
 
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
-from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow
+from latentsky.layout import (  # noqa: F401  (re-exported)
+    EXAMPLE_BLOCK, EXAMPLE_FRAME, EXAMPLE_PIECE, INPUT_VARS, LOG_RAIN_SCALE, P, PIECES, RUNS,
+    rain_from_z)
+from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow, flow_config  # noqa: F401
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-RUNS = Path("/glade/derecho/scratch/sabramian/LatentSky_runs")
-PIECES = Path("/glade/derecho/scratch/sabramian/latentsky_pieces")
 OUT = REPO / "docs" / "assets_model_reference"
-INPUT_VARS = ["precipw", "t2m", "olrtoa", "mse_500hPa", "mse_850hPa",
-              "uzonal_500hPa", "uzonal_850hPa", "umeridional_500hPa",
-              "umeridional_850hPa", "rain_log1p"]
-P, PIECE, FRAME, BLOCK = 128, 8, 64, (1, 4)
-SCALE, SIGMA, NSTEPS = 2.0, 0.1876, 32
+P, PIECE, FRAME, BLOCK = P, EXAMPLE_PIECE, EXAMPLE_FRAME, EXAMPLE_BLOCK
+SCALE = LOG_RAIN_SCALE
+_CFG = flow_config(3)
+SIGMA, NSTEPS = _CFG["sigma"], _CFG["n_steps"]
 
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 matplotlib.rcParams["savefig.bbox"] = None
 
 
 def sample_traj(rf, net, cond, zf, seed):
-    g = torch.Generator().manual_seed(seed)
-    x = rf.source(zf, generator=g)
-    snaps = {0.0: x.numpy()[0, 0].copy()}
-    dt = 1.0 / NSTEPS
-    for i in range(NSTEPS):
-        t0 = torch.full((1,), i * dt)
-        v0 = net(x, cond, t0 * (T_EMB_RANGE - 1))
-        xp = x + dt * v0
-        if i + 1 < NSTEPS:
-            t1 = torch.full((1,), (i + 1) * dt)
-            v1 = net(xp, cond, t1 * (T_EMB_RANGE - 1))
-            x = x + dt * 0.5 * (v0 + v1)
-        else:
-            x = xp
-        for m in (0.5, 1.0):
-            if abs((i + 1) * dt - m) < dt / 2:
-                snaps[m] = x.numpy()[0, 0].copy()
-    return snaps
+    """Fields at flow times 0, 0.5 and 1 of one draw (numpy, block only)."""
+    snaps = rf.sample_path(net, cond, zf, n_steps=NSTEPS, snap_at=(0.0, 0.5, 1.0),
+                           generator=torch.Generator().manual_seed(seed))
+    return {m: v.numpy()[0, 0].copy() for m, v in snaps.items()}
 
 
 def main():
@@ -80,8 +66,6 @@ def main():
     net.eval()
     rf = RectifiedFlow(sigma=SIGMA)
 
-    def to_rain(z):
-        return np.clip(np.expm1(SCALE * np.clip(z, 0, 2.5)), 0, None)
 
     with torch.no_grad():
         det_t, _ = twohead(cond)
@@ -122,25 +106,25 @@ def main():
         plt.close(fig)
         print("saved", fn)
 
-    strip([("our forecast for +3 h", to_rain(zf0), "rain"),
+    strip([("our forecast for +3 h", rain_from_z(zf0), "rain"),
            ("what actually happened", truth, "rain")], "flow_step1.png")
-    strip([("the forecast", to_rain(zf0), "rain"),
-           ("+ a sprinkle of noise = x₀", to_rain(x00), "rain")],
+    strip([("the forecast", rain_from_z(zf0), "rain"),
+           ("+ a sprinkle of noise = x₀", rain_from_z(x00), "rain")],
           "flow_step2.png")
-    strip([("25 % of the way", to_rain(xts[0.25]), "rain"),
-           ("50 %", to_rain(xts[0.5]), "rain"),
-           ("75 %", to_rain(xts[0.75]), "rain")], "flow_step3.png")
+    strip([("25 % of the way", rain_from_z(xts[0.25]), "rain"),
+           ("50 %", rain_from_z(xts[0.5]), "rain"),
+           ("75 %", rain_from_z(xts[0.75]), "rain")], "flow_step3.png")
     strip([("the right answer:  truth − x₀", v_target, "v"),
            ("the network's answer", v_pred, "v")], "flow_step4.png")
-    strip([("start: fresh noise on the forecast", to_rain(trajA[0.0]), "rain"),
-           ("after 16 of 32 steps", to_rain(trajA[0.5]), "rain"),
-           ("after 32 steps: the draw", to_rain(trajA[1.0]), "rain")],
+    strip([("start: fresh noise on the forecast", rain_from_z(trajA[0.0]), "rain"),
+           ("after 16 of 32 steps", rain_from_z(trajA[0.5]), "rain"),
+           ("after 32 steps: the draw", rain_from_z(trajA[1.0]), "rain")],
           "flow_step5.png")
-    strip([("draw A (one sprinkle)", to_rain(trajA[1.0]), "rain"),
-           ("draw B (another sprinkle)", to_rain(trajB[1.0]), "rain"),
+    strip([("draw A (one sprinkle)", rain_from_z(trajA[1.0]), "rain"),
+           ("draw B (another sprinkle)", rain_from_z(trajB[1.0]), "rain"),
            ("the truth", truth, "rain")], "flow_step6.png")
-    print("draw maxima:", round(float(to_rain(trajA[1.0]).max()), 1),
-          round(float(to_rain(trajB[1.0]).max()), 1),
+    print("draw maxima:", round(float(rain_from_z(trajA[1.0]).max()), 1),
+          round(float(rain_from_z(trajB[1.0]).max()), 1),
           "truth", round(float(truth.max()), 1))
 
 

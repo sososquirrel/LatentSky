@@ -15,9 +15,27 @@ different eps draws. All fields in z = log1p(rain) / 2 space, as everywhere else
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 import torch
 
 T_EMB_RANGE = 1000  # scale of the sinusoidal embedding the backbone expects
+FLOW_EXPERIMENT = Path(__file__).resolve().parents[3] / "experiments" / "flow_matching_6h"
+
+
+def flow_config(lead_h: float, root: Path = FLOW_EXPERIMENT) -> dict:
+    """The canonical flow settings of one lead, read from its experiment config:
+    sigma, the number of sampling steps, and the frame offset of the target
+    (lead_steps_15 + 1, the convention of the training run)."""
+    import yaml
+
+    for fn in [root / f"config_lead{lead_h:g}h.yaml", root / "config.yaml"]:
+        if fn.exists():
+            cfg = yaml.safe_load(fn.read_text())
+            if abs(cfg["lead_steps_15"] * 0.25 - lead_h) < 1e-9:
+                return {"sigma": float(cfg["sigma"]), "n_steps": int(cfg["eval_n_steps"]),
+                        "target_offset": int(cfg["lead_steps_15"]) + 1, "name": cfg["name"]}
+    raise FileNotFoundError(f"no flow config for lead {lead_h} h in {root}")
 
 
 class RectifiedFlow:
@@ -54,3 +72,26 @@ class RectifiedFlow:
             else:
                 x = x_pred
         return x
+
+    @torch.no_grad()
+    def sample_path(self, model, cond: torch.Tensor, z_forecast: torch.Tensor,
+                    n_steps: int = 32, snap_at=(0.0, 0.5, 1.0), generator=None) -> dict:
+        """The same Heun integration as `sample`, keeping the field at the flow
+        times in `snap_at` (0 is the noised forecast, 1 the draw)."""
+        x = self.source(z_forecast, generator=generator)
+        snaps = {0.0: x.clone()} if any(abs(m) < 1e-12 for m in snap_at) else {}
+        dt = 1.0 / n_steps
+        for i in range(n_steps):
+            t0 = torch.full((x.shape[0],), i * dt, device=x.device)
+            v0 = model(x, cond, t0 * (T_EMB_RANGE - 1))
+            x_pred = x + dt * v0
+            if i + 1 < n_steps:
+                t1 = torch.full((x.shape[0],), (i + 1) * dt, device=x.device)
+                v1 = model(x_pred, cond, t1 * (T_EMB_RANGE - 1))
+                x = x + dt * 0.5 * (v0 + v1)
+            else:
+                x = x_pred
+            for m in snap_at:
+                if m > 0 and abs((i + 1) * dt - m) < dt / 2:
+                    snaps[m] = x.clone()
+        return snaps

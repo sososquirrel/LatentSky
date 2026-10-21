@@ -14,7 +14,6 @@ strict load_state_dict compatibility against the canonical trained runs.
 
 from __future__ import annotations
 
-import math
 
 import torch.nn as nn
 import torch

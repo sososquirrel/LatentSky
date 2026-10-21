@@ -16,17 +16,15 @@ from matplotlib.lines import Line2D
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.layout import (  # noqa: F401  (re-exported)
+    EXAMPLE_BLOCK, EXAMPLE_FRAME, EXAMPLE_PIECE, INPUT_VARS, IOU_MIN, LOG_RAIN_SCALE, P,
+    PIECES, RUNS, WET_THRESHOLD_MM)
 from latentsky.models.flow import RectifiedFlow
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-RUNS = Path("/glade/derecho/scratch/sabramian/LatentSky_runs")
-PIECES = Path("/glade/derecho/scratch/sabramian/latentsky_pieces")
 OUT = REPO / "docs" / "assets_model_reference"
-INPUT_VARS = ["precipw", "t2m", "olrtoa", "mse_500hPa", "mse_850hPa",
-              "uzonal_500hPa", "uzonal_850hPa", "umeridional_500hPa",
-              "umeridional_850hPa", "rain_log1p"]
-P, PIECE, FRAME, BLOCK = 128, 8, 64, (1, 4)
-THR, IOU_MIN, SCALE = 0.1, 0.1, 2.0
+PIECE, FRAME, BLOCK = EXAMPLE_PIECE, EXAMPLE_FRAME, EXAMPLE_BLOCK
+THR, SCALE = WET_THRESHOLD_MM, LOG_RAIN_SCALE
 
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 
