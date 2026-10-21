@@ -12,14 +12,20 @@ lint:
 
 # --- paper: home is paper/, Overleaf mirrors that folder only ------------------
 # one-time: git remote add overleaf https://git.overleaf.com/<project-id>
-OVERLEAF_BRANCH := master
+OVERLEAF_BRANCH := main
 paper:
 	cd paper && module load texlive/20250308 2>/dev/null; \
 	pdflatex -interaction=nonstopmode main.tex >/dev/null; bibtex main >/dev/null; \
 	pdflatex -interaction=nonstopmode main.tex >/dev/null; pdflatex -interaction=nonstopmode main.tex | tail -2
 # bring the co-author's Overleaf edits into paper/ (commit your own work first)
 overleaf-pull:
-	git subtree pull --prefix paper overleaf $(OVERLEAF_BRANCH) -m "paper: merge Overleaf edits"
-# send paper/ to Overleaf (pulls first, so nobody's edits are overwritten)
+	@if git fetch overleaf $(OVERLEAF_BRANCH); then \
+	  git merge -s recursive -Xsubtree=paper --allow-unrelated-histories --no-edit \
+	    -m "paper: merge Overleaf edits" overleaf/$(OVERLEAF_BRANCH); \
+	else echo "(Overleaf has no history yet: nothing to pull)"; fi
+# send the current paper/ to Overleaf as one snapshot commit (no repo history,
+# nothing outside paper/); pulls first, so the co-author's edits are kept
 overleaf-push: overleaf-pull
-	git subtree push --prefix paper overleaf $(OVERLEAF_BRANCH)
+	@parent=$$(git rev-parse -q --verify overleaf/$(OVERLEAF_BRANCH) >/dev/null && echo "-p overleaf/$(OVERLEAF_BRANCH)"); \
+	c=$$(git commit-tree HEAD:paper $$parent -m "paper/ from LatentSky $$(git rev-parse --short HEAD)"); \
+	git push overleaf $$c:refs/heads/$(OVERLEAF_BRANCH)
