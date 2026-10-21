@@ -28,4 +28,8 @@ overleaf-pull:
 overleaf-push: overleaf-pull
 	@parent=$$(git rev-parse -q --verify overleaf/$(OVERLEAF_BRANCH) >/dev/null && echo "-p overleaf/$(OVERLEAF_BRANCH)"); \
 	c=$$(git commit-tree HEAD:paper $$parent -m "paper/ from LatentSky $$(git rev-parse --short HEAD)"); \
-	git push overleaf $$c:refs/heads/$(OVERLEAF_BRANCH)
+	git push overleaf $$c:refs/heads/$(OVERLEAF_BRANCH) && \
+	git fetch -q overleaf $(OVERLEAF_BRANCH) && \
+	git merge -q -s ours --no-edit -m "paper: synced to Overleaf" $$c
+# (the last merge records the pushed snapshot in this branch's history, with no
+#  file change, so the next pull compares against it and not against an old base)
