@@ -28,6 +28,7 @@ OUT = REPO / "paper" / "figures"
 LEADS = [0.25, 0.5, 1, 2, 3, 6]
 BANDS = [(25, 50), (50, 100), (100, 200), (200, 400), (400, 800)]
 BAND_CMAP = plt.get_cmap("viridis")
+LABEL = {"two-head": "U-Net", "flow": "flow", "persistence": "persistence"}
 FIT_WINDOW = (50, 400)   # km; band mids 59 ... 336
 
 
@@ -87,14 +88,14 @@ def main():
         df = pd.read_csv(table_name(model, 3))
         summ = summarize_by_scale(df, edges).by_scale
         kw = dict(color=COLOR[model], marker=MARKER[model], ms=3.5, lw=1.4)
-        ax_pod.plot(summ["scale_mid"], summ["POD"], ls="-", label=model, **kw)
+        ax_pod.plot(summ["scale_mid"], summ["POD"], ls="-", label=LABEL[model], **kw)
         ax_far.plot(summ["scale_mid"], summ["FAR"], ls="--", **kw)
     for ax, ylab in [(ax_pod, "Probability of Detection (POD)"), (ax_far, "False-Alarm Ratio (FAR)")]:
         ax.set_xscale("log")
         ax.set_xlim(25, 620)
         log_ticks(ax.xaxis, [30, 50, 100, 200, 400])
         ax.set_ylim(0, 1.02)
-        ax.set_xlabel(r"system scale $L = \sqrt{A}$ (km)")
+        ax.set_xlabel(r"system size $L = \sqrt{A}$ (km)")
         ax.set_ylabel(ylab)
     ax_pod.legend(loc="center left", fontsize=8)
     title(ax_pod, "(a)", "Detection by system size, +3 h")
@@ -112,14 +113,13 @@ def main():
     ax_dec.set_xlabel("lead time (h)")
     ax_dec.set_ylabel("Probability of Detection (POD)")
     ax_dec.plot([], [], "-", color="0.3", lw=1.5, label="flow")
-    ax_dec.plot([], [], ":", color="0.3", lw=1.2, label="two-head")
+    ax_dec.plot([], [], ":", color="0.3", lw=1.2, label="U-Net")
     ax_dec.legend(loc="center", bbox_to_anchor=(0.72, 0.55), fontsize=7.5)
     title(ax_dec, "(c)", "Detection against lead time, per size band")
 
     # --- (d) tau(L) scaling -------------------------------------------------
     df = pd.read_csv(ASSETS / "tau_fullrecord.csv")
     mids = np.sort(df.L_mid.unique())
-    sc = None
     # one fit window for the three forecasts: the bands a 6 h record constrains
     # for persistence, and the same bands for the two models
     ax_tau.axvspan(*FIT_WINDOW, color="0.93", lw=0, zorder=0)
@@ -128,16 +128,17 @@ def main():
     inw = (mids > FIT_WINDOW[0]) & (mids < FIT_WINDOW[1])
     for model in ("persistence", "two-head", "flow"):
         d = df[df.model == model].sort_values("L_mid")
-        t, pod0 = d.tau.to_numpy(), d["pod_0.25h"].to_numpy()
+        t = d.tau.to_numpy()
         out = fit_powerlaw(mids[inw], t[inw])
         a = out["beta"]
         c0 = out["tau_ref"] / (out["L_ref"] ** a)
         Lg = np.array(FIT_WINDOW, dtype=float)
         ax_tau.plot(Lg, c0 * Lg ** a, "-", color=COLOR[model], lw=1.4,
-                    label=rf"{model}: $\alpha$ = {a:.2f}")
-        sc = ax_tau.scatter(mids[inw], t[inw], c=pod0[inw], cmap="plasma",
-                            vmin=0, vmax=1, marker=MARKER[model], s=26,
-                            edgecolors=COLOR[model], linewidths=1.0, zorder=4)
+                    label=rf"{LABEL[model]}: $\alpha$ = {a:.2f}")
+        # bands in the fit: filled with the model's colour
+        ax_tau.scatter(mids[inw], t[inw], marker=MARKER[model], s=34,
+                       facecolors=COLOR[model], edgecolors="white",
+                       linewidths=0.6, zorder=4)
         # bands left out of the fit: hollow
         left = ~inw & np.isfinite(t) & (t > 0) & (t < 110)
         ax_tau.scatter(mids[left], t[left], marker=MARKER[model], s=26,
@@ -149,22 +150,19 @@ def main():
     log_ticks(ax_tau.yaxis, [0.5, 1, 2, 5, 10, 20, 50, 100])
     ax_tau.set_xlim(25, 800)
     ax_tau.set_ylim(0.3, 110)
-    ax_tau.set_xlabel("system scale L (km)")
+    ax_tau.set_xlabel(r"system size $L = \sqrt{A}$ (km)")
     ax_tau.set_ylabel(r"detection horizon $\tau(L)$ (h)")
     ax_tau.legend(loc="upper left", fontsize=7.5)
     title(ax_tau, "(d)", "Horizon against system size")
-    # colorbar below panel D, without shrinking the panel itself: give it an
-    # explicit axis so D stays the same size as the POD panel
     fig.subplots_adjust(left=0.075, right=0.985, top=0.965,
                         bottom=0.055, hspace=0.32, wspace=0.22)
+    # below panel D: what filled and hollow markers mean, level with C's colorbar
     pos = ax_tau.get_position()
-    cax = fig.add_axes([pos.x0 + 0.08 * pos.width, pos.y0 - 0.105,
-                        0.84 * pos.width, 0.016])
-    cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
-    cb.set_label(r"POD at 0.25 h lead ($\mathrm{POD}_0$)", fontsize=8)
-    cb.ax.tick_params(labelsize=7, length=2, width=0.6)
-    cb.outline.set_linewidth(0.5)
-
+    from matplotlib.lines import Line2D
+    hk = [Line2D([], [], ls="", marker="o", ms=5, mfc="0.35", mec="white", label="in the fit"),
+          Line2D([], [], ls="", marker="o", ms=5, mfc="white", mec="0.35", label="not fitted")]
+    fig.legend(handles=hk, loc="center", ncol=2, fontsize=7.5, frameon=False,
+               bbox_to_anchor=(pos.x0 + pos.width / 2, pos.y0 - 0.097))
     # discrete band colorbar below panel C, symmetric with D's
     from matplotlib import cm
     from matplotlib.colors import BoundaryNorm, ListedColormap

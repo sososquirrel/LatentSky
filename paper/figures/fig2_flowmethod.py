@@ -10,7 +10,6 @@ answers it. Reuses make_flow_steps' computation (CPU, ~2 min).
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -20,17 +19,29 @@ from matplotlib.colors import LogNorm
 from paperfig import W2
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "docs"))
-from make_flow_steps import (  # noqa: E402
-    BLOCK, FRAME, INPUT_VARS, P, PIECE, PIECES, RUNS, SCALE, SIGMA,
-    sample_traj)
+from latentsky.layout import EXAMPLE_BLOCK as BLOCK  # noqa: E402
+from latentsky.layout import EXAMPLE_FRAME as FRAME  # noqa: E402
+from latentsky.layout import EXAMPLE_PIECE as PIECE  # noqa: E402
+from latentsky.layout import INPUT_VARS, P, PIECES, RUNS, rain_from_z  # noqa: E402
+from latentsky.layout import LOG_RAIN_SCALE as SCALE  # noqa: E402
+from latentsky.models.flow import flow_config  # noqa: E402
+
+CFG = flow_config(3)
+SIGMA = CFG["sigma"]
+
+
+def sample_traj(rf, net, cond, zf, seed):
+    """Fields at flow times 0, 0.5 and 1 of one draw (numpy, block only)."""
+    snaps = rf.sample_path(net, cond, zf, n_steps=CFG["n_steps"], snap_at=(0.0, 0.5, 1.0),
+                           generator=torch.Generator().manual_seed(seed))
+    return {m: v.numpy()[0, 0].copy() for m, v in snaps.items()}
 
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
 from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow  # noqa: E402
 
 import matplotlib  # noqa: E402
 
-matplotlib.rcParams["savefig.bbox"] = "tight"  # make_flow_steps unsets it
+matplotlib.rcParams["savefig.bbox"] = "tight"
 
 OUT = REPO / "paper" / "figures"
 
@@ -43,7 +54,7 @@ def compute():
                                      mmap_mode="r")[FRAME],
                              dtype=np.float32)[sl] for v in INPUT_VARS], 0)
     truth = np.asarray(np.load(PIECES / f"rain_total_piece{PIECE:02d}.npy",
-                               mmap_mode="r")[FRAME + 13],
+                               mmap_mode="r")[FRAME + CFG["target_offset"]],
                        dtype=np.float32)[sl]
     cond = torch.from_numpy(x[None])
     twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
@@ -78,8 +89,6 @@ def compute():
 def main():
     d = compute()
 
-    def to_rain(z):
-        return np.clip(np.expm1(SCALE * np.clip(z, 0, 2.5)), 0, None)
 
     vmax = max(d["truth"].max(), 1.0)
     rnorm = LogNorm(vmin=0.1, vmax=vmax)
@@ -88,12 +97,12 @@ def main():
     vlim = float(np.abs(d["v_target"]).max()) * 0.85
 
     panels = [
-        ("(a)", "forecast (two-head)", to_rain(d["zf"]), "rain"),
+        ("(a)", "forecast (two-head)", rain_from_z(d["zf"]), "rain"),
         ("(b)", "truth", d["truth"], "rain"),
-        ("(c)", "flow draw A", to_rain(d["drawA"]), "rain"),
-        ("(d)", "flow draw B", to_rain(d["drawB"]), "rain"),
-        ("(e)", "x₀ = forecast + σ·ε", to_rain(d["x0"]), "rain"),
-        ("(f)", "crossfade x₀→truth, t = 0.5", to_rain(d["x_half"]), "rain"),
+        ("(c)", "flow draw A", rain_from_z(d["drawA"]), "rain"),
+        ("(d)", "flow draw B", rain_from_z(d["drawB"]), "rain"),
+        ("(e)", "x₀ = forecast + σ·ε", rain_from_z(d["x0"]), "rain"),
+        ("(f)", "crossfade x₀→truth, t = 0.5", rain_from_z(d["x_half"]), "rain"),
         ("(g)", "target v = truth − x₀", d["v_target"], "v"),
         ("(h)", "network v̂ at t = 0.5", d["v_pred"], "v"),
     ]

@@ -16,14 +16,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LogNorm
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "docs"))
 sys.path.insert(0, str(REPO / "paper" / "figures"))
 from paperfig import W2  # noqa: E402
 
@@ -35,20 +33,25 @@ SEEDS = (11, 12, 13)
 
 def compute():
     import torch
-    from make_flow_steps import (BLOCK, FRAME, INPUT_VARS, NSTEPS, P, PIECE,
-                                 PIECES, RUNS, SCALE, SIGMA)
+    from latentsky.layout import EXAMPLE_BLOCK as BLOCK
+    from latentsky.layout import EXAMPLE_FRAME as FRAME
+    from latentsky.layout import EXAMPLE_PIECE as PIECE
+    from latentsky.layout import INPUT_VARS, P, PIECES, RUNS, rain_from_z
+    from latentsky.layout import LOG_RAIN_SCALE as SCALE
+    from latentsky.models.flow import flow_config
 
     from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
-    from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow
+    from latentsky.models.flow import RectifiedFlow
 
     torch.set_num_threads(8)
+    cfg = flow_config(3)
     r, c = BLOCK
     sl = np.s_[r * P:(r + 1) * P, c * P:(c + 1) * P]
     x = np.stack([np.asarray(np.load(PIECES / f"{v}_piece{PIECE:02d}.npy",
                                      mmap_mode="r")[FRAME],
                              dtype=np.float32)[sl] for v in INPUT_VARS], 0)
     truth = np.asarray(np.load(PIECES / f"rain_total_piece{PIECE:02d}.npy",
-                               mmap_mode="r")[FRAME + 13],
+                               mmap_mode="r")[FRAME + cfg["target_offset"]],
                        dtype=np.float32)[sl]
     cond = torch.from_numpy(x[None])
     twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
@@ -62,38 +65,21 @@ def compute():
         RUNS / "flow_models/flow_matching_lead3h.checkpoint.pt",
         map_location="cpu", weights_only=True))
     net.eval()
-    rf = RectifiedFlow(sigma=SIGMA)
+    rf = RectifiedFlow(sigma=cfg["sigma"])
 
-    def to_rain(z):
-        return np.clip(np.expm1(SCALE * np.clip(z, 0, 2.5)), 0, None)
 
     out = dict(inputs=x, truth=truth, input_vars=np.array(INPUT_VARS))
-    dt = 1.0 / NSTEPS
     with torch.no_grad():
         det_t, _ = twohead(cond)
         zf = torch.log1p(torch.clamp(det_t, min=0.0)) / SCALE
-        out["forecast"] = to_rain(zf.numpy()[0, 0])
+        out["forecast"] = rain_from_z(zf.numpy()[0, 0])
         for seed in SEEDS:
-            g = torch.Generator().manual_seed(seed)
-            xc = rf.source(zf, generator=g)
-            snaps = {0.0: xc.numpy()[0, 0].copy()}
-            # Heun, as in the paper: last step plain Euler
-            for i in range(NSTEPS):
-                t0 = torch.full((1,), i * dt)
-                v0 = net(xc, cond, t0 * (T_EMB_RANGE - 1))
-                xp = xc + dt * v0
-                if i + 1 < NSTEPS:
-                    t1 = torch.full((1,), (i + 1) * dt)
-                    v1 = net(xp, cond, t1 * (T_EMB_RANGE - 1))
-                    xc = xc + dt * 0.5 * (v0 + v1)
-                else:
-                    xc = xp
-                for m in SNAP_T[1:]:
-                    if abs((i + 1) * dt - m) < dt / 2:
-                        snaps[m] = xc.numpy()[0, 0].copy()
+            path = rf.sample_path(net, cond, zf, n_steps=cfg["n_steps"], snap_at=SNAP_T,
+                                  generator=torch.Generator().manual_seed(seed))
+            snaps = {m: v.numpy()[0, 0] for m, v in path.items()}
             if seed == SEEDS[0]:
-                out["path"] = np.stack([to_rain(snaps[m]) for m in SNAP_T])
-            out[f"draw{seed}"] = to_rain(snaps[1.0])
+                out["path"] = np.stack([rain_from_z(snaps[m]) for m in SNAP_T])
+            out[f"draw{seed}"] = rain_from_z(snaps[1.0])
             print("seed", seed, "done", flush=True)
     CACHE.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(CACHE, **out)
@@ -110,17 +96,25 @@ BLUE_BG, ORANGE_BG, INK, GRAY = "#eef1f4", "#f2eef5", "0.2", "0.45"
 
 
 def draw():
+    # the paper's text font is Computer Modern: use it here too
+    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
+                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
+                         "axes.formatter.use_mathtext": True})
+    fig, ax = plt.subplots(figsize=(W2, W2 * 0.45))
+    draw_pipeline(ax)
+    fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
+    fig.savefig(OUT / "fig2_pipeline.pdf")
+    print("saved fig2_pipeline.pdf")
+
+
+def draw_pipeline(ax, letters=("(a)", "(b)", "(c)")):
+    """Draw the schematic into `ax` (aspect W2 x 0.45 W2), panels tagged `letters`."""
     d = np.load(CACHE, allow_pickle=False)
     norm = LogNorm(0.1, max(float(d["truth"].max()), 1.0))
     rcmap = plt.get_cmap("Blues").copy()
     rcmap.set_under("#ffffff")
     rcmap.set_bad("#ffffff")
 
-    # the paper's text font is Computer Modern: use it here too
-    plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
-                         "mathtext.fontset": "cm", "axes.unicode_minus": False,
-                         "axes.formatter.use_mathtext": True})
-    fig, ax = plt.subplots(figsize=(W2, W2 * 0.45))
     ax.set_xlim(-1.6, 100)
     ax.set_ylim(10.5, 55.5)
     ax.axis("off")
@@ -202,7 +196,7 @@ def draw():
               extent=(xr, xr + S_IN, yr, yr + S_IN), interpolation="nearest", zorder=3)
     ax.add_patch(Rectangle((xr, yr), S_IN, S_IN, fill=False, ec=BLUE, lw=1.2, zorder=4))
     ax.text(xr + S_IN / 2, yr - 0.6, "rain at time $t$", ha="center", va="top", fontsize=6.5)
-    panel(-1.2, "(a)", "Inputs")
+    panel(-1.2, letters[0], "Inputs")
     # the two inputs join and enter the U-Net
     xj, y_st = 15.6, 37.0
     st_right = 0.6 + 0.5 * (len(state) - 1) + S_IN
@@ -214,7 +208,7 @@ def draw():
     y0 = YM - S / 2
     xu = 18.6
     xu1, _ = unet(xu, YM, BLUE, BLUE_BG, "U-Net", 10, 2)
-    panel(xu, "(b)", r"U-Net: rain at $t + \Delta t$")
+    panel(xu, letters[1], r"U-Net: rain at $t + \Delta t$")
     arrow((xj, YM), (xu, YM))
     xf = xu1 + 3.0
     rain(d["forecast"], xf, y0, S, "U-Net forecast", ec=BLUE, lw=1.1)
@@ -224,7 +218,7 @@ def draw():
     # ---------------- flow matching -------------------------------------------
     xc0 = xf + S + 2.5
     frame(xc0, 11.5, 99.6 - xc0, 40.0, ORANGE, "none")
-    panel(xc0, "(c)", "Flow matching: forecast + noise $\\rightarrow$ draws")
+    panel(xc0, letters[2], "Flow matching: forecast + noise $\\rightarrow$ draws")
     x0s = xc0 + 1.6
     rain(d["path"][0], x0s, y0, S, "$x_0$")
     ax.text(x0s + S / 2, y0 - 0.6, r"forecast $+\,\sigma\varepsilon$", ha="center",
@@ -292,9 +286,6 @@ def draw():
     ax.plot(*src, "o", ms=3.0, mfc=INK, mec="white", mew=0.4, zorder=7)
     ax.text(xb + SD + 1.0, yd + SD / 2, "one forecast,\nthree draws", ha="left", va="center",
             fontsize=5.5, color=GRAY, linespacing=1.2)
-    fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
-    fig.savefig(OUT / "fig2_pipeline.pdf")
-    print("saved fig2_pipeline.pdf")
 
 
 if __name__ == "__main__":

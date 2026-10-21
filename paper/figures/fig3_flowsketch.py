@@ -13,15 +13,14 @@ from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.colors import LogNorm
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "docs"))
 sys.path.insert(0, str(REPO / "paper" / "figures"))
 from fig2_flowmethod import compute  # noqa: E402
-from make_flow_steps import SCALE  # noqa: E402
+
+from latentsky.layout import rain_from_z  # noqa: E402
 
 matplotlib.rcParams["savefig.bbox"] = "tight"
 OUT = REPO / "paper" / "figures"
@@ -32,15 +31,13 @@ GRAY = "#666666"
 INK = "0.2"
 
 
-def to_rain(z):
-    return np.clip(np.expm1(SCALE * np.clip(z, 0, 2.5)), 0, None)
 
 
 def main():
     d = compute()
-    fc = to_rain(d["zf"])
-    dA = to_rain(d["drawA"])
-    dB = to_rain(d["drawB"])
+    fc = rain_from_z(d["zf"])
+    dA = rain_from_z(d["drawA"])
+    dB = rain_from_z(d["drawB"])
     truth = d["truth"]
     vmax = max(truth.max(), 1.0)
     norm = LogNorm(0.1, vmax)

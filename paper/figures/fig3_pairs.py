@@ -7,10 +7,8 @@ no titles, in-panel labels, thin rain colorbar below. CPU ~1 min.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -19,9 +17,9 @@ from matplotlib.lines import Line2D
 from paperfig import W2
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "docs"))
-from make_flow_pairs_panel import (  # noqa: E402
-    INPUT_VARS, IOU_MIN, P, PIECES, RUNS, SCALE, THR)
+from latentsky.layout import INPUT_VARS, IOU_MIN, P, PIECES, RUNS  # noqa: E402
+from latentsky.layout import LOG_RAIN_SCALE as SCALE  # noqa: E402
+from latentsky.layout import WET_THRESHOLD_MM as THR  # noqa: E402
 
 # the standard example block of the paper (West Pacific warm pool), as in Fig. 2
 PIECE, FRAME, BLOCK = 8, 64, (1, 4)

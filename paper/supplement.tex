@@ -1,9 +1,10 @@
-%% Supporting Information for "The Size of the Storm Sets the Horizon"
+%% Supporting Information for "The Size of the Storm Sets the Horizon" (GRL; AGU Advances version: supplement_agu_advances.tex)
 %% Compiled standalone (article class); port into the AGU SI template
 %% (agutexSI2019.cls from Overleaf) at submission.
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{lineno}
@@ -61,6 +62,44 @@ single unactivated velocity head; the per-lead noise scale $\sigma$ is the
 measured wet-masked forecast error rms in log-rain space
 ($0.102, 0.119, 0.146, 0.171, 0.188, 0.204$ for the six leads).
 
+\textbf{Inputs.} Each input field is standardized with one mean and one
+standard deviation per field over the whole record; the rain is
+transformed to $\ln(1 + R)$ before standardization, $R$ in mm per
+$15$~min. The target is the rain in mm, not standardized. The models see
+one $128 \times 128$ block at a time and nothing outside it. In addition to
+the ten fields, the U-Net receives at its bottleneck the mean and the
+minimum of the outgoing longwave radiation over the block: two numbers that
+tell it how much deep convection the block holds and how cold its highest
+tops are.
+
+\textbf{U-Net loss.} The loss is Eq.~1 of the main text, with weights
+$1$, $1$, and $0.25$; the wet threshold of the fraction term is
+$0.1$~mm, with a sigmoid of sharpness $20$ to keep it differentiable, and
+its six windows ($1, 3, 5, 11, 19, 33$ pixels) coincide with the size
+bands of the evaluation. The wet/dry head hedges like the rain head:
+because some rain is present almost everywhere in a $15$-min
+kilometer-scale field, it calls almost every pixel wet (Figure~S1). The
+evaluation uses the rain head alone.
+
+\textbf{Flow matching.} The flow works in the log space $z = \ln(1 + R)/2$.
+For one training sample with inputs $c$, U-Net forecast $z_{\mathrm{fc}}$,
+and truth $z$, the start is $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$
+with $\varepsilon \sim \mathcal{N}(0, I)$, the end is $x_1 = z$, and
+$x_s = (1 - s)\,x_0 + s\,x_1$. The velocity network is the least-squares
+fit of
+\begin{equation}
+v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] :
+\end{equation}
+the average, over all training lines passing through $x$ at time $s$, of
+the direction to their own truth. A draw starts from
+$y_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ and integrates
+$y_1 = y_0 + \int_0^1 v_s(y_s, c)\,\mathrm{d}s$ with $32$ Heun steps (the
+last a plain Euler step). Besides generating different draws, the noise
+spreads the starting points of the training lines around each forecast,
+so that a new forecast starts where training lines have passed. All flow
+statistics are computed on one draw per block and frame with a fixed seed,
+never on an average of draws.
+
 \section*{Text S3. The warm-started diffusion model as a sampling sensitivity}
 Before the rectified flow, the generative representative was a conditional
 denoising diffusion model trained to denoise noised \emph{truth}, sampled by
@@ -75,7 +114,23 @@ area $+1.5\%$ at $6$~h). We therefore report the diffusion model as a
 sampling-protocol sensitivity: its failure localizes the DDPM's limit in
 the sampler's mismatch, not in an informational limit of the inputs.
 
-\section*{Text S4. Sensitivities of the matching}
+\section*{Text S4. The detection horizon}
+Systems are counted in ten log-spaced size bands from $25$ to $600$~km
+(Figure~4a,b of the main text) or $800$~km (Figure~4c,d). In each band, the
+POD at the six leads is divided by its value at the shortest lead,
+$15$~min, and $\exp[-(t - 0.25\,\mathrm{h})/\tau]$ is fitted to the ratio
+by least squares, with $\tau$ bounded to $[0.1, 200]$~h. The power law
+$T(L) \propto L^{\alpha}$ is fitted by unweighted least squares of
+$\ln\tau$ on $\ln L$ over the six bands from $59$ to $336$~km, the same
+for the three forecasts. The two smallest bands are left out because their
+systems are one to two pixels wide; the two largest because their $\tau$
+exceeds the $6$~h covered by the leads several times over ($26$~h and
+more), so that their values are extrapolations. Matched-pair errors
+(Eq.~4 of the main text) are averaged with weights given by the truth
+system's rain, in three bands: below $65$~km, $65$ to $200$~km, and above
+$200$~km.
+
+\section*{Text S5. Sensitivities of the matching}
 \textbf{IoU threshold.} Storms are long-lived, so at $\mathrm{IoU} \ge 0.1$
 an old storm often still overlaps its past self; loose matching therefore
 flatters persistence at short leads. Tightening the acceptance threshold
@@ -120,7 +175,7 @@ concatenations, and two parallel $1{\times}1$ output heads.
 C.~The outputs for this input at $+3$~h: the rain field (softplus, mm), the
 wet/dry logits (red positive, wet-leaning; blue negative, dry), and the
 precipitation mask at the paper's wet threshold (rain $> 0.1$~mm) --- the
-mask the object detection of Section~2.4 of the main text operates on. The
+mask the object detection of Section~2.3 of the main text operates on. The
 logit head itself is permissive --- trained against $y > 0$, any rain at
 all, it flags wet nearly everywhere and only confidently dry regions go
 negative --- so segmentation uses the rain field. The bottleneck is
@@ -156,11 +211,40 @@ $1$.}
 \includegraphics[width=\textwidth]{figures/figS_wb2_belts.pdf}
 \caption{Object matching for GraphCast at a $6$~h lead against ERA5 over
 the whole tropical belt, valid 2020-08-15 06 UTC, with the threshold and
-matching of Figure~6 of the main text. (a, b) The belt on the block grid
+matching of Figure~5 of the main text. (a, b) The belt on the block grid
 of Figure~1; matched pairs share a color across the two maps ($145$
-pairs); the dashed box marks the block of Figure~6a,b. (c, d) That block,
+pairs); the dashed box marks the block of Figure~5a,b. (c, d) That block,
 with the missed truth systems in (c) and the false alarms in (d) in black
 ($313$ and $90$ over the belt).}
 \label{fig:s3}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/fig7c_clouds.pdf}
+\caption{Area and intensity errors of the matched systems for the
+WeatherBench~2 models at a $12$~h lead, pooled over August 2020 (about
+$8{,}000$ pairs per model), with the conventions of Figure~3 of the main
+text and size bands of $<100$, $100$--$400$, and $>400$~km. The error
+clouds are wide in area and narrow in intensity, the reverse of the
+kilometer-scale clouds: at $0.25^{\circ}$ the rain rate is recovered and
+the boundaries of the systems are not. The rain-weighted mean intensity
+error of the deterministic models is $-0.24$, $-0.17$, and $-0.06$ from
+the smallest to the largest band, against $-0.06$, $-0.03$, and $+0.01$
+for the GenCast member.}
+\label{fig:s4}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/fig7b_pod.pdf}
+\caption{(a) Probability of detection and (b) false-alarm ratio against
+system size for the WeatherBench~2 models and persistence at a $12$~h lead
+(2020-08-15, two initializations), with the threshold and matching of
+Figure~5 of the main text; bands with fewer than $20$ systems are blank.
+Above $240$~km, one GenCast member detects $0.78$ to $0.82$ of the systems,
+against $0.68$ to $0.73$ for GraphCast, with a false-alarm ratio of $0.32$
+against $0.17$.}
+\label{fig:s5}
 \end{figure}
 \end{document}

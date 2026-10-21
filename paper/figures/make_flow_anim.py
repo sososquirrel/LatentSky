@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import base64
 import io
-import sys
 from pathlib import Path
 
 import matplotlib
@@ -24,9 +23,15 @@ import numpy as np
 import torch
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "docs"))
-from make_flow_steps import (  # noqa: E402
-    BLOCK, FRAME, INPUT_VARS, P, PIECE, PIECES, RUNS, SCALE, SIGMA)
+plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
+from latentsky.layout import EXAMPLE_BLOCK as BLOCK  # noqa: E402
+from latentsky.layout import EXAMPLE_FRAME as FRAME  # noqa: E402
+from latentsky.layout import EXAMPLE_PIECE as PIECE  # noqa: E402
+from latentsky.layout import INPUT_VARS, P, PIECES, RUNS, rain_from_z  # noqa: E402
+from latentsky.layout import LOG_RAIN_SCALE as SCALE  # noqa: E402
+from latentsky.models.flow import flow_config  # noqa: E402
+
+SIGMA = flow_config(3)["sigma"]
 
 from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
 from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow  # noqa: E402
@@ -104,8 +109,6 @@ def main():
     z1n = z1.numpy()[0, 0]
     vt = v_target.numpy()[0, 0]
 
-    def to_rain(z):
-        return np.clip(np.expm1(SCALE * np.clip(z, 0, 2.5)), 0, None)
 
     # shared scales
     vmax = max(float(truth.max()), 1.0)
@@ -117,7 +120,7 @@ def main():
     vcmap = plt.get_cmap("RdBu_r").copy()
 
     def rain(zfield):
-        f = to_rain(zfield)
+        f = rain_from_z(zfield)
         return png64((np.log10(np.clip(f, 1e-9, None)) - lo) / (hi - lo),
                      rcmap)
 
@@ -139,8 +142,8 @@ def main():
         "truth": rain(z1n),
     }
 
-    peak_draw = float(to_rain(xs[-1]).max())
-    peak_fc = float(to_rain(zf0).max())
+    peak_draw = float(rain_from_z(xs[-1]).max())
+    peak_fc = float(rain_from_z(zf0).max())
     print(f"peaks: forecast {peak_fc:.1f} mm, draw {peak_draw:.1f} mm, "
           f"truth {truth.max():.1f} mm")
 

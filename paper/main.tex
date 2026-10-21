@@ -1,4 +1,4 @@
-%% LatentSky — AGU Advances manuscript
+%% LatentSky — GRL manuscript (12 publication units; full version: main_agu_advances.tex)
 %% Compile on Overleaf with the official AGU template (class agujournal2019),
 %% or drop agujournal2019.cls + agutexSI2019.cls into this folder.
 %% Structure follows the group-meeting deck (deck/build.py): model and flow matching first,
@@ -13,7 +13,7 @@
 \usepackage{soul}
 \linenumbers
 
-\journalname{AGU Advances}
+\journalname{Geophysical Research Letters}
 
 \begin{document}
 
@@ -30,190 +30,111 @@ AI Precipitation Forecasts}
 
 %% ===================== KEY POINTS (three, <= 140 chars each) ================
 \begin{keypoints}
-\item Flow matching turns a blurred deterministic rain forecast into sharp
-draws that carry the intensities and the small scales of the truth
-\item Split into systems of intensity times area, the flow detects more at
-every size and removes the too-large, too-weak bias, at a false-alarm cost
-\item The detection horizon grows with system size as a power law; the flow
-lengthens it 1.3 to 1.5 times at every size without changing the exponent
+\item Forecasts trained on mean-square error lack small rain systems and are
+too weak; generative sampling restores both
+\item The detection horizon grows with system size with exponent 1.8,
+against 1 for persistence; flow matching lengthens it 1.3 to 1.5 times
+\item Below 60 km, rain systems are lost within about an hour, far less than
+the time step of operational AI weather models
 \end{keypoints}
 
 %% ===================== ABSTRACT ============================================
 \begin{abstract}
-%% DRAFT for Sophie's rewrite
-How far ahead precipitation can be predicted depends on the size of the
-precipitating system, yet the pixel-wise scores by which AI forecasts are
-usually ranked integrate over scale, and mean-square-error training blurs
-the small systems the question is about. Using a 40-day kilometer-scale DYAMOND MPAS integration,
-we first build a forecast that is realistic at every scale. A deterministic
-U-Net trained on mean-square error returns the conditional mean --- the right
-pattern, blurred. A conditional rectified flow, trained to transport that
-forecast to the truth along its own measured error, returns sharp draws. We
-then ask how skill is distributed across scales: every precipitating system
-is decomposed into an area and an intensity ($P = \rho A$) and matched
-between forecast and truth. At $+3$~h detection rises from $0.04$ for
-$30$-km systems to $0.98$ at $480$~km; the flow detects more than the U-Net
-in every size band, removes its too-large, too-weak bias per draw, and pays
-an explicitly priced false-alarm cost below $65$~km. Finally we define a
-scale-dependent detection horizon $T(L)$, the e-folding time of the
-probability of detection per size band, with persistence as a nested null.
-Between $60$ and $340$~km the horizon follows a power law
-$T(L) \propto L^{\alpha}$. For persistence $\alpha = 0.97$: a system is
-lost once it has moved its own size at about $8$~m\,s$^{-1}$. The U-Net and
-the flow share a steeper exponent, $\alpha \approx 1.8$, and the flow's
-horizon is $1.3$ to $1.5$ times the U-Net's at every size: $2$~h at
-$60$~km, $10$~h at $170$~km. A $30$-km cell is lost within the hour; below
-$100$~km only the flow keeps up with persistence. Applied unchanged to
-operational AI models (GraphCast, FuXi, GenCast, FGN), the same
-scale-dependent limits hold: sampling a diffusion member restores intensity
-from $150$~km up, while below $60$~km no model detects systems --- a limit
-set jointly by $0.25^{\circ}$ resolution and by forecast steps far beyond the
-small-system horizon.
+How far ahead can precipitation be predicted? The answer depends on the
+size of the precipitating system. We measure this dependence in a 40-day
+kilometer-scale DYAMOND simulation, with rain systems identified as
+objects, matched between forecast and truth, and split into area and
+intensity. A U-Net trained on squared errors predicts too few small
+systems, and draws the systems it finds too large and too weak. A
+flow-matching model trained on the U-Net's error restores them, at the
+cost of more false alarms below $65$~km. Between $60$ and $340$~km the
+detection horizon grows as a power law of size: $L^{0.97}$ for
+persistence, as for advection at $8$~m\,s$^{-1}$, and $L^{1.8}$ for both
+models, the flow's horizon being $1.3$ to $1.5$ times longer. Operational
+AI forecasts show the same biases, and a single GenCast member corrects
+them as the flow does. Below $60$~km, systems are lost within about an
+hour.
 \end{abstract}
 
 \section*{Plain Language Summary}
-%% DRAFT for Sophie's rewrite
-How far ahead can rain be predicted? It depends on the rain: a monsoon rain
-shield hundreds of kilometers wide will still be there tomorrow, but a small
-thunderstorm may not survive the next hour. To measure this, a forecast must
-first draw small storms at all, and most do not. Models trained to minimize
-the average error respond to uncertainty by blurring --- they draw storms too
-large and too weak. We train a second network that learns to turn the blurred
-forecast into sharp, realistic possibilities, the way one photo can be
-brought into several plausible focuses. We then treat every rainy patch in a
-very high resolution simulation as an object with a size and an intensity,
-and count how many objects of each size a forecast finds. The sharp forecast
-finds more storms of every size and draws them with the right size and
-strength --- at the price of more false alarms among the smallest, which we
-report. Following these counts as the forecast reaches further ahead gives a
-simple law: the survival time of predictions grows steeply with storm size.
-Today's operational AI weather models show the same behavior: their rain
-systems are also too weak, sampling from the newest generative models fixes
-that, and no current model can place small storms six hours ahead --- both
-sharper training data and more frequent forecasts will be needed.
+How far ahead can rain be predicted? It depends on the rain. A monsoon rain
+band hundreds of kilometers wide is still there the next day, but a small
+thunderstorm may not last the next hour. To measure this, a forecast must
+first contain small storms. Models trained to minimize the average error do
+not: when they are uncertain, they spread the rain, and their storms are
+too large and too weak. We train a second network that turns this smooth
+forecast into sharp, realistic rain. We then treat every rainy area as an
+object with a size and an intensity, and count how many objects of each
+size a forecast finds. The sharp forecast finds more storms of every size
+and gives them the right size and strength, but it also predicts more small
+storms that do not occur. The time over which storms are still found grows
+steeply with their size. Current AI weather models behave in the same way,
+and none of them can place small storms six hours ahead.
 
 %% ===================== 1. INTRODUCTION =====================================
 \section{Introduction}
 
-How far ahead can precipitation be predicted? The answer depends on the size
-of the precipitating system --- a 500-km monsoon rain shield will still be
-found eight hours from now; a 30-km convective cell may not survive the next
-one --- and the goal of this paper is to make that dependence quantitative:
-a scale-aware time horizon $T(L)$ for precipitation prediction, the time
-over which a forecast keeps track of raining systems of size $L$. That such
-a horizon must take the form of a scaling law is one of the oldest results
-of predictability theory: errors originate at the smallest scales and
-contaminate progressively larger ones, so small features are lost first and
-large ones endure \cite{lorenz1969, hohenegger2007, zhang2003}. The quantity
-to measure is therefore not any single skill score --- which collapses the
-scale dependence into one number --- but the exponent of the law,
-$T(L) \propto L^{\alpha}$. Theory supplies two reference values. For dry
-turbulence Lorenz's argument fixes the exponent: with a Kolmogorov
-$k^{-5/3}$ spectrum, error reaches scale $\ell$ after the summed turnover
-times of all smaller eddies, giving $T \propto \ell^{2/3}$
-\cite{lorenz1969, rotunno2008}. And a forecast with no skill at all ---
-each storm simply carried off by the mean wind --- is lost once the storm
-has traveled its own size, $T(L) \approx L/U$, hence $\alpha = 1$. The
-same exponent has a second reading, in terms of the life cycle: if the
-duration of a system grows in proportion to its size, as $L/U$ with $U$ a
-velocity characteristic of the system, then a forecast that cannot
-anticipate decay and initiation loses each storm when the storm itself
-ends, and again $\alpha = 1$. Where a
-measured exponent falls relative to these two anchors is itself
-information.
+How far ahead can precipitation be predicted? The answer depends on the
+process that produces the rain, and each process leaves its signature in
+the size of the precipitating system. An isolated convective cell is a few
+tens of kilometers wide and lives about an hour. A mesoscale convective
+system, organized by its own cold pools and circulations, spans hundreds
+of kilometers and lives for many hours. A monsoon rain band, tied to the
+large-scale circulation, spans thousands of kilometers and persists for
+days. Size is therefore a measure of the organization of convection, which
+controls the intensity and the variability of tropical rain
+\cite{muller2022, shamekh2023}. Each size $L$ should then have its own predictability horizon $T(L)$,
+the time over which a forecast keeps track of rain systems of that size
+\cite{zhang2003, hohenegger2007}. Such horizons often follow a power law,
+$T \propto L^{\alpha}$, whose exponent depends on how errors grow. The
+textbook example is dry turbulence: with a $k^{-5/3}$ spectrum, error
+reaches a scale $L$ after the turnover times of all smaller eddies, and
+$\alpha = 2/3$ \cite{lorenz1969, rotunno2008}. For our problem,
+precipitation, persistence gives the reference that any forecast must
+beat. It keeps each storm in place while a wind $U$ carries the real one away, so a system is
+lost once it has moved by its own size: $T = L/U$, and $\alpha = 1$.
 
-This paper is about that dependence on scale. Measuring $T(L)$ requires two
-things. The forecast rain field must contain systems of every size, and
-skill must be evaluated per system size. Current AI forecasts meet neither
-condition. We first recall how they produce rain.
+Tracking studies tie the rain of a system to its life cycle: in the tropics,
+long-lived mesoscale convective systems produce most of the extreme rain
+\cite{roca2020}, and each precipitating phenomenon has its own scales in
+space and time \cite{prein2023}. These studies follow systems above a
+size or duration threshold \cite{fiolleau2013, feng2023, feng2025}. Across
+all scales, from single cells to mesoscale systems, and for the AI models
+that now forecast them, the exponent of the horizon has not been measured.
 
-In a numerical model, rain results from a physical chain: resolved ascent,
-a convection scheme where the grid is too coarse, cloud microphysics, and a
-water budget. AI weather models have no such chain. A neural network is
-trained on four decades of the ERA5 reanalysis at $0.25^{\circ}$ to map the
-global atmospheric state (winds, temperature, humidity, and geopotential on
-pressure levels, plus a few surface fields) to the state $6$ or $12$~h
-later. A forecast applies the network repeatedly to its own output, out to
-$10$--$15$ days \cite{lam2023, chen2023, price2025}. Rain is one of the
-output fields: the total precipitation of the reanalysis, accumulated over
-the step. It is produced by the convection and cloud schemes of the model
-behind the reanalysis. It is not observed.
+AI weather models forecast precipitation, but not scale by scale. They
+are trained on the ERA5 reanalysis at $0.25^{\circ}$ to step the
+atmospheric state forward by $6$ or $12$~h \cite{lam2023, chen2023,
+price2025}, and their rain is the reanalysis rain: produced by a
+convection scheme, not observed, and without convective cells smaller than
+the grid. Deterministic models such as GraphCast and FuXi learn rain by
+minimizing a mean-square error; FourCastNet diagnoses it with a separate
+network \cite{pathak2022}, and we note in passing that Pangu-Weather does
+not \cite{bi2023}. A model trained on mean-square error
+predicts the mean of all futures compatible with its inputs. Like an
+ensemble mean, this forecast is smooth, with rain areas too wide and
+intensities too weak, and grid-point scores reward it \cite{ravuri2021}.
+Generative models produce sharp members instead: by diffusion in GenCast
+\cite{price2025}, by a perturbed network trained on the continuous ranked
+probability score in FGN \cite{alet2025}, or by flow matching, a more
+direct path from noise to data \cite{lipman2023, liu2023}. Yet these
+models leave precipitation out of their main results, and radar
+nowcasting models report skill per rain threshold, not per scale
+\cite{andrychowicz2023, sarabia2025}. To our knowledge, the precipitation
+of AI forecasts has not been evaluated system by system.
 
-Deterministic models return a single forecast. GraphCast and FuXi learn
-rain jointly with the rest of the state by minimizing a grid-point error,
-most often the mean-square error. FourCastNet diagnoses rain from the
-predicted state with a separate network \cite{pathak2022}. We note in
-passing that Pangu-Weather predicts no rain \cite{bi2023}. Two features of
-these models remove the small scales. First, the training data do not
-contain them: a reanalysis at $0.25^{\circ}$ parameterizes convection.
-Second, the forecast that minimizes a mean-square error is the mean of all
-futures compatible with the initial state. This mean is smooth, like an
-ensemble mean: rain areas are too wide and intensities too weak. Grid-point
-scores favor it (the double-penalty problem \cite{ravuri2021}).
-
-Probabilistic models return an ensemble of sharp members. GenCast is a
-diffusion model: each member is obtained by progressively refining a noise
-field into a forecast, given the previous states \cite{price2025}. Recent
-work has promoted flow matching as a less expensive alternative to
-diffusion: it learns a more direct path from noise to data, which takes
-fewer steps to generate a member \cite{lipman2023, liu2023}. FGN
-perturbs the network with a random vector and is trained on the continuous
-ranked probability score, computed at each grid point and for each variable
-\cite{alet2025}. These models do not blur. Their rain is still the
-reanalysis rain accumulated over $6$ to $12$~h, and both exclude
-precipitation from their main results for lack of confidence in it.
-Regional nowcasting models such as MetNet-3 \cite{andrychowicz2023} and
-RainPro-8 \cite{sarabia2025} predict rain-rate probabilities from radar at
-kilometer resolution, but report skill per rain threshold, not per scale.
-
-We believe that these obstacles, taken together, explain why the
-precipitation of AI forecasts is not yet evaluated scale by scale. Knowing
-at which scales a forecast loses its rain systems, and how early, shows
-where it can be improved. Here we explore that direction. We ask three
-questions: how to produce a realistic precipitation forecast, how its skill
-is distributed across scales, and what time horizon each scale admits.
-
-Global kilometer-scale simulations provide what these questions require
-\cite{stevens2019, satoh2019}. They resolve deep convection explicitly, so
-their rain is produced by the simulated storms and not by a
-parameterization, from isolated cells to mesoscale convective systems. They
-also provide it every $15$~min, which is needed to measure horizons shorter
-than an hour. We use a 40-day simulation of the DYAMOND project,
-coarse-grained to $0.25^{\circ}$ over the tropical belt, and train two
-forecast models that differ only in their training objective: a
-deterministic U-Net and a generative flow-matching model started from its
-output. Both predict rain at leads of $15$~min to $6$~h from the
-large-scale state and the current rain, so that persistence is a nested
-null. Rain systems are identified as objects in the forecast and in the
-reference and matched. This gives the probability of detection per size
-band, which measures whether and where convection is \emph{triggered}, and,
-for matched systems, the errors in area and intensity, which measure its
-\emph{amplitude}. The models are small and are not meant to compete with
-operational systems; they form a controlled experiment, and the evaluation
-applies to any forecast that produces a rain field
-(Section~\ref{sec:methods}).
-
-We show that a deterministic U-Net returns a blurred mean, and that a
-flow-matching model started from it returns sharp draws with the
-intensities and the small scales of the truth. Describing each rain system
-by its area and its intensity, we find that the flow detects more systems
-than the U-Net at every size and removes its bias, at the cost of more
-false alarms below $65$~km. The detection horizon then follows a power law
-of system size. Between $60$ and $340$~km the horizon of persistence grows
-linearly with size, $T = L/U$ with $U \approx 8$~m\,s$^{-1}$, as expected
-from advection. The two trained models share a steeper exponent,
-$\alpha \approx 1.8$, and the horizon of the flow is $1.3$ to $1.5$ times
-that of the U-Net: the generative forecast lengthens the horizon at every
-scale without changing its exponent. Applied to four operational AI models
-from WeatherBench~2
-\cite{lam2023, chen2023, price2025, alet2025, rasp2024}, the same
-evaluation shows that sampling a generative member restores the intensity,
-and that no model detects systems below ${\sim}60$~km at $0.25^{\circ}$.
-
-Section~\ref{sec:methods} describes the data, the two models, and the
-evaluation. Section~\ref{sec:results} addresses the three questions in
-order, then the operational models. Section~\ref{sec:discussion}
-discusses what the horizon does and does not measure.
+Here we ask three questions. How can a forecast produce realistic rain at
+every scale? How is its skill distributed across scales? What horizon does
+each scale have? Global kilometer-scale simulations provide the data to
+answer them \cite{stevens2019, satoh2019}: they resolve deep convection,
+from isolated cells to mesoscale systems, every $15$~min. On a 40-day
+DYAMOND simulation we train a deterministic U-Net and a flow-matching
+model that starts from the U-Net forecast. Both receive the current rain,
+so persistence is nested in both. The models are small: a controlled
+experiment, not a competitor to operational systems. The
+evaluation, which matches rain objects between forecast and truth, applies
+to any forecast that produces a rain field, and we apply it to three AI
+models from WeatherBench~2 \cite{lam2023, chen2023, price2025, rasp2024}.
 
 %% ===================== 2. DATA AND METHODS =================================
 \section{Data and Methods}\label{sec:methods}
@@ -222,553 +143,328 @@ discusses what the horizon does and does not measure.
 
 \begin{figure}
 \centering
-\makebox[\textwidth][c]{\includegraphics{figures/fig1a_domain.pdf}}
-\caption{Standardized precipitable water over the tropical belt
-($40^{\circ}$S--$40^{\circ}$N, $0.25^{\circ}$) on one $15$-min frame of the
-$40$-day DYAMOND MPAS record. Black lines show the $2 \times 11$ blocks of
-$128 \times 128$ pixels used for training, evaluation, and the data split;
-the shaded strips are excluded. The red box marks the example block of
-Figures~\ref{fig:arch} and~\ref{fig:pairs}.}
+\makebox[\textwidth][c]{\includegraphics{figures/fig1_overview.pdf}}
+\caption{Data and forecast pipeline. (a) Standardized precipitable water on
+one $15$-min frame of the DYAMOND MPAS record; black lines show the
+$2 \times 11$ blocks of $128 \times 128$ pixels, and the red box marks the example block of panels (b)--(d) and
+Figure~\ref{fig:pairs}. (b) The ten input fields at time $t$. (c) The
+U-Net, which maps them to the rain at $t + \Delta t$. (d) Flow matching at
+a $3$~h lead: the forecast plus noise is carried to a sharp field in $32$
+steps of the velocity network, which also receives the input fields
+(dashed); three noise fields give three draws. Rain maps share one logarithmic color scale.}
 \label{fig:data}
 \end{figure}
 
-\begin{figure}
-\centering
-\makebox[\textwidth][c]{\includegraphics{figures/fig2_pipeline.pdf}}
-\caption{Schematic of the forecast pipeline on the example block at a
-$3$~h lead. (a) The ten input fields at time $t$: nine standardized
-large-scale fields and the current rain. (b) The U-Net, which maps the ten
-fields ($128^2 \times 10$) to the rain at $t + \Delta t$ through a latent
-of $4^2 \times 2048$; the second output, a wet/dry field, is shown in
-Figure~S1. (c) Flow matching: the forecast plus noise,
-$x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$, is carried to a sharp field
-in $32$ steps of the velocity network, a second U-Net that also receives
-the ten input fields (dashed arrow); three noise fields give the three
-draws shown. The lower sketch illustrates the idea in two dimensions. All
-rain maps share one logarithmic color scale.}
-\label{fig:arch}
-\end{figure}
+We use the DYAMOND MPAS-Atmosphere simulation \cite{stevens2019}, a global
+storm-resolving run at ${\sim}3.8$~km with output every $15$~min over
+40 days of boreal summer.
+MPAS produces more tropical mesoscale convective systems than are observed
+\cite{feng2023, feng2025}, so the horizons below are those of a simulated
+atmosphere. We average the fields onto a regular $0.25^{\circ}$ grid
+(${\approx}28$~km) over $40^{\circ}$S--$40^{\circ}$N and divide each frame
+into $22$ blocks of $128 \times 128$ pixels (Figure~\ref{fig:data}a). The
+data are split by block-day: the $880$ block-days are shuffled and divided
+into $616$ for training, $132$ for validation, and $132$ for testing. No
+pixel, and no $15$-min autocorrelation at a given location, is shared
+between the sets (Text~S1).
 
-The data are the DYAMOND MPAS-Atmosphere simulation \cite{stevens2019}: a
-global storm-resolving run at ${\sim}3.8$~km with output every $15$~min
-over a 40-day summer period. Deep convection is resolved by the dynamics
-and the cloud microphysics (a double-moment scheme for cloud and rain),
-not by a convection scheme. MPAS reproduces the mean precipitation and its
-diurnal cycle within the DYAMOND range \cite{stevens2019} but produces more
-tropical mesoscale convective systems than IMERG-based tracking finds
-\cite{feng2023, feng2025}; the horizons below are therefore horizons of a
-simulated atmosphere, measured against the model's own rain. We regrid
-the fields to a regular $0.25^{\circ}$ grid (${\approx}28$~km) over
-$40^{\circ}$S--$40^{\circ}$N: $320 \times 1440$ pixels, $96$ frames per
-day, $40$ days. The rain on this grid is the average of resolved
-convection, which keeps the small and short-lived systems that a
-parameterization at this resolution does not produce. Nothing below one
-pixel is evaluated.
-
-Each frame is tiled into $22$ blocks of $128 \times 128$ pixels
-($2 \times 11$; the last $64$ rows and $32$ columns are left out,
-Figure~\ref{fig:data}). The unit of the data split is the block-day: one
-block location on one day, with all its $96$ frames. The $880$ block-days
-are shuffled with a fixed seed and cut into $616$ for training, $132$ for
-validation, and $132$ for testing. Blocks do not overlap and a block-day
-is never split across sets, so neither a pixel nor the 15-minute
-autocorrelation at a fixed location can leak between training and test.
-A storm straddling two adjacent blocks in different sets is the residual
-risk; the evaluation counts a system in the set of the block that holds
-its centroid. An earlier split by day leaked through the autocorrelation
-and was discarded; no result here uses it (Text~S1).
-
-Every model takes the same ten input fields at time $t$: precipitable
-water, 2-m temperature, outgoing longwave radiation at the top of the
-atmosphere, moist static energy and both horizontal wind components at
-$850$ and $500$~hPa, and the rain at $t$. Each input is standardized to
-zero mean and unit variance with one mean and one standard deviation per
-field over the whole record; the rain is transformed to $\ln(1 + R)$
-before standardization, $R$ in mm per $15$~min. Giving the model the
-current rain means giving it the persistence forecast, so persistence is
-nested in every model: any skill above it is skill the model added. The
-target is the rain accumulated over $15$~min at $t + \Delta t$, in mm
-and not standardized, for $\Delta t = 0.25, 0.5, 1, 2, 3$, and $6$~h.
-One model is trained per lead. The models see one $128 \times 128$ block
-at a time; nothing outside the block is given to them.
+The inputs are ten fields at time $t$: precipitable water, 2-m
+temperature, outgoing longwave radiation, moist static energy and both
+horizontal wind components at $850$ and $500$~hPa, and the rain at $t$
+(Figure~\ref{fig:data}b). The target is the rain accumulated over $15$~min
+at $t + \Delta t$, for $\Delta t = 0.25, 0.5, 1, 2, 3$, and $6$~h. We
+train a separate U-Net and a separate flow for each lead, twelve models
+in all. Each predicts the rain at its lead directly from the state at $t$,
+without stepping through shorter leads.
 
 \subsection{Models}\label{sec:unet}
 
-We forecast at six lead times, $\Delta t = 0.25, 0.5, 1, 2, 3$, and
-$6$~h. Each lead has its own models: a deterministic U-Net, trained to
-predict the rain at $t + \Delta t$ from the ten fields at $t$, and a
-flow-matching model, trained afterwards on that U-Net's forecasts to turn
-them into realistic rain fields. Twelve models in all. The two models of
-a lead have the same inputs and the same target; they differ in what they
-return, one field for the U-Net, one field per draw for the flow.
-
-\subsubsection{The U-Net}
-
-The U-Net maps the ten input fields to the rain at $t + \Delta t$
-(Figure~\ref{fig:arch}B). It is a U-Net of $125$~M parameters (Text~S2)
-with a typical architecture: five encoder stages (each two $3 \times 3$
-convolutions with group normalization and ReLU), a $2048$-channel
-bottleneck, a mirrored decoder with skip connections, and two output
-heads. The rain head has a softplus activation, so the rain is
-non-negative; the wet/dry head returns logits. In addition to the ten
-fields, the network is given the mean and the minimum of the outgoing
-longwave radiation over the block at its bottleneck: two numbers that
-tell it how much deep convection the block holds and how cold its highest
-tops are, and so whether the rain is more convective or more stratiform.
-The loss has three terms, each answering one difficulty of rain as a
-target,
+The deterministic model is a U-Net, a standard encoder--decoder of
+$125$~M parameters with two outputs, the rain $\hat{R}$ and a wet/dry
+field $\hat{m}$ (Figure~\ref{fig:data}c; Text~S2). Its loss has three
+terms,
 \begin{equation}
 \mathcal{L} =
 \underbrace{\frac{1}{|\mathcal{M}|}\sum_{i \in \mathcal{M}}
-  \big(\hat{R}_i - R_i\big)^2}_{\text{rain on the wet pixels}}
+  \big(\hat{R}_i - R_i\big)^2}_{\text{intensity}}
 \;+\;
-\underbrace{\mathrm{BCE}\big(\hat{m},\, \mathbf{1}[R > 0]\big)}_{\text{wet or dry}}
+\underbrace{\mathrm{BCE}\big(\hat{m},\, \mathbf{1}[R > 0]\big)}_{\text{where it rains}}
 \;+\; 0.25\,
 \underbrace{\frac{1}{6}\sum_{k=1}^{6}
-  \big\| \bar{f}_k(\hat{R}) - \bar{f}_k(R) \big\|^2}_{\text{rain fractions at six scales}} ,
+  \big\| \bar{f}_k(\hat{R}) - \bar{f}_k(R) \big\|^2}_{\text{tolerance to shifts}} ,
 \label{eq:loss}
 \end{equation}
-where $\mathcal{M}$ is the set of pixels where the truth $R$ is wet, $\hat{R}$
-and $\hat{m}$ are the two outputs, and $\bar{f}_k$ is the fraction of wet
-pixels ($R > 0.1$~mm) in a window of $1, 3, 5, 11, 19$, or $33$ pixels
-($28$ to $920$~km). Most pixels are dry. A mean-square error over all of
-them would be dominated by the zeros and would drive the model toward
-weak rain everywhere, so the first term compares intensities only where
-it rains in the truth, which keeps the pressure to produce heavy rain
-where heavy rain occurs. Left alone, that term lets the model rain
-anywhere at no cost; the second term charges every pixel declared wet or
-dry wrongly. The first two terms are pixel-wise, and a rain pattern
-displaced by a few pixels pays the full price although it is nearly
-right; the third term coarse-grains both fields into wet fractions over
-windows of growing size and compares those, so that a nearby placement
-costs little at the scales it gets right. Training uses AdamW
-(learning rate $10^{-3}$, weight decay $10^{-5}$), batches of $64$
-blocks, a learning rate halved every $8$ epochs, and early stopping after
-$10$ epochs without improvement of the validation loss ($51$ to $82$
-epochs depending on the lead), on one A100 per lead.
+where $R$ is the true rain, $\mathcal{M}$ the set of pixels where it is
+wet, BCE the binary cross-entropy, and $\bar{f}_k$ the fraction of wet
+pixels in windows of $1$ to $33$ pixels ($28$ to $920$~km). The first
+term produces high rain values: computed only where the truth is wet, it
+is not dominated by the many dry pixels, which would push the model toward
+weak rain everywhere. The second term teaches the spatial pattern of the
+rain, which pixels are wet and which are dry. The third is gentle with
+shifts: comparing coarse-grained fields, it penalizes a system displaced
+by a few pixels much less than a missing one.
 
-A model trained with a mean-square error returns the conditional mean of
-the target. For rain this mean is smooth: it spreads each uncertain
-system over the area where it might be and lowers its intensity, more so
-as the lead grows. The wet/dry head hedges in the same way: because some
-rain is present almost everywhere in a $15$-minute kilometer-scale field,
-the loss-minimizing answer is to call almost every pixel wet, and it does
-(Figure~S1C). Neither head is faulty; both answer the question the loss
-asks. The evaluation uses the rain head alone, thresholded, and the
-generative model is added to obtain fields that commit to one outcome.
+Even with this loss, the U-Net is trained on squared errors and predicts
+the conditional mean of the rain. When the position of a storm is
+uncertain, its rain is spread over all possible positions and its
+intensity is reduced. The forecast places the rain correctly but is too
+smooth.
 
-\subsubsection{Flow matching}
-
-\textit{In words.} The U-Net places the rain but cannot choose between
-the outcomes it averages over. The generative model makes that choice. It
-takes a field and returns the small change that brings it a little closer
-to a realistic one; applied repeatedly to its own output, it carries the U-Net forecast
-step by step into one sharp rain field. The change is learned by flow
-matching \cite{lipman2023, liu2023}: in training, each U-Net forecast is
-joined to its own truth by a straight line in a fictitious time $s$ from
-$0$ to $1$, and the model learns, at random points on these lines, the
-direction of the line. Having seen many pairs, it can carry a new
-forecast along the same kind of path. A small noise added to the
-forecast at the start gives a different sharp field for each draw, all
-consistent with the same forecast and inputs. The U-Net is trained first
-and frozen; the generative model is trained on its forecasts for the same
-lead (Figure~\ref{fig:arch}C).
-
-\textit{Inputs and outputs.} The model works in the log space
-$z = \ln(1 + R)/2$. Its input is the U-Net forecast $z_{\mathrm{fc}}$ for
-the block and the ten input fields $c$; its output is one rain field, a
-draw, with the shape and units of the target. The change at each step is
-computed by a second U-Net, the velocity network $v_s(x_s, c)$,
-with the same trunk as the first and a comparable number of parameters:
-eleven channels in, the current field $x_s$ and the ten input fields, with
-the time $s$ scaling and shifting the features at every stage; one field
-out, the velocity, of either sign. It is the tendency term of a numerical
-model, $\mathrm{d}x/\mathrm{d}s$ as a function of the state, learned
-rather than derived.
-
-\textit{Equations.} For one training sample, with inputs $c$, U-Net
-forecast $z_{\mathrm{fc}}$, and true rain $z$, both in the log space, the
-noised forecast is $x_0 = z_{\mathrm{fc}} + \sigma\varepsilon$ with
-$\varepsilon \sim \mathcal{N}(0, I)$, the truth is $x_1 = z$, and the line
-between them is $x_s = (1 - s)\,x_0 + s\,x_1$ for $0 \le s \le 1$ (every
-point of the line is a training example, so one pair yields many; this is
-a form of data augmentation). Over all training samples, the velocity network is the least-squares fit of
+The generative model uses flow matching \cite{lipman2023, liu2023} to
+recover the sharpness lost by averaging. It moves the U-Net forecast, in
+small steps, toward a sharp rain field consistent with the inputs. During
+training, each U-Net forecast $x_0$ is paired with the truth $x_1$ it was
+trying to predict, and the two are joined by a straight line,
 \begin{equation}
-v_s(x, c) = \mathbb{E}\big[\,x_1 - x_0 \;\big|\; x_s = x,\, c\,\big] .
-\label{eq:velocity}
+x_s = (1 - s)\,x_0 + s\,x_1, \qquad 0 \le s \le 1 .
+\label{eq:line}
 \end{equation}
-In words: take all the training samples whose line passes through the
-field $x$ at time $s$, for the same inputs $c$; each of them points toward
-its own truth; $v_s$ is the average of these directions. A single sample
-would give a direction toward one particular truth; the average gives the
-direction toward what is realistic, given everything the field and the
-inputs say. A draw starts from a new noised forecast $y_0 = z_{\mathrm{fc}} + \sigma\varepsilon$
-and follows the learned velocity,
-\begin{equation}
-y_1 = y_0 + \int_0^1 v_s(y_s, c)\,\mathrm{d}s ,
-\label{eq:flow}
-\end{equation}
-integrated with $32$ Heun steps. $\sigma$ is the root-mean-square error of
-the U-Net on wet pixels at that lead, in $z$: $0.10$ at $15$~min to $0.20$
-at $6$~h. The noise does two things. It is the source of the different
-draws. And it spreads the starting points of the training lines around
-each forecast, so that the lines cover a neighborhood of the forecasts and
-not only the forecasts themselves: a new forecast then starts where
-training lines have passed, and the velocity it follows was learned
-there rather than extrapolated. Optimizer and stopping rule are those of the U-Net (Text~S2).
+A second U-Net, the velocity network, receives a field on this line and
+the ten input fields, and learns the direction toward the truth,
+$x_1 - x_0$. From many such pairs, it learns how real rain differs from a
+smooth forecast: more concentrated, more intense, and organized in cells.
 
-\textit{Scoring.} All statistics of the flow are computed on one draw per
-block and frame, with a fixed seed, and never on an average of draws: the
-average of draws is again an estimate of the mean and would remove the
-difference we measure. A denoising diffusion model started from the same
-forecast was also tested; its small-scale variance saturates at
-$0.80$--$0.85$ of the truth's, because it is trained to denoise noised
-truth and applied to noised forecasts, and it is reported as a
-sensitivity in Text~S3.
+To produce a forecast, the model starts from the U-Net output and follows
+the learned direction for $32$ steps (Figure~\ref{fig:data}d). A small
+noise is added to the starting field, with an amplitude equal to the
+U-Net's error at that lead. This noise selects one of the futures
+compatible with the inputs. Different noise gives different draws, all
+sharp and all consistent with the same inputs. A diffusion alternative is
+discussed in Text~S3. We score each draw separately
+and never the average of draws, since that average is again a smooth mean.
 
 \subsection{Evaluation: systems and their matching}
 \label{sec:evaluation}
 
-The question is how far ahead rain systems of a given size can be
-predicted. A pixel score cannot answer it: it does not know what a system
-is. We therefore evaluate on systems: find them, decide whether each one
-was found, and, if so, how well it was drawn.
-
-\textit{Systems.} In the truth and in each forecast, a system is an
-8-connected set of pixels with rain above $0.1$~mm per $15$~min. Each has
-an area $A$ (km$^2$, pixel areas following the cosine of latitude), a
-total rain $P$ (mm\,km$^2$), a mean intensity $\rho$, and a size $L$:
+In the truth and in each forecast, a system is an 8-connected set of pixels
+with rain above $0.1$~mm per $15$~min. Each system has an area $A$, a mean
+intensity $\rho$, a total rain $P$, and a size $L$:
 \begin{equation}
 P = \rho\,A, \qquad L = \sqrt{A}.
 \label{eq:PrhoA}
 \end{equation}
-One pixel is $L \approx 28$~km, and a one-pixel system counts as a system.
-
-\textit{Matching.} Within each frame, truth and forecast systems are paired
-by intersection over union, in decreasing order, each system at most once,
-down to $\mathrm{IoU} = 0.1$. Every system is then matched, missed (truth
-without partner), or a false alarm (forecast without partner). Per size
-band, $\mathrm{POD} = \mathrm{matched}/(\mathrm{matched} + \mathrm{missed})$
-over truth systems and $\mathrm{FAR} = \mathrm{false\ alarms}/(\mathrm{matched}
-+ \mathrm{false\ alarms})$ over forecast systems; the bands are ten,
-log-spaced, from $25$ to $600$~km (Figure~\ref{fig:horizon}A,B) or $800$~km
-(Figure~\ref{fig:horizon}C,D). For a matched pair, Eq.~\ref{eq:PrhoA}
-splits the rain error exactly into an area and an intensity part,
+Within each frame, truth and forecast systems are paired by intersection
+over union (IoU), in decreasing order of IoU, each system at most once,
+down to $\mathrm{IoU} = 0.1$. A truth system without a partner is missed,
+and a forecast system without a partner is a false alarm. In each size
+band we compute the probability of detection (POD) over truth systems and
+the false-alarm ratio (FAR) over forecast systems. For a matched pair, the
+rain error splits exactly into an area and an intensity contribution,
 \begin{equation}
 \mathrm{d}\ln P = \mathrm{d}\ln A + \mathrm{d}\ln\rho,
 \label{eq:decomp}
 \end{equation}
-with $\mathrm{d}\ln A = \ln(A_{\mathrm{fc}}/A_{\mathrm{truth}})$ and
-likewise for $\rho$; negative is too small or too weak. Band means are
-weighted by the truth system's rain, in three bands: below $65$~km, $65$
-to $200$~km, above $200$~km.
+with $\mathrm{d}\ln A = \ln(A_{\mathrm{fc}}/A_{\mathrm{truth}})$, and
+similarly for $\rho$. The horizon $\tau(L)$ of a size band is the
+e-folding time of its POD over the six leads, and the power law
+$T(L) \propto L^{\alpha}$ is fitted to $\tau$ between $59$ and $336$~km
+(Text~S4).
 
-\textit{The null.} Persistence, the rain at $t$ taken as the forecast for
-$t + \Delta t$, goes through the same steps. It is a strong null for
-detection: a long-lived system still overlaps its own earlier position at
-$\mathrm{IoU} \ge 0.1$.
-
-\textit{Limits.} The segmentation is simple on purpose, one threshold and
-one connectivity rule, so that it applies unchanged to any rain field.
-It has two risks. A sharp field can be cut into several systems where the
-truth has one, each extra fragment a false alarm; a smooth field can merge
-neighboring systems into one. The second is a bias of the deterministic
-model that the method should not excuse. Trackers built for mesoscale
-convective systems, with convective thresholds, area and duration
-criteria, and tracking in time \cite{fiolleau2013, feng2023, prein2023,
-feng2025}, are the natural refinement; the matching and
-Eq.~\ref{eq:decomp} apply to any segmentation. Sensitivities to the IoU
-and rain thresholds and to one-to-one matching are in Text~S4.
+Persistence, the rain at $t$ used as the forecast for $t + \Delta t$, is
+evaluated in the same way. It is a strong reference for
+detection, because a long-lived system still overlaps its earlier position
+at $\mathrm{IoU} \ge 0.1$. The segmentation is kept simple so that it
+applies to any rain field; its sensitivities are in Text~S5.
 
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}
 
-\subsection{Detection and false alarms by size}\label{sec:res-scales}
+
+\subsection{Small systems are missing, not misplaced}\label{sec:res-scales}
 
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig3_pairs.pdf}}
 \caption{Object detection and matching on the example block at a $3$~h
-lead. (a--c) Rain in the truth, the U-Net forecast, and one flow draw;
-matched systems are outlined with one color and number per truth system,
-repeated in each forecast panel where that system was found. (d) The
-$120$ truth systems colored by outcome: found by both models (green,
-$11$), missed by the U-Net only (blue, $11$), missed by the flow only
-(purple, $6$), missed by both (black, $92$). (e, f) Matched systems
-(green) and false alarms (red) of the U-Net ($17$ and $5$) and of the
-flow draw ($22$ and $106$). Systems are 8-connected regions with rain
-above $0.1$~mm; matching is one-to-one at $\mathrm{IoU} \ge 0.1$.}
+lead. (a--c) Rain in the truth, the U-Net forecast, and one flow draw,
+with matched systems outlined. (d) The $120$ truth systems by outcome:
+found by both models (green), missed by the U-Net only (blue), by the flow
+only (purple), or by both (black). (e, f) Matched systems (green) and
+false alarms (red) of the U-Net and of the flow draw.}
 \label{fig:pairs}
 \end{figure}
 
-\begin{figure}
-\centering
-\includegraphics[width=\textwidth]{figures/fig5_horizon.pdf}
-\caption{Detection skill by system size and the detection horizon
-over the full test record ($132$ blocks $\times$ $40$ days, about $10^6$
-systems per forecast and lead). (a) Probability of detection and (b)
-false-alarm ratio as functions of system size $L$ at a $3$~h lead, for the
-U-Net, the flow (one draw), and persistence. (c) Probability of detection
-as a function of lead time in five size bands (solid, flow; dotted,
-U-Net). (d) Detection horizon $\tau(L)$, the e-folding time of detection,
-with power-law fits $T(L) \propto L^{\alpha}$ over the six bands from
-$59$ to $336$~km (shaded) for the three forecasts; filled markers enter
-the fits and are colored by the detection at the $15$-min lead, hollow
-markers are excluded, and the dotted line marks the longest lead.}
-\label{fig:horizon}
-\end{figure}
+Figure~\ref{fig:pairs} shows what the forecasts draw on the example block
+of Figure~\ref{fig:data}a at $+3$~h. The top row gives the rain in the
+truth and the two forecasts (a--c). A truth system found by a forecast
+keeps the same color and number in every panel; systems found by neither
+model have no outline. The bottom row sorts the systems by outcome
+(d--f).
 
-Figure~\ref{fig:pairs} shows the evaluation on one block at $+3$~h. The
-truth holds $120$ systems. The U-Net draws $22$, as smooth envelopes with
-weak peaks, and matches $17$ of the truth's; the flow draw has cells and
-intensities like the truth's, matches $22$, and adds $106$ false alarms
-against the U-Net's $5$. Of the $120$, $92$ are found by neither model,
-and they are the smallest. Over the whole test record the same holds for
-the number of systems: per size band, the U-Net has $0.04$ to $0.5$ times
-the truth's count below $120$~km and $2.4$ times above $600$~km, the flow
-$0.85$ to $1.1$ times at every size.
+The truth contains $120$ systems. The U-Net predicts $22$, smooth and with
+weak peaks, and matches $17$. The flow draw has cells and intensities like
+the truth's, matches $22$, and produces $106$ false alarms against $5$ for
+the U-Net. The $92$ systems found by neither model are the smallest. The
+U-Net misses them mainly because it does not produce them: over the test
+record, it produces $0.04$ to $0.5$ times the number of truth systems
+below $120$~km and $2.4$ times too many above $600$~km, while the flow
+produces $0.85$ to $1.1$ times at every size. Over the test record,
+Figure~\ref{fig:decomp} gives the area and intensity of all matched
+systems at $+3$~h (Section~\ref{sec:res-decomp}), and
+Figure~\ref{fig:horizon} gives their detection and false alarms by size
+(a, b) and, from all six leads, the decay of detection with time (c, d;
+Section~\ref{sec:res-horizon}).
 
-Figure~\ref{fig:horizon}a,b gives the detection and false-alarm ratios by
-size over the record, at $+3$~h. Detection rises with size for every
-forecast, from $0.04$ at $30$~km to $0.98$ at $480$~km for the flow. The
-flow detects more than the U-Net in every band, $0.79$ against $0.72$ at
-$190$~km and $0.078$ against $0.028$ below $65$~km, and produces more
-false alarms in every band, $0.92$ against $0.64$ below $65$~km and
-$0.17$ against $0.08$ at $190$~km. Persistence detects $0.64$ at $190$~km
-and more than the flow below $70$~km, because a long-lived system still
-overlaps its own earlier position; its false-alarm ratio is the highest of
-the three at every size. The matched systems of this figure are the
-input of the next comparison.
-
-\subsection{Area and intensity of the matched systems}\label{sec:res-decomp}
+\subsection{The flow removes the too-large, too-weak bias}\label{sec:res-decomp}
 
 \begin{figure}
 \centering
 \makebox[\textwidth][c]{\includegraphics{figures/fig4_decomp.pdf}}
-\caption{Area and intensity errors of the matched systems at a $3$~h
-lead over the full test record, for (a) the U-Net ($83{,}960$ pairs) and
-(b) the flow, one draw ($125{,}159$ pairs). Shaded regions contain $75\%$
-of the matched pairs of each size band and are darker where pairs are
-denser; dots mark the rain-weighted mean error of each band, joined to the
-origin; the grey outline contains $95\%$ of all pairs; along the dotted
-diagonal the area and intensity errors cancel.}
+\caption{Area and intensity errors of the matched systems at a $3$~h lead
+over the test record, for (a) the U-Net ($83{,}960$ pairs) and (b) one
+flow draw ($125{,}159$ pairs). Shaded regions hold $75\%$ of the pairs of
+each size band, darker where denser; dots mark the rain-weighted mean
+error of each band; the grey outline holds $95\%$ of all pairs.}
 \label{fig:decomp}
 \end{figure}
 
-We now look only at the matched pairs, and ask how well a system is drawn
-once it is found. Each pair has an area error $\mathrm{d}\ln A$ and an
-intensity error $\mathrm{d}\ln\rho$ (Eq.~\ref{eq:decomp}). In
-Figure~\ref{fig:decomp} the pairs of each size band are summarized by the
-region that holds $75\%$ of them, darker where they are denser, and by
-their rain-weighted mean error, drawn as a dot joined to the origin; the
-grey outline holds $95\%$ of all pairs. A pair at the origin has the right
-area and the right intensity.
+Once a system is found, how well is it drawn? Each matched pair is a point
+in the plane of area error $\mathrm{d}\ln A$ and intensity error
+$\mathrm{d}\ln\rho$ (Figure~\ref{fig:decomp}). A perfect system sits at
+the origin; on the dotted diagonal, the rain is right but spread over the
+wrong area.
 
-The U-Net's systems are too large and too weak at every size: the mean
-errors are $(+0.53, -1.05)$ below $65$~km, $(+0.14, -0.75)$ between $65$
-and $200$~km, and $(+0.20, -0.39)$ above $200$~km, and the bias is largest
-for the small systems. When the flow finds a system, it draws it much
-better: the mean errors move to $(+0.21, -0.24)$, $(-0.15, -0.15)$, and
-$(-0.14, -0.04)$, and the three regions sit on the origin. The bias of the
-conditional mean is removed. The small systems remain too large by
-$+0.21$, that is $23\%$ in area; one pixel added to a two-pixel system is
-already $+0.4$ in $\ln A$, so this residual is of the order of one pixel,
-whereas the same relative error on a $500$-km system would be a gross
-one.
+The U-Net's systems are too large and too weak at every size
+(Figure~\ref{fig:decomp}a). Below $65$~km they are $1.7$ times too large
+and three times too weak ($\mathrm{d}\ln A = +0.53$,
+$\mathrm{d}\ln\rho = -1.05$); between $65$ and $200$~km, $1.15$ times too
+large and twice too weak ($+0.14$, $-0.75$); above $200$~km, $1.2$ times
+too large and $1.5$ times too weak ($+0.20$, $-0.39$). This is what
+averaging over uncertain positions does: the rain of a system is spread
+over every place it might be, so its area grows and its intensity drops.
+The bias is largest for small systems, whose position is the most
+uncertain relative to their size.
 
-\subsection{The horizon of each scale}\label{sec:res-horizon}
+The flow removes this bias (Figure~\ref{fig:decomp}b). Its systems are
+within $25\%$ of the truth in area and in intensity at every size (mean
+errors $(+0.21, -0.24)$, $(-0.15, -0.15)$, and $(-0.14, -0.04)$), and the
+three distributions are centered on the origin. The remaining $+0.21$ in
+area for small systems is about one pixel: adding one pixel to a
+two-pixel system already gives $+0.4$ in $\ln A$.
 
-Detection decays with lead in every size band, faster for small systems
-(Figure~\ref{fig:horizon}C), and the decay is close to exponential. We
-define the horizon of a band as the e-folding time of its detection: in
-each band, $\mathrm{POD}$ at the six leads is divided by its value at the
-shortest lead, $15$~min, and $\exp[-(t - 0.25\,\mathrm{h})/\tau]$ is
-fitted to the ratio by least squares, with $\tau$ bounded to
-$[0.1, 200]$~h (Figure~\ref{fig:horizon}D). The power law
-$T(L) \propto L^{\alpha}$ is then fitted by unweighted least squares of
-$\ln\tau$ on $\ln L$ over the six bands from $59$ to $336$~km, the same
-for the three forecasts; the two smallest bands are left out because
-their systems are one to two pixels wide, the two largest because their
-$\tau$ exceeds the $6$~h covered by the leads several times over. For
-the flow, $\tau$ rises from $0.8$~h at
-$L \approx 30$~km to $2.1$~h at $60$~km, $10$~h at $170$~km, and $49$~h at
-$340$~km. The U-Net's horizon is shorter in every band, $0.55$, $1.4$,
-$7.3$, and $32$~h at the same sizes; the flow's is $1.3$ to $1.5$ times
-the U-Net's from $30$ to $340$~km.
+\subsection{Detection and its horizon grow with size}\label{sec:res-horizon}
 
-Between $59$ and $336$~km the three horizons follow power laws,
-$T(L) \propto L^{\alpha}$. For persistence $\alpha = 0.97 \pm 0.07$ (95\%
-interval), and $L/\tau$ is $7.5$ to $8.4$~m\,s$^{-1}$ in all six bands:
-persistence loses a system once the system has moved its own size at
-about $8$~m\,s$^{-1}$, the advection anchor of the introduction. The U-Net and the flow have the same exponent,
-$1.77 \pm 0.23$ and $1.78 \pm 0.33$: the flow lengthens the horizon by a
-constant factor and does not change its dependence on size. The two
-trained models are steeper than persistence, so they gain more on large
-systems than on small ones. Their lines cross persistence: the U-Net is
-below persistence up to about $100$~km ($2.3$ against $3.1$~h at $84$~km)
-and above it beyond; the flow is at or above persistence in every band
-($0.83$ against $0.53$~h at $30$~km, a tie at $60$~km, $9.9$ against
-$5.8$~h at $170$~km).
+\begin{figure}
+\centering
+\includegraphics[width=\textwidth]{figures/fig5_horizon.pdf}
+\caption{Detection by system size and the detection horizon over the test
+record. (a) Probability of
+detection and (b) false-alarm ratio against system size $L$ at a $3$~h
+lead, for the U-Net, one flow draw, and persistence. (c) Probability of
+detection against lead in five size bands (solid, flow; dotted, U-Net).
+(d) Detection horizon $\tau(L)$ with power-law fits over the shaded bands
+from $59$ to $336$~km; hollow markers are not fitted, and the dotted line
+marks the longest lead.}
+\label{fig:horizon}
+\end{figure}
 
-Outside the fitted window the horizons leave the power laws in two ways.
-Below $59$~km all three forecasts lose systems in $0.5$ to $1.2$~h, less
-than the $1$ to $1.5$~h it would take the wind to move them their own
-size: these systems are one or two pixels wide and end before they are
-displaced. Above $336$~km the fitted $\tau$ exceeds the $6$~h covered by
-the leads, $26$~h and more; detection has barely decayed at $6$~h and
-these values are extrapolations. The three largest bands of
-Figure~\ref{fig:horizon}D are shown but not fitted.
+Detection increases with size for every forecast
+(Figure~\ref{fig:horizon}a), from $0.04$ at $30$~km to $0.98$ at $480$~km
+for the flow. The flow detects more than the U-Net in every band ($0.79$
+against $0.72$ at $190$~km, $0.078$ against $0.028$ below $65$~km) and
+produces more false alarms (Figure~\ref{fig:horizon}b; $0.92$ against
+$0.64$ below $65$~km, $0.17$ against $0.08$ at $190$~km). Below $70$~km,
+persistence detects more than the flow, because long-lived systems still
+overlap their earlier positions, but it has the highest false-alarm ratio
+at every size.
 
-\subsection{Operational AI forecasts}\label{sec:res-wb2}
+Across the six leads, each forecast by its own models, detection decays
+nearly exponentially, faster for small systems
+(Figure~\ref{fig:horizon}c). For the flow, the horizon $\tau$ is $0.8$~h
+at $30$~km, $2.1$~h at $60$~km, $10$~h at $170$~km, and $49$~h at
+$340$~km (Figure~\ref{fig:horizon}d); for the U-Net it is $0.55$, $1.4$,
+$7.3$, and $32$~h.
+
+Between $59$ and $336$~km the three horizons follow power laws.
+Persistence has $\alpha = 0.97 \pm 0.07$ (95\% interval), with $L/\tau$
+between $7.5$ and $8.4$~m\,s$^{-1}$ in all six bands: it loses a system
+once the system has moved by its own size at about $8$~m\,s$^{-1}$, the
+advective limit. The U-Net and the flow share a steeper exponent,
+$1.77 \pm 0.23$ and $1.78 \pm 0.33$. The flow multiplies the horizon by
+$1.3$ to $1.5$ at every size and leaves the exponent unchanged. Their gain over persistence grows with size: the U-Net falls below persistence up to about $100$~km, while the
+flow is at or above it in every band ($0.83$ against $0.53$~h at $30$~km,
+$9.9$ against $5.8$~h at $170$~km). Below $59$~km, all three forecasts
+lose systems within $0.5$ to $1.2$~h, before the wind has moved them by
+their own size: these one- or two-pixel systems end before they are
+displaced.
+
+\subsection{Operational AI forecasts share the same biases}\label{sec:res-wb2}
 
 \begin{figure}
 \centering
 \includegraphics[width=\textwidth]{figures/fig6_wb2.pdf}
-\caption{The evaluation on the WeatherBench~2 forecasts. (a, b) Object
-matching for GraphCast at a $6$~h lead against ERA5 on one $128$-pixel
-block of the Maritime Continent ($96$--$128^{\circ}$E), valid 2020-08-15
-06 UTC, with systems above $2.4$~mm per $6$~h (the rate of the
-kilometer-scale threshold) and one-to-one matching at
-$\mathrm{IoU} \ge 0.1$; matched pairs share a color in the two panels,
-the missed truth systems in (a) and the false alarms in (b) are black.
-The full belt is shown in Figure~S3. (c) Probability of detection and (d)
-false-alarm ratio as functions of system size for the WeatherBench~2
-models and persistence at a $12$~h lead (2020-08-15, two initializations),
-with the same threshold and matching; bands with fewer than $20$ systems
-are left blank.}
+\caption{The evaluation applied to WeatherBench~2. (a, b) Object matching
+for GraphCast at a $6$~h lead against ERA5 on one block of the Maritime
+Continent, valid 2020-08-15 06 UTC; matched pairs share a color, and the
+missed truth systems (a) and false alarms (b) are black. (c) Number of
+systems per field and (d) mean intensity of the systems of each size,
+for ERA5 (black) and the WeatherBench~2 models at a $12$~h lead,
+pooled over August 2020 ($62$ initializations). Systems exceed $2.4$~mm
+per $6$~h, the rate of the kilometer-scale threshold.}
 \label{fig:wb2}
 \end{figure}
 
+We apply the same evaluation to GraphCast, FuXi, and GenCast from
+WeatherBench~2, against ERA5 over the same belt, with the rain threshold
+converted to the same rate (Figure~\ref{fig:wb2}a,b). Data, resolution,
+and leads differ from ours, so we do not rank the two sets.
 
-\begin{figure}
-\centering
-\makebox[\textwidth][c]{\includegraphics{figures/fig7c_clouds.pdf}}
-\caption{Area and intensity errors of the matched systems for the
-WeatherBench~2 models at a $12$~h lead, pooled over August 2020 (about
-$8{,}000$ pairs per model), with the conventions of Figure~\ref{fig:decomp}
-and size bands of $<100$, $100$--$400$, and $>400$~km.}
-\label{fig:wb2clouds}
-\end{figure}
+The operational models reproduce the behavior of the U-Net and the flow.
+First, the mean forecasts lack small systems (Figure~\ref{fig:wb2}c).
+Below $100$~km, GraphCast, FuXi, and the GenCast ensemble mean produce one
+third to one half of the systems in ERA5, while above $300$~km all models
+have the right number. A single GenCast member has the right number from
+$80$~km upward and three times too many at $30$~km, where it fragments
+rain areas (Text~S5). Second, the mean forecasts are too weak
+(Figure~\ref{fig:wb2}d). In ERA5, intensity increases with size, from
+$5$~mm per $12$~h at $30$~km to $14$~mm at $1{,}000$~km. Between $100$ and
+$700$~km, GraphCast, FuXi, and the GenCast mean are $10$ to $15\%$ weaker,
+while the GenCast member matches ERA5 at every size; matched systems give
+the same result (Figure~S4). Third, detection depends on size: below
+$60$~km every model detects $13\%$ of the systems or fewer at $+6$ and
+$+12$~h (Figure~S5).
 
-The same evaluation applies to the WeatherBench~2 forecasts
-(Figures~\ref{fig:wb2} and~\ref{fig:wb2clouds}): GraphCast, FuXi, GenCast,
-and FGN against ERA5 over the same tropical belt, with the rain threshold
-converted to the same rate ($2.4$~mm per $6$~h for $0.1$~mm per $15$~min).
-This is an outlook. The data, the resolution of the rain, and the leads
-differ from those of our models, and we do not rank the two sets against
-each other.
 
-Three results carry over. First, detection depends on size in the same
-way: for every model it rises with $L$, and below $60$~km every model,
-deterministic or generative, detects $13\%$ of the systems or fewer at
-$+6$ and $+12$~h. Second, a single sample beats the mean. At $+12$~h one
-GenCast member detects more systems than any other forecast from about
-$240$~km up ($0.78$--$0.82$ against GraphCast's $0.68$--$0.73$), at a
-false-alarm ratio of $0.32$ against $0.17$; the GenCast ensemble mean
-falls back among the deterministic models. Third, the deterministic models
-are too weak. Over a month of matched systems (about $8{,}000$ per model)
-their mean intensity error is $-0.24$, $-0.17$, and $-0.06$ from the
-smallest to the largest band, and the GenCast member's is $-0.06$, $-0.03$,
-and $+0.01$. The error clouds are wide in area and narrow in intensity, the
-reverse of the kilometer-scale clouds: at $0.25^{\circ}$ the rain rate is
-recovered and the boundaries of the systems are not.
 
-The floor below $60$~km is not only a matter of resolution. Our own
-horizons price the lead: even for the flow, $\tau(30~\mathrm{km})
-\approx 0.8$~h, so a $+6$~h forecast asks for detection seven e-folding
-times past the horizon. No model at any resolution should find a $30$-km
-system at $+6$ or $+12$~h. Small systems need kilometer-scale data to be
-present in the forecast at all, and a forecast cadence below one hour to
-be caught before they are gone. Operational systems stepping at $6$~h
-satisfy neither condition; resolution alone would change nothing below
-$60$~km.
+%% ===================== 4. DISCUSSION =======================================
+\section{Discussion and conclusions}\label{sec:discussion}
 
-%% ===================== 5. DISCUSSION =======================================
-\section{Discussion and outlook}\label{sec:discussion}
-%% DRAFT for Sophie's rewrite — ~750 words, room left for additions
+We measured how far ahead rain systems can be predicted as a function of
+their size. Between $60$ and $340$~km the detection
+horizon follows a scaling law, $T \propto L^{\alpha}$. Persistence matches
+the advective prediction, $\alpha = 0.97$ (Section~\ref{sec:res-horizon}). The trained models are steeper, $\alpha \approx 1.8$. They capture
+the advection, which is why they outperform persistence, more so for large
+systems. What then limits detection is the life cycle: a system is lost
+when it decays, or when a new one forms unpredicted. Below $59$~km this
+limit is reached first; above, it grows faster with size than the
+advective bound.
 
-What does the horizon measure, and what does it not? Systems are matched at
-a common valid time, so $T(L)$ does not follow individual storms through
-their life cycles; it asks the operational question --- is the rain where the
-forecast said it would be, when it said it would be there? Time evolution
-enters statistically, through the family of six leads: the decay of
-detection with lead time is precisely the rate at which the evolving
-atmosphere carries systems away from any snapshot-consistent prediction, and
-the persistence null makes this reading exact, because persistence is the
-forecast with \emph{no} evolution at all. The margin over persistence is
-therefore the evolution the model captured. A Lagrangian companion ---
-tracking matched systems through consecutive frames to separate displacement
-error from genuine dissipation and initiation --- is the natural next
-instrument, and the matched-pair tables built here already contain the
-centroids it needs.
+For AI weather models, two conclusions follow. First, a large part of the
+small-scale rain missing from mean-square forecasts is lost to the
+training objective, not to a lack of information. A generative model
+trained on the forecast's own error recovers it at every scale, at a
+measured false-alarm cost, and GenCast members,
+but not their mean, already do the same. Second, this is not enough for
+the smallest systems. Their horizon, $0.8$~h at $30$~km for the flow, is
+shorter than the time step of operational models, so progress below
+${\sim}60$~km requires both kilometer-scale training data and forecast
+steps shorter than one hour. Precipitation is therefore a test of how much
+an AI model has learned about convection: producing rain systems of the
+right number, size, and intensity at every scale, and sampling their
+variations rather than averaging them, requires representing convection
+and its stochasticity \cite{shamekh2023}.
 
-The trigger--amplitude decomposition can be made quantitative. Writing the
-total error schematically as
-$\epsilon(t) = \epsilon_{\mathcal{T}}(t) + \epsilon_A(t)$, the decay of
-detection measures the trigger term and the matched-pair intensity error
-measures the amplitude term, conditional on the trigger being found. Two
-predictions follow from the physical picture. First,
-$\epsilon_{\mathcal{T}}$ should grow faster with lead than $\epsilon_A$ ---
-the environment that controls amplitude carries the longer memory --- and
-our curves are consistent with this ordering: detection collapses within
-$\tau(L)$ while the matched $\mathrm{d}\ln\rho$ barycenters drift only
-slowly with lead. Second, and testable with the input ablations this
-framework invites, the decay timescale $\tau$ should be a property of the
-atmosphere rather than of the input set: enriching the inputs (thermodynamic
-profiles, explicit vertical motion) should raise the intercept
-$\mathrm{POD}_0$ but leave $\tau$, and hence $\alpha$, unchanged. If instead
-$\tau$ moves, the horizon is partly informational, not intrinsic --- either
-outcome is instructive.
-
-The exponent deserves a careful reading, because the natural intuition,
-that a better model should have a larger $\alpha$, is wrong.
-$\alpha = \mathrm{d}\ln\tau / \mathrm{d}\ln L$ measures how the horizon is
-distributed between large and small systems; skill is the level of
-$\tau(L)$, which the flow raises at every size while leaving $\alpha$
-unchanged. The values order themselves physically. Detection ends when the
-position error of a system becomes comparable to its size, so if that
-error grows as $t^{p}$, then $\alpha = 1/p$. Persistence has $\alpha = 1$,
-$p = 1$: the error grows linearly in time, the system is carried away at a
-constant speed, and the $8$~m\,s$^{-1}$ we measure is that speed. The
-trained models know the steering flow and remove the coherent part of the
-displacement; what remains grows as $t^{0.56}$ ($\alpha \approx 1.8$),
-between the linear growth of advection and the $t^{1/2}$ of a random walk,
-which would give $\alpha = 2$. Lorenz's dry-cascade value,
-$\tau \propto \ell^{2/3}$ \cite{lorenz1969}, is far from all of these:
-detection of rain systems is lost by displacement against size, not by the
-saturation of inertial-range error. The reading is testable with the
-matched-pair tables in hand: the centroid separation of matched pairs
-should grow as $t^{1/\alpha}$ with each forecast's own exponent.
-
-Several limitations bound the claims. The record is one 40-day tropical
-summer of a single kilometer-scale model, and MPAS overestimates deep
-convection relative to observations; the exponents deserve re-measurement on
-other DYAMOND members and on observations (IMERG at its native scales) before
-they are treated as universal. The two largest scale bands barely decay
-within the trained $6$~h, so their $\tau$ is an extrapolation of the fit,
-not a measurement. The matching itself has known sensitivities --- loose IoU
-flatters persistence, the rain threshold changes the object population ---
-quantified in Text~S4; none changes the ordering of the three forecasts. And
-our generative claims are per-draw statements about single realizations;
-building and scoring proper ensembles from the flow (spread, calibration,
-CRPS) is a separate study.
-
-The practical implication is a recipe rather than a model. The apparent
-predictability limit of km-scale precipitation contains a large,
-recoverable estimator artifact, and the recovery mechanism is cheap: a
-generative correction trained on the forecast's own error budget, sampled
-per draw, with the false-alarm price stated by the same instrument that
-measures the gain. The WB2 results suggest the recipe transfers: GenCast's
-members --- but not their mean --- already behave like the flow, which
-argues that joint sampling of the precipitation field, rather than
-per-pixel-optimal objectives, is the property to preserve as operational
-models evolve. For the smallest systems the recipe alone is not enough:
-their horizon is shorter than any operational forecast step, so progress
-below ${\sim}60$~km requires kilometer-scale training data \emph{and}
-sub-hour forecast cadence together. Where the horizon itself varies --- land
-versus ocean, tropics versus midlatitudes --- is open, and the instrument
-travels: any forecast that produces a rain field, numerical or neural,
-deterministic or generative, can be placed on the same $\tau(L)$ axes.
+Three extensions follow. Tracking systems through their life cycle
+\cite{fiolleau2013, feng2023} would give the rain anomaly from initiation
+to decay and separate displacement errors from errors in initiation and
+decay. Repeating the analysis across the DYAMOND models \cite{feng2025}
+would separate properties of the atmosphere from those of MPAS, which
+overestimates mesoscale convective systems. Finally, the scale at which
+skill is lost points AI models to the process they miss: initiation for
+isolated cells, organization for mesoscale systems. Conditioning detection
+on the large-scale forcing, such as ascent or moisture convergence, would
+show whether a forecast is right mainly when the dynamics are strong, and
+whether the extremes it misses develop under weak forcing.
 
 \section{Open Research}
 The DYAMOND MPAS output is available through the DYAMOND initiative
@@ -776,7 +472,7 @@ The DYAMOND MPAS output is available through the DYAMOND initiative
 trained model checkpoints, and the full matched-system tables that underlie
 every figure will be archived with a DOI upon acceptance
 %% TODO: mint the archive (Zenodo or NCAR GDEX) before submission
-. The WeatherBench~2 forecasts (GraphCast, FuXi, GenCast, FGN) and the ERA5
+. The WeatherBench~2 forecasts (GraphCast, FuXi, GenCast) and the ERA5
 verification fields are publicly available from the WeatherBench~2 cloud
 archive \cite{rasp2024}. All analysis and figure code --- the object
 detection, matching, and $\rho A$ decomposition, the training and sampling
@@ -790,6 +486,7 @@ Atmospheric Research (CISL), on the Casper and Derecho systems under
 allocation UCLB0066. We thank the DYAMOND initiative and the MPAS group at
 NCAR for the storm-resolving simulation, the WeatherBench~2 team for the
 open forecast archive, and ECMWF for ERA5.
+We dedicate this study to Caroline Muller.
 
 \bibliography{refs}
 

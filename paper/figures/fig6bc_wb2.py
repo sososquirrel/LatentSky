@@ -21,6 +21,7 @@ from matplotlib.colors import LogNorm
 from paperfig import W2, panel_label
 
 from latentsky.metrics import cell_area_km2, match_systems
+from latentsky.comparison.wb2 import to_mm
 
 CACHE = Path("/glade/derecho/scratch/sabramian/wb2_eval")
 WB = Path("/glade/u/home/sabramian/LatentSky/wb2_benchmark")
@@ -55,8 +56,6 @@ def main():
                              lat_extent=(float(ds.lat[0]) - 0.125,
                                          float(ds.lat[-1]) + 0.125))
 
-    def to_mm(a):
-        return a * 1000.0 if float(np.nanmax(a)) < 2.0 else a
 
     truths = [to_mm(ds.truth.values[i]) for i in range(ds.init.size)]
 

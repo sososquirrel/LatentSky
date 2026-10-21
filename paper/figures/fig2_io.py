@@ -10,7 +10,6 @@ fig2c_outputs.pdf: the two-head's two outputs for this input at +3 h — the
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import matplotlib
@@ -20,9 +19,11 @@ import torch
 from matplotlib.colors import LogNorm
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "docs"))
-from make_flow_pairs_panel import (  # noqa: E402
-    BLOCK, FRAME, INPUT_VARS, P, PIECE, PIECES, RUNS)
+plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
+from latentsky.layout import EXAMPLE_BLOCK as BLOCK  # noqa: E402
+from latentsky.layout import EXAMPLE_FRAME as FRAME  # noqa: E402
+from latentsky.layout import EXAMPLE_PIECE as PIECE  # noqa: E402
+from latentsky.layout import INPUT_VARS, P, PIECES, RUNS  # noqa: E402
 
 from latentsky.models import UNet2DTwoHead  # noqa: E402
 

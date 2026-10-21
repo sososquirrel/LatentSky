@@ -17,6 +17,7 @@ from fig5_horizon import log_ticks
 from paperfig import W2
 
 from latentsky.metrics import cell_area_km2, match_systems, summarize_by_scale
+from latentsky.comparison.wb2 import to_mm
 
 CACHE = Path("/glade/derecho/scratch/sabramian/wb2_eval")
 OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
@@ -30,9 +31,6 @@ def series():
                              lat_extent=(float(ds.lat[0]) - 0.125,
                                          float(ds.lat[-1]) + 0.125))
 
-    def to_mm(a):
-        import numpy as np
-        return a * 1000.0 if float(np.nanmax(a)) < 2.0 else a
 
     truths = [to_mm(ds.truth.values[i]) for i in range(ds.init.size)]
 
