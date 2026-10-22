@@ -200,7 +200,7 @@ without stepping through shorter leads.
 
 The deterministic model is a U-Net, a standard encoder--decoder of
 $125$~M parameters with two outputs, the rain $\hat{R}$ and a wet/dry
-field $\hat{m}$ (Figure~\ref{fig:data}c; Text~S2). Its loss has three
+field $\hat{m}$ (Figure~\ref{fig:data}c; Text~S2; Figure~S1). Its loss has three
 terms,
 \begin{equation}
 \mathcal{L} =
@@ -245,8 +245,7 @@ the learned direction for $32$ steps (Figure~\ref{fig:data}d). A small
 noise is added to the starting field, with an amplitude equal to the
 U-Net's error at that lead. This noise selects one of the futures
 compatible with the inputs. Different noise gives different draws, all
-sharp and all consistent with the same inputs. A diffusion alternative is
-discussed in Text~S3. We score each draw separately
+sharp and all consistent with the same inputs. We score each draw separately
 and never the average of draws, since that average is again a smooth mean.
 
 \subsection{Evaluation: systems and their matching}
@@ -274,13 +273,13 @@ with $\mathrm{d}\ln A = \ln(A_{\mathrm{fc}}/A_{\mathrm{truth}})$, and
 similarly for $\rho$. The horizon $\tau(L)$ of a size band is the
 e-folding time of its POD over the six leads, and the power law
 $T(L) \propto L^{\alpha}$ is fitted to $\tau$ between $59$ and $336$~km
-(Text~S4).
+(Text~S3).
 
 Persistence, the rain at $t$ used as the forecast for $t + \Delta t$, is
 evaluated in the same way. It is a strong reference for
 detection, because a long-lived system still overlaps its earlier position
 at $\mathrm{IoU} \ge 0.1$. The matching
-sensitivities are in Text~S5.
+sensitivities are in Text~S4.
 
 %% ===================== 3. RESULTS ==========================================
 \section{Results}\label{sec:results}
@@ -415,7 +414,8 @@ per $6$~h, the rate of the kilometer-scale threshold.}
 
 We apply the same evaluation to the three models with WeatherBench~2
 precipitation for August 2020, GraphCast, FuXi, and GenCast, against ERA5 over the same belt, with the rain threshold
-converted to the same rate (Figure~\ref{fig:wb2}a,b). Data, resolution,
+converted to the same rate (Figure~\ref{fig:wb2}a,b; whole belt in
+Figure~S2). Data, resolution,
 and leads differ from ours, and our models were built to measure how skill
 decays with lead and size, not to compete; we do not rank the two sets.
 
@@ -425,14 +425,13 @@ Below $100$~km, GraphCast, FuXi, and the GenCast ensemble mean produce one
 third to one half of the systems in ERA5, while above $300$~km all models
 have the right number. A single GenCast member has the right number from
 $80$~km upward and three times too many at $30$~km, where it fragments
-rain areas (Text~S5). Second, the mean forecasts are too weak
+rain areas (Text~S4). Second, the mean forecasts are too weak
 (Figure~\ref{fig:wb2}d). In ERA5, intensity increases with size, from
 $5$~mm per $12$~h at $30$~km to $14$~mm at $1{,}000$~km. Between $100$ and
 $700$~km, GraphCast, FuXi, and the GenCast mean are $10$ to $15\%$ weaker,
 while the GenCast member matches ERA5 at every size; matched systems give
-the same result (Figure~S4). Third, detection depends on size: below
-$60$~km every model detects $13\%$ of the systems or fewer at $+6$ and
-$+12$~h (Figure~S5).
+the same result (Figure~S3). Third, detection depends on size: below
+$60$~km every model detects $13\%$ of the systems or fewer at $+12$~h (Figure~S4).
 
 
 

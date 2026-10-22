@@ -95,6 +95,36 @@ BLUE, ORANGE = "#35526e", "#6f4a86"
 BLUE_BG, ORANGE_BG, INK, GRAY = "#eef1f4", "#f2eef5", "0.2", "0.45"
 
 
+def unet_glyph(ax, x0, yc, col, bg, title, n_in, n_out):
+    """One U-Net glyph; the two networks are drawn at the same size (comparable parameters)."""
+    gw, gh = 18.7, 18.4
+    ax.add_patch(FancyBboxPatch((x0, yc - gh / 2), gw, gh, boxstyle="round,pad=0,rounding_size=0.6",
+                                fc=bg, ec=col, lw=0.8, zorder=3))
+    bw, dx, dy = 1.0, 1.45, 1.75
+    hs = [8.5, 6.6, 5.0, 3.6, 2.5]
+    xe_ = [x0 + 1.2 + dx * i for i in range(5)]
+    xd_ = [x0 + gw - 1.2 - bw - dx * i for i in range(5)]
+    ycs = [yc + 2.6 - dy * i for i in range(5)]
+    for i in range(5):
+        for x in (xe_[i], xd_[i]):
+            ax.add_patch(Rectangle((x, ycs[i] - hs[i] / 2), bw, hs[i], fc="white", ec=col,
+                                   lw=0.7, zorder=4))
+        ax.plot([xe_[i] + bw + 0.2, xd_[i] - 0.2], [ycs[i] + hs[i] / 2 - 0.45] * 2, color=col,
+                lw=0.4, ls=(0, (3, 2)), zorder=4)
+    xb_ = (xe_[4] + bw + xd_[4]) / 2
+    ax.add_patch(Rectangle((xb_ - 0.65, ycs[4] - dy - 0.65), 1.3, 1.3, fc=col, ec=col, lw=0.6,
+                           alpha=0.55, zorder=4))
+    # sizes as resolution x channels: what goes in, what comes out, and the latent
+    for xq, nch in ((xe_[0] + bw / 2 + 1.5, n_in), (xd_[0] + bw / 2 - 1.5, n_out)):
+        ax.text(xq, ycs[0] + hs[0] / 2 + 0.45, rf"$128^2\!\times\!{nch}$", ha="center",
+                va="bottom", fontsize=5, color=col)
+    ax.text(xb_, ycs[4] - dy - 1.0, r"latent $4^2\!\times\!2048$", ha="center", va="top",
+            fontsize=5, color=col)
+    ax.text(x0 + gw / 2, yc + gh / 2 + 0.5, title, ha="center", va="bottom", fontsize=6.5,
+            color=col)
+    return x0 + gw, yc + gh / 2
+
+
 def draw():
     # the paper's text font is Computer Modern: use it here too
     plt.rcParams.update({"font.family": "serif", "font.serif": ["cmr10"],
@@ -148,33 +178,7 @@ def draw_pipeline(ax, letters=("(a)", "(b)", "(c)")):
     YM = 31.5   # the level of the main row: inputs join -> U-Net -> forecast -> flow
 
     def unet(x0, yc, col, bg, title, n_in, n_out):
-        """One U-Net glyph; the two networks are drawn at the same size (comparable parameters)."""
-        gw, gh = 18.7, 18.4
-        ax.add_patch(FancyBboxPatch((x0, yc - gh / 2), gw, gh, boxstyle="round,pad=0,rounding_size=0.6",
-                                    fc=bg, ec=col, lw=0.8, zorder=3))
-        bw, dx, dy = 1.0, 1.45, 1.75
-        hs = [8.5, 6.6, 5.0, 3.6, 2.5]
-        xe_ = [x0 + 1.2 + dx * i for i in range(5)]
-        xd_ = [x0 + gw - 1.2 - bw - dx * i for i in range(5)]
-        ycs = [yc + 2.6 - dy * i for i in range(5)]
-        for i in range(5):
-            for x in (xe_[i], xd_[i]):
-                ax.add_patch(Rectangle((x, ycs[i] - hs[i] / 2), bw, hs[i], fc="white", ec=col,
-                                       lw=0.7, zorder=4))
-            ax.plot([xe_[i] + bw + 0.2, xd_[i] - 0.2], [ycs[i] + hs[i] / 2 - 0.45] * 2, color=col,
-                    lw=0.4, ls=(0, (3, 2)), zorder=4)
-        xb_ = (xe_[4] + bw + xd_[4]) / 2
-        ax.add_patch(Rectangle((xb_ - 0.65, ycs[4] - dy - 0.65), 1.3, 1.3, fc=col, ec=col, lw=0.6,
-                               alpha=0.55, zorder=4))
-        # sizes as resolution x channels: what goes in, what comes out, and the latent
-        for xq, nch in ((xe_[0] + bw / 2 + 1.5, n_in), (xd_[0] + bw / 2 - 1.5, n_out)):
-            ax.text(xq, ycs[0] + hs[0] / 2 + 0.45, rf"$128^2\!\times\!{nch}$", ha="center",
-                    va="bottom", fontsize=5, color=col)
-        ax.text(xb_, ycs[4] - dy - 1.0, r"latent $4^2\!\times\!2048$", ha="center", va="top",
-                fontsize=5, color=col)
-        ax.text(x0 + gw / 2, yc + gh / 2 + 0.5, title, ha="center", va="bottom", fontsize=6.5,
-                color=col)
-        return x0 + gw, yc + gh / 2
+        return unet_glyph(ax, x0, yc, col, bg, title, n_in, n_out)
 
     # ---------------- inputs: nine state fields stacked, the rain at t below ---
     S_IN = 9.0
