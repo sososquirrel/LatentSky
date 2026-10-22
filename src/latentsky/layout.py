@@ -69,3 +69,18 @@ def rain_from_z(z, zmax: float = 2.5):
     """Rain (mm per 15 min) from the flow's log space, z = ln(1 + R) / LOG_RAIN_SCALE;
     z is clipped to [0, zmax] first, as in every figure of the paper."""
     return np.clip(np.expm1(LOG_RAIN_SCALE * np.clip(z, 0, zmax)), 0, None)
+
+
+def tiles(x: np.ndarray, p: int = P) -> np.ndarray:
+    """(C, H, W) frame -> (nr * nc, C, p, p) non-overlapping blocks, row-major;
+    the remainder rows and columns are left out, as in the data split."""
+    c, h, w = x.shape
+    nr, nc = h // p, w // p
+    t = x[:, :nr * p, :nc * p].reshape(c, nr, p, nc, p)
+    return np.ascontiguousarray(t.transpose(1, 3, 0, 2, 4).reshape(nr * nc, c, p, p))
+
+
+def mosaic(t: np.ndarray, nr: int, nc: int) -> np.ndarray:
+    """(nr * nc, 1, p, p) blocks -> (nr * p, nc * p) field; inverse of `tiles`."""
+    p = t.shape[-1]
+    return t.reshape(nr, nc, p, p).transpose(0, 2, 1, 3).reshape(nr * p, nc * p)

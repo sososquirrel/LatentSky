@@ -77,3 +77,11 @@ def test_rain_from_z_inverts_log_space():
     z = np.log1p(r) / layout.LOG_RAIN_SCALE
     assert np.allclose(layout.rain_from_z(z), r)
     assert layout.rain_from_z(np.array([-1.0]))[0] == 0.0
+
+
+def test_tiles_and_mosaic_invert_each_other():
+    x = np.random.default_rng(0).random((3, layout.H, layout.W)).astype(np.float32)
+    b = layout.tiles(x)
+    assert b.shape == (22, 3, layout.P, layout.P)
+    assert np.array_equal(b[4, 1], x[1, 0:128, 512:640])
+    assert np.array_equal(layout.mosaic(b[:, :1], 2, 11), x[0, :256, :1408])
