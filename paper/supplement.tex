@@ -8,6 +8,9 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{lineno}
+% Overleaf compiles every document as "output", so this file can read the
+% paper's .aux, which holds apacite citation entries; let them pass silently.
+\providecommand{\APACbibcite}[2]{}
 \linenumbers
 
 \title{Supporting Information for\\
