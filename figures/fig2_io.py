@@ -91,7 +91,8 @@ def fig_inputs(x):
     print("saved fig2a_inputs.pdf")
 
 
-def fig_outputs(x):
+def predict(x):
+    """The +3 h U-Net's two outputs for one block: rain (mm) and wet/dry logits."""
     cond = torch.from_numpy(x[None])
     twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
     twohead.load_state_dict(torch.load(
@@ -102,6 +103,11 @@ def fig_outputs(x):
         rain_t, logit_t = twohead(cond)
     rain = np.clip(rain_t.numpy()[0, 0], 0, None)
     logit = logit_t.numpy()[0, 0]
+    return rain, logit
+
+
+def fig_outputs(x):
+    rain, logit = predict(x)
 
     fig, axs = plt.subplots(1, 3, figsize=(W2 * 0.63, W2 * 0.27))
     im0 = axs[0].imshow(rain, origin="lower", cmap="Blues",
