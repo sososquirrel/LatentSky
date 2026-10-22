@@ -1,12 +1,12 @@
 """Conditional rectified flow from the deterministic forecast to truth.
 
-The alternative to the SDEdit retrofit (see experiments/tstart_protocol): instead
+The alternative to the SDEdit retrofit (archived in _archive/ddpm_2026-09/): instead
 of pretending the two-head forecast is partially-noised truth, learn the transport
 directly. Source samples are x0 = z_forecast + sigma * eps (the noise keeps the
 map generative — a deterministic pair-map would collapse to a regression; sigma
 is set to the measured wet-masked forecast error in z-space). Target x1 = z_truth.
 Straight-line interpolation x_t = (1 - t) * x0 + t * x1 with velocity target
-v = x1 - x0; the network v(x_t, cond, t) reuses ConditionalDiffusionUNet (its
+v = x1 - x0; the network v(x_t, cond, t) is VelocityUNet (its
 timestep embedding takes t * (T_EMB_RANGE - 1), mapping t in [0, 1] onto the
 embedding range it was designed for).
 

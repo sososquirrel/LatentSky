@@ -32,7 +32,7 @@ import numpy as np
 import torch
 from sklearn.decomposition import PCA
 
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.models import VelocityUNet, UNet2DTwoHead
 from latentsky.models.flow import RectifiedFlow, T_EMB_RANGE
 from latentsky.training.patch_split import compute_patch_grid, make_patch_split
 
@@ -88,7 +88,7 @@ def main():
         RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead6h/checkpoint.pt",
         map_location=device, weights_only=True))
     twohead = twohead.to(device).eval()
-    flow_net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+    flow_net = VelocityUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
     flow_net.load_state_dict(torch.load(
         RUNS / "flow_models/flow_matching_lead6h.checkpoint.pt",
         map_location=device, weights_only=True))

@@ -13,7 +13,7 @@ import torch
 import torch.nn.functional as F
 import yaml
 
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.models import VelocityUNet, UNet2DTwoHead
 from latentsky.models.flow import RectifiedFlow
 from latentsky.training import (
     build_filtered_patch_loader, blocks_for_piece, compute_patch_grid,
@@ -29,8 +29,19 @@ INPUT_VARS = [
 ]
 SCALE = 2.0
 
-sys.path.insert(0, str(HERE.parent / "tstart_protocol"))
-from run import band_power, mosaic, tiles  # noqa: E402
+from latentsky.layout import mosaic as _mosaic  # noqa: E402
+from latentsky.layout import tiles as _tiles  # noqa: E402
+from latentsky.metrics.spectral import band_power  # noqa: E402
+
+
+def tiles(x):
+    """(C, H, W) frame -> (22, C, P, P) torch batch of non-overlapping blocks."""
+    return torch.from_numpy(_tiles(x))
+
+
+def mosaic(t):
+    """(22, P, P) or (22, 1, P, P) blocks -> (256, 1408) field."""
+    return _mosaic(np.asarray(t), 2, 11)
 
 
 def z_of(rain_mm: torch.Tensor) -> torch.Tensor:
@@ -54,7 +65,7 @@ def main():
     for p in twohead.parameters():
         p.requires_grad_(False)
 
-    net = ConditionalDiffusionUNet(
+    net = VelocityUNet(
         cond_ch=10, base_ch=cfg["base_ch"], depth=cfg["depth"],
         time_emb_dim=cfg["time_emb_dim"]).to(device)
     rf = RectifiedFlow(sigma=cfg["sigma"])

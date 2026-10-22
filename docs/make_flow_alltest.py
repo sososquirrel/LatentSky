@@ -12,7 +12,7 @@ import pandas as pd
 import torch
 
 from latentsky.metrics import cell_area_km2, match_systems
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.models import VelocityUNet, UNet2DTwoHead
 from latentsky.models.flow import RectifiedFlow
 from latentsky.training import blocks_for_piece, make_patch_split
 
@@ -40,7 +40,7 @@ def main():
         RUNS / f"unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead{lead:g}h/checkpoint.pt",
         map_location=device, weights_only=True))
     twohead = twohead.to(device).eval()
-    net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+    net = VelocityUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
     net.load_state_dict(torch.load(
         RUNS / f"flow_models/flow_matching_lead{lead:g}h.checkpoint.pt",
         map_location=device, weights_only=True))

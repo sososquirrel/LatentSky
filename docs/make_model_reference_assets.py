@@ -17,7 +17,7 @@ import numpy as np
 import torch
 from matplotlib.colors import LogNorm
 
-from latentsky.models import ConditionalDiffusionUNet, GaussianDiffusion, UNet2DTwoHead
+from latentsky.models import VelocityUNet, GaussianDiffusion, UNet2DTwoHead
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 RUNS = Path("/glade/derecho/scratch/sabramian/LatentSky_runs")
@@ -109,7 +109,7 @@ def main():
         map_location=device, weights_only=True))
     twohead = twohead.to(device).eval()
 
-    diff = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+    diff = VelocityUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
     diff.load_state_dict(torch.load(
         RUNS / "gen_models/10var/diffusion_lead3h/checkpoint.pt",
         map_location=device, weights_only=True))

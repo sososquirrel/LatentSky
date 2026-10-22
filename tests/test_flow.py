@@ -1,6 +1,6 @@
 import torch
 
-from latentsky.models import ConditionalDiffusionUNet
+from latentsky.models import VelocityUNet
 from latentsky.models.flow import RectifiedFlow
 
 
@@ -32,7 +32,7 @@ def test_sample_with_perfect_velocity_reaches_truth():
 def test_sample_runs_with_real_backbone_and_noise():
     torch.manual_seed(0)
     rf = RectifiedFlow(sigma=0.2)
-    net = ConditionalDiffusionUNet(cond_ch=3, base_ch=8, depth=2, time_emb_dim=16)
+    net = VelocityUNet(cond_ch=3, base_ch=8, depth=2, time_emb_dim=16)
     net.eval()
     out = rf.sample(net, torch.randn(1, 3, 16, 16), torch.rand(1, 1, 16, 16), n_steps=4)
     assert out.shape == (1, 1, 16, 16)
@@ -46,7 +46,7 @@ def test_sample_runs_with_real_backbone_and_noise():
 
 def test_sample_path_ends_at_sample():
     torch.manual_seed(0)
-    net = ConditionalDiffusionUNet(cond_ch=10, base_ch=8, depth=2, time_emb_dim=16).eval()
+    net = VelocityUNet(cond_ch=10, base_ch=8, depth=2, time_emb_dim=16).eval()
     zf = torch.rand(1, 1, 16, 16)
     cond = torch.rand(1, 10, 16, 16)
     rf = RectifiedFlow(sigma=0.1)

@@ -42,7 +42,7 @@ def flow_systems_for_lead(lead_h: float) -> pd.DataFrame:
         return pd.read_csv(cache)
     import torch
     torch.set_num_threads(16)
-    from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+    from latentsky.models import VelocityUNet, UNet2DTwoHead
     from latentsky.models.flow import RectifiedFlow
     delta = int(round(lead_h * 4)) + 1
     twohead = UNet2DTwoHead(in_ch=10, base_ch=64, depth=5, olr_channel_idx=2)
@@ -50,7 +50,7 @@ def flow_systems_for_lead(lead_h: float) -> pd.DataFrame:
         RUNS / f"unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead{lead_h:g}h/checkpoint.pt",
         map_location="cpu", weights_only=True))
     twohead.eval()
-    net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+    net = VelocityUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
     net.load_state_dict(torch.load(
         RUNS / f"flow_models/flow_matching_lead{lead_h:g}h.checkpoint.pt",
         map_location="cpu", weights_only=True))

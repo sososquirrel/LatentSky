@@ -20,7 +20,7 @@ import numpy as np
 import torch
 from matplotlib.colors import LogNorm
 
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.models import VelocityUNet, UNet2DTwoHead
 from latentsky.layout import rain_from_z
 from latentsky.models.flow import T_EMB_RANGE, RectifiedFlow
 
@@ -54,7 +54,7 @@ def main():
         RUNS / "unet_models/two_head/10var/patchsplit_twohead_olr_fss_lead3h/checkpoint.pt",
         map_location="cpu", weights_only=True))
     twohead.eval()
-    net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+    net = VelocityUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
     net.load_state_dict(torch.load(
         RUNS / "flow_models/flow_matching_lead3h.checkpoint.pt",
         map_location="cpu", weights_only=True))

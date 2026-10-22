@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from matplotlib.colors import LogNorm
 
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.models import VelocityUNet, UNet2DTwoHead
 from latentsky.models.flow import RectifiedFlow
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
@@ -58,7 +58,7 @@ def main():
             twohead.eval()
             det, _ = twohead(cond)
             det_mm = np.clip(det.numpy()[0, 0], 0, None)
-            net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5,
+            net = VelocityUNet(cond_ch=10, base_ch=64, depth=5,
                                            time_emb_dim=128)
             net.load_state_dict(torch.load(
                 RUNS / f"flow_models/flow_matching_lead{L:g}h.checkpoint.pt",

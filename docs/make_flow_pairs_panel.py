@@ -15,7 +15,7 @@ from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead
+from latentsky.models import VelocityUNet, UNet2DTwoHead
 from latentsky.layout import (  # noqa: F401  (re-exported)
     EXAMPLE_BLOCK, EXAMPLE_FRAME, EXAMPLE_PIECE, INPUT_VARS, IOU_MIN, LOG_RAIN_SCALE, P,
     PIECES, RUNS, WET_THRESHOLD_MM)
@@ -49,7 +49,7 @@ def main():
         twohead.eval()
         det_t, _ = twohead(cond)
         det = np.clip(det_t.numpy()[0, 0], 0, None)
-        net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
+        net = VelocityUNet(cond_ch=10, base_ch=64, depth=5, time_emb_dim=128)
         net.load_state_dict(torch.load(
             RUNS / "flow_models/flow_matching_lead3h.checkpoint.pt",
             map_location="cpu", weights_only=True))

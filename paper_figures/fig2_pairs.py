@@ -33,7 +33,7 @@ else:
     OUT_FILE = None
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
-from latentsky.models import ConditionalDiffusionUNet, UNet2DTwoHead  # noqa: E402
+from latentsky.models import VelocityUNet, UNet2DTwoHead  # noqa: E402
 from latentsky.models.flow import RectifiedFlow  # noqa: E402
 
 OUT = REPO / "paper" / "figures"
@@ -61,7 +61,7 @@ def main():
         twohead.eval()
         det_t, _ = twohead(cond)
         det = np.clip(det_t.numpy()[0, 0], 0, None)
-        net = ConditionalDiffusionUNet(cond_ch=10, base_ch=64, depth=5,
+        net = VelocityUNet(cond_ch=10, base_ch=64, depth=5,
                                        time_emb_dim=128)
         net.load_state_dict(torch.load(
             RUNS / "flow_models/flow_matching_lead3h.checkpoint.pt",
