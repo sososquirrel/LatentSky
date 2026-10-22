@@ -22,10 +22,10 @@ from matplotlib.colors import LogNorm
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "paper" / "figures"))
+sys.path.insert(0, str(REPO / "paper_figures"))
 from paperfig import W2  # noqa: E402
 
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper_figures" / "extra"
 CACHE = REPO / "data" / "paper_figs" / "fig2_pipeline.npz"
 SNAP_T = (0.0, 0.25, 0.5, 0.75, 1.0)
 SEEDS = (11, 12, 13)

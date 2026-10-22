@@ -21,7 +21,7 @@ REPO = Path("/glade/u/home/sabramian/LatentSky")
 plt.style.use(str(REPO / "docs" / "latentsky.mplstyle"))
 
 matplotlib.rcParams["savefig.bbox"] = None  # exact canvas, no auto-crop
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper_figures" / "extra"
 
 CM = 1 / 2.54
 MAPW = 17.5 * CM                 # map axes width = textwidth

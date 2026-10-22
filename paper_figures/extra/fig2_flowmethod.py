@@ -16,7 +16,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from matplotlib.colors import LogNorm
-from paperfig import W2
+import sys as _sys
+_sys.path.insert(0, "/glade/u/home/sabramian/LatentSky/paper_figures")
+from paperfig import W2  # noqa: E402
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
 from latentsky.layout import EXAMPLE_BLOCK as BLOCK  # noqa: E402
@@ -43,7 +45,7 @@ import matplotlib  # noqa: E402
 
 matplotlib.rcParams["savefig.bbox"] = "tight"
 
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper_figures" / "extra"
 
 
 def compute():

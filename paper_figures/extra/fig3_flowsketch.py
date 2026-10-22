@@ -17,13 +17,13 @@ from matplotlib.colors import LogNorm
 from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "paper" / "figures"))
+sys.path.insert(0, str(REPO / "paper_figures" / "extra"))
 from fig2_flowmethod import compute  # noqa: E402
 
 from latentsky.layout import rain_from_z  # noqa: E402
 
 matplotlib.rcParams["savefig.bbox"] = "tight"
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper_figures" / "extra"
 CM = 1 / 2.54
 ORANGE = "#c55a11"
 ORANGE_BG = "#fdf0e6"

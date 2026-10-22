@@ -12,8 +12,14 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 plt.style.use("/glade/u/home/sabramian/LatentSky/docs/latentsky.mplstyle")
+
+REPO = Path("/glade/u/home/sabramian/LatentSky")
+FIG_DIR = REPO / "paper" / "figures"          # the five figures of the paper
+SI_DIR = REPO / "paper" / "figures_si"        # the supplementary figures
+EXTRA_DIR = REPO / "paper_figures" / "extra"  # intermediate panels, previews
 
 CM = 1 / 2.54
 W1 = 8.5 * CM    # single column

@@ -11,11 +11,12 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from fig4_decomp import PAPER_FONT, decomposition_panel, legend_handles
+from fig3_decomp import PAPER_FONT, decomposition_panel, legend_handles
 from paperfig import W2
 
 WB = Path("/glade/u/home/sabramian/LatentSky/wb2_benchmark")
-OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
+REPO = Path("/glade/u/home/sabramian/LatentSky")
+OUT = REPO / "paper" / "figures_si"
 
 MODELS = [("graphcast", "GraphCast"), ("fuxi", "FuXi"),
           ("gencast mean", "GenCast mean"), ("gencast member", "GenCast member")]
@@ -47,8 +48,8 @@ def main():
     fig.legend(handles=legend_handles(BANDS), loc="lower center", ncol=3, fontsize=7,
                frameon=False, columnspacing=2.2, handlelength=1.6, handletextpad=0.6,
                bbox_to_anchor=(0.54, 0.0))
-    fig.savefig(OUT / "fig7c_clouds.pdf")
-    print("saved fig7c_clouds.pdf")
+    fig.savefig(OUT / "figS3_wb2_clouds.pdf")
+    print("saved figS3_wb2_clouds.pdf")
 
 
 if __name__ == "__main__":

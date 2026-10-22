@@ -11,16 +11,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
-from fig6bc_wb2 import BANDS, COLW, MIDS, NMIN
-from fig4_decomp import PAPER_FONT
-from fig5_horizon import log_ticks
+from wb2_common import BANDS, COLW, MIDS, NMIN
+from fig3_decomp import PAPER_FONT
+from fig4_horizon import log_ticks
 from paperfig import W2
 
 from latentsky.metrics import cell_area_km2, match_systems, summarize_by_scale
 from latentsky.comparison.wb2 import to_mm
 
 CACHE = Path("/glade/derecho/scratch/sabramian/wb2_eval")
-OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
+REPO = Path("/glade/u/home/sabramian/LatentSky")
+OUT = REPO / "paper" / "figures_si"
 THR, IOU_MIN = 4.8, 0.1
 
 
@@ -99,8 +100,8 @@ def main():
     fig, (ax_pod, ax_far) = plt.subplots(1, 2, figsize=(W2, W2 * 0.46))
     fig.subplots_adjust(left=0.07, right=0.985, top=0.90, bottom=0.15, wspace=0.22)
     plot_podfar(ax_pod, ax_far, series())
-    fig.savefig(OUT / "fig7b_pod.pdf")
-    print("saved fig7b_pod.pdf")
+    fig.savefig(OUT / "figS4_wb2_pod.pdf")
+    print("saved figS4_wb2_pod.pdf")
 
 
 if __name__ == "__main__":

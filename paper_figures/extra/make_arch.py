@@ -135,6 +135,6 @@ axs[1].text(0.0, 1.0, "B. velocity network (flow matching)",
             ha="left", va="top")
 fig.subplots_adjust(wspace=0.06, left=0.01, right=0.99, top=0.99,
                     bottom=0.01)
-fig.savefig("/glade/u/home/sabramian/LatentSky/paper/figures/fig1b_architecture.pdf",
+fig.savefig("/glade/u/home/sabramian/LatentSky/paper_figures/extra/fig1b_architecture.pdf",
             bbox_inches="tight")
 print("written")

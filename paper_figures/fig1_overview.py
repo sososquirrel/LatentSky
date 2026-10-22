@@ -13,9 +13,9 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "paper" / "figures"))
-from fig1a_domain import CM, FH, FONT, FW, LABW, draw_domain  # noqa: E402
-from fig2_pipeline import W2, draw_pipeline  # noqa: E402
+sys.path.insert(0, str(REPO / "paper_figures"))
+from fig1_domain import CM, FH, FONT, FW, LABW, draw_domain  # noqa: E402
+from fig1_pipeline import W2, draw_pipeline  # noqa: E402
 
 OUT = REPO / "paper" / "figures"
 PH = W2 * 0.45          # pipeline height, as in fig2_pipeline.pdf

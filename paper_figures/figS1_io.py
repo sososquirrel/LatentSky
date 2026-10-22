@@ -28,7 +28,7 @@ from latentsky.layout import INPUT_VARS, P, PIECES, RUNS  # noqa: E402
 from latentsky.models import UNet2DTwoHead  # noqa: E402
 
 matplotlib.rcParams["savefig.bbox"] = "tight"
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper_figures" / "extra"
 CM = 1 / 2.54
 W2 = 17.5 * CM
 DET = "#2166ac"

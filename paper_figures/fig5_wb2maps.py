@@ -24,7 +24,7 @@ NR, NC = 2, 11   # the 2 x 11 block grid of Fig. 1 (320 x 1440 pixels, 128-pixel
 
 from latentsky.metrics import cell_area_km2, label_systems, match_systems  # noqa: E402
 
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper" / "figures_si"
 CM = 1 / 2.54
 W2 = 17.5 * CM
 
@@ -248,8 +248,8 @@ def main():
     fig.legend(handles=handles, loc="lower center", ncol=2, fontsize=7, frameon=False,
                bbox_to_anchor=(0.5 + LABW / FW / 2, 0.0), handlelength=1.8, columnspacing=1.6)
 
-    fig.savefig(OUT / "figS_wb2_belts.pdf", dpi=300)
-    print("saved figS_wb2_belts.pdf")
+    fig.savefig(OUT / "figS2_wb2_belts.pdf", dpi=300)
+    print("saved figS2_wb2_belts.pdf")
 
 
 if __name__ == "__main__":

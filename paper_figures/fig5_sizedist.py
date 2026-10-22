@@ -21,15 +21,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 REPO = Path("/glade/u/home/sabramian/LatentSky")
-sys.path.insert(0, str(REPO / "paper" / "figures"))
-from fig4_decomp import PAPER_FONT  # noqa: E402
-from fig5_horizon import log_ticks, title  # noqa: E402
-from fig6bc_wb2 import COLW, THR  # noqa: E402
+sys.path.insert(0, str(REPO / "paper_figures"))
+from fig3_decomp import PAPER_FONT  # noqa: E402
+from fig4_horizon import log_ticks, title  # noqa: E402
+from wb2_common import COLW, THR  # noqa: E402
 from paperfig import W2  # noqa: E402
 
 CACHE = Path("/glade/derecho/scratch/sabramian/wb2_eval")
 DATA = REPO / "data" / "paper_figs" / "fig5_sizedist.npz"
-OUT = REPO / "paper" / "figures"
+OUT = REPO / "paper_figures" / "extra"
 EDGES = np.geomspace(20, 3000, 17)
 MIDS = np.sqrt(EDGES[:-1] * EDGES[1:])
 FIELDS = {"truth": "truth", "graphcast": "graphcast", "fuxi": "fuxi",

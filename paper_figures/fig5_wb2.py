@@ -1,17 +1,18 @@
 """Paper Fig 5 (WB2) — the zoom pair of the GraphCast +6 h matching above, and the
 size distribution of the systems (ERA5 and the WB2 models, +12 h, August 2020) below;
-the detection and false-alarm panels moved to the supplement (fig7b_pod.py). The belt maps
-go to the supplement (fig7a_wb2maps.py -> figS_wb2_belts.pdf)."""
+the detection and false-alarm panels moved to the supplement (figS4_wb2_pod.py). The belt maps
+go to the supplement (fig5_wb2maps.py -> figures_si/figS2_wb2_belts.pdf)."""
 from __future__ import annotations
 
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from fig4_decomp import PAPER_FONT
-from fig7a_wb2maps import compute, draw_zoom
+from fig3_decomp import PAPER_FONT
+from fig5_wb2maps import compute, draw_zoom
 from fig5_sizedist import plot_sizedist
 
-OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
+REPO = Path("/glade/u/home/sabramian/LatentSky")
+OUT = REPO / "paper" / "figures"
 
 
 def title(fig, ax, letter, text):
@@ -53,8 +54,8 @@ def main():
                              (ax_n, "(c)", "Number of systems, +12 h"),
                              (ax_p, "(d)", "Mean intensity, +12 h")):
         title(fig, ax, letter, text)
-    fig.savefig(OUT / "fig6_wb2.pdf", dpi=300)
-    print("saved fig6_wb2.pdf")
+    fig.savefig(OUT / "fig5_wb2.pdf", dpi=300)
+    print("saved fig5_wb2.pdf")
 
 
 if __name__ == "__main__":

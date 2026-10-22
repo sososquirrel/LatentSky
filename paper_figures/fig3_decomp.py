@@ -25,7 +25,8 @@ from paperfig import W2
 from scipy.ndimage import gaussian_filter
 
 EVAL = Path("/glade/derecho/scratch/sabramian/latentsky/eval_method")
-OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
+REPO = Path("/glade/u/home/sabramian/LatentSky")
+OUT = REPO / "paper" / "figures"
 
 LIM = 2.4
 # three size bands, small to large, on the scale colours of the other figures
@@ -205,7 +206,7 @@ def main_density():
                       label="mean error, " + name) for _, _, name, c in BANDS]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
                columnspacing=1.6, handlelength=1.6, bbox_to_anchor=(0.54, -0.005))
-    fig.savefig(OUT / "fig4_decomp_density.pdf")
+    fig.savefig(REPO / "paper_figures" / "extra" / "fig4_decomp_density.pdf")
     print("saved fig4_decomp_density.pdf")
 
 
@@ -232,8 +233,8 @@ def main():
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
                columnspacing=2.2, handlelength=1.6, handletextpad=0.6,
                bbox_to_anchor=(0.54, 0.0))
-    fig.savefig(OUT / "fig4_decomp.pdf")
-    print("saved fig4_decomp.pdf")
+    fig.savefig(OUT / "fig3_decomp.pdf")
+    print("saved fig3_decomp.pdf")
 
 
 if __name__ == "__main__":

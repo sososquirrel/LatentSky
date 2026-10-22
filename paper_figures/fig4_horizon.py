@@ -181,8 +181,8 @@ def main():
     cbc.set_label("scale band L (km)", fontsize=8)
     cbc.ax.tick_params(labelsize=7, length=2, width=0.6)
     cbc.outline.set_linewidth(0.5)
-    fig.savefig(OUT / "fig5_horizon.pdf")
-    print("saved fig5_horizon.pdf")
+    fig.savefig(OUT / "fig4_horizon.pdf")
+    print("saved fig4_horizon.pdf")
 
 
 if __name__ == "__main__":

@@ -275,8 +275,8 @@ def main():
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, fontsize=7, frameon=False,
                bbox_to_anchor=(0.475, 0.0), handlelength=1.8, columnspacing=1.6)
-    fig.savefig(OUT_FILE or OUT / "fig3_pairs.pdf", dpi=300)
-    print("saved", OUT_FILE or "fig3_pairs.pdf")
+    fig.savefig(OUT_FILE or OUT / "fig2_pairs.pdf", dpi=300)
+    print("saved", OUT_FILE or "fig2_pairs.pdf")
 
 
 if __name__ == "__main__":

@@ -25,7 +25,8 @@ from latentsky.comparison.wb2 import to_mm
 
 CACHE = Path("/glade/derecho/scratch/sabramian/wb2_eval")
 WB = Path("/glade/u/home/sabramian/LatentSky/wb2_benchmark")
-OUT = Path("/glade/u/home/sabramian/LatentSky/paper/figures")
+REPO = Path("/glade/u/home/sabramian/LatentSky")
+OUT = REPO / "paper_figures" / "extra"
 
 THR, IOU_MIN = 4.8, 0.1
 BANDS = np.geomspace(30, 3000, 11)

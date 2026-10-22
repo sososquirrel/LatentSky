@@ -27,18 +27,23 @@ GRL specifics:
 - Open Research (data/code availability) section required;
 - 12 publication units in total (check with AGU's counter before submission).
 
-Figures are built by the scripts in `figures/` (one script per PDF; shared
-constants and helpers come from `src/latentsky`, not from `docs/`):
+Figures: `figures/` holds the five figures of the paper and `figures_si/` the
+supplementary ones, named by their number in the paper. They are built by the
+scripts in `../paper_figures/` (same names; shared constants and helpers come
+from `src/latentsky`). That folder also holds the helper scripts and, in
+`extra/`, everything not shown in the paper (intermediate panels, previews,
+older figures). Only `paper/` is synced to Overleaf.
 
-| Figure | Script | Notes |
+| Figure | Script (in `paper_figures/`) | Notes |
 |---|---|---|
-| 1 | `fig1_overview.py` | domain (`fig1a_domain.py`) + pipeline (`fig2_pipeline.py`, cached run) |
-| 2 | `fig3_pairs.py` | runs the +3 h U-Net and flow on CPU |
-| 3 | `fig4_decomp.py` | |
-| 4 | `fig5_horizon.py` | |
-| 5 | `fig6_wb2.py` | maps (`fig7a_wb2maps.py`) + size distributions (`fig5_sizedist.py`) |
-| S1, S2 | `fig2_io.py` + `make_arch.py`, `fig3_flowsketch.py` | |
-| S3, S4, S5 | `fig7a_wb2maps.py`, `fig7c_clouds.py`, `fig7b_pod.py` | |
+| 1 | `fig1_overview.py` | domain (`fig1_domain.py`) + pipeline (`fig1_pipeline.py`, cached run) |
+| 2 | `fig2_pairs.py` | runs the +3 h U-Net and flow on CPU |
+| 3 | `fig3_decomp.py` | |
+| 4 | `fig4_horizon.py` | |
+| 5 | `fig5_wb2.py` | maps (`fig5_wb2maps.py`) + size distributions (`fig5_sizedist.py`) |
+| S1 | `figS1_unet.py` | inputs and outputs from `figS1_io.py`, U-Net glyph from `fig1_pipeline.py` |
+| S2 | `fig5_wb2maps.py` | the whole tropical belt |
+| S3, S4 | `figS3_wb2_clouds.py`, `figS4_wb2_pod.py` | WB2 constants in `wb2_common.py` |
 
 They are not yet registered in `results/REGISTRY.md`; promotion
 (`/promote-result`) needs the sensitivity tests first.
