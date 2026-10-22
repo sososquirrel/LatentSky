@@ -85,7 +85,7 @@ controls the intensity and the variability of tropical rain
 these scales in two ways. Some are invisible to it: small cells are missed
 altogether, although most organized systems grow from them
 \cite{muller2022, bony2025}. Others are captured but systematically biased: large
-systems, which carry the heaviest rain \cite{roca2020}, are detected yet
+systems, which carry the heaviest rain \cite{roca2020, carenso2025}, are detected yet
 drawn too wide and too weak. Reaching their intensity is essential for
 extremes, and AI weather models still underestimate that of tropical
 cyclones \cite{bi2023}. How a forecast's skill varies with size
@@ -112,7 +112,7 @@ not been measured.
 AI weather models are usually trained on the ERA5 reanalysis at
 $0.25^{\circ}$ and step the atmosphere forward by $6$ or $12$~h
 \cite{lam2023, chen2023, price2025}. WeatherBench~2 compares them against
-ERA5 \cite{rasp2024}; for precipitation it holds GraphCast
+ERA5 (\citeNP{rasp2024}; Text~S5); for precipitation it holds GraphCast
 \cite<Google DeepMind;>{lam2023}, FuXi \cite{chen2023}, GenCast
 \cite<Google DeepMind;>{price2025}, and FGN, for functional generative networks
 \cite<Google DeepMind;>{alet2025}.
@@ -415,7 +415,7 @@ per $6$~h, the rate of the kilometer-scale threshold.}
 We apply the same evaluation to the three models with WeatherBench~2
 precipitation for August 2020, GraphCast, FuXi, and GenCast, against ERA5 over the same belt, with the rain threshold
 converted to the same rate (Figure~\ref{fig:wb2}a,b; whole belt in
-Figure~S2). Data, resolution,
+Figure~S2; Text~S5). Data, resolution,
 and leads differ from ours, and our models were built to measure how skill
 decays with lead and size, not to compete; we do not rank the two sets.
 

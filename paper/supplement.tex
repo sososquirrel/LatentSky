@@ -137,6 +137,36 @@ models under-segment instead ($\approx 200$ objects). A many-to-one variant
 is the appropriate sensitivity and does not change the intensity-bias
 conclusions.
 
+\section*{Text S5. The WeatherBench~2 forecasts}
+We do not run the AI models ourselves: WeatherBench~2 distributes their
+forecasts, precomputed, as cloud datasets on a common $0.25^{\circ}$ grid,
+and we read them directly. Each model is a neural network trained on
+ERA5. To forecast, it takes the global atmospheric state at the
+initialization time and one step earlier (winds, temperature, humidity, and
+geopotential on pressure levels, plus surface fields) and returns the state
+one step later, $6$~h for GraphCast and FuXi and $12$~h for GenCast; it is
+then applied to its own output to reach longer leads. Precipitation is
+predicted as an accumulation over each step; for GraphCast and GenCast it
+is an output only, never an input, whereas our models receive the current
+rain. Once trained, the models are fast: a 10-day GraphCast forecast takes
+under a minute on a single Google TPU (Tensor Processing Unit, a chip built
+for neural networks), and a 15-day GenCast forecast about eight minutes
+(Lam et al., 2023; Price et al., 2025). For the reader's curiosity,
+training GraphCast took about four weeks on 32 TPUs, and GenCast about five
+days on 32 TPUs.
+
+We use the $62$ forecasts initialized at 00 and 12~UTC in August~2020, a
+period available for all three models. The rain at $+12$~h is the sum of
+the 0--6~h and 6--12~h accumulations for GraphCast and FuXi, and the
+12~h accumulation for GenCast, both for its ensemble mean and for one
+member (the first sample). The truth is the ERA5 accumulation over the
+same 12~h, and persistence the ERA5 accumulation over the 12~h before
+initialization. All fields are restricted to $40^{\circ}$S--$40^{\circ}$N,
+converted from metres to millimetres, and segmented at $4.8$~mm per 12~h,
+the rate of the kilometer-scale threshold ($0.1$~mm per $15$~min), with
+the matching of the main text. The GraphCast example of Figure~5a,b uses
+its 0--6~h accumulation, at $2.4$~mm per 6~h.
+
 \clearpage
 \begin{figure}
 \centering
